@@ -1,0 +1,46 @@
+@font-face {
+    font-family: 'jersey';
+    src: url('/fonts/jersey.ttf') format('truetype');
+    font-weight: normal; /* Pode ser normal, bold, etc. */
+    font-style: normal;  /* Pode ser normal, italic, etc. */
+}
+
+* {
+    font-family: 'jersey';
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column-reverse;
+    background: #121212;
+    gap: 16px;
+    canvas {
+        border-radius: 16px;
+        border: 2px solid white;
+        box-shadow: 0px 8px 16px #00000025;
+    }
+    .actions-wrapper {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        button {
+            background-color: olivedrab;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            transition: all 125ms ease-in-out;
+            cursor: pointer;
+            font-size: 24px;
+            &:disabled {
+                opacity: 0.75;
+                cursor:not-allowed;
+            }
+            &:hover {
+                filter: brightness(1.1);
+            }
+        }
+    }
+}
