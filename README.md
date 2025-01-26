@@ -26,7 +26,21 @@ $ npm run zip
 
 will build your game and package into a .zip file, you can upload to your server or itch.io / newground etc.
 
+## Deploy
+```sh
+$ npm install --save-dev gh-pages
+```
+```sh
+$ npm run deploy
+```
+
 ## TODO
+
+- Project
+    - [X] Define libs
+    - [X] Prototype
+    - [X] GitHub Repo
+    - [X] Deploy to Github Pages
 
 - Communication between client/server mockup
     - [X] Simple battle
