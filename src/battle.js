@@ -1,7 +1,8 @@
 const playerData = {
     hp: 100,
     maxHP: 100,
-    dex: 10
+    dex: 10,
+    att: 20
 }
 
 const enemiesData = {
@@ -10,10 +11,25 @@ const enemiesData = {
         hp: 60,
         maxHP: 60,
         dex: 8,
-    }
+        att: 10
+    },
+    'pirate': {
+        name: 'pirate',
+        hp: 20,
+        maxHP: 20,
+        dex: 16,
+        att: 5
+    },
+    'beached_bucaneer': {
+        name: 'beached_bucaneer',
+        hp: 120,
+        maxHP: 120,
+        dex: 10,
+        att: 15
+    },
 }
 
-const randomInt = () => (Math.round(-1* Math.random()*25));
+const randomInt = (base=5) => (Math.round(-1* Math.random()*base));
 
 const calculateBattle = (player, enemy_name) => {
     const ret = []
@@ -31,7 +47,7 @@ const calculateBattle = (player, enemy_name) => {
         const enemyDexFactor = Math.random() * __enemy.dex;
         
         if(playerDexFactor > enemyDexFactor) {
-            const playerAttack = randomInt();
+            const playerAttack = randomInt(player.att);
             __enemy.hp += playerAttack;
             ret.push({
                 action: 'damageEnemy',
@@ -40,7 +56,7 @@ const calculateBattle = (player, enemy_name) => {
         } 
         
         if(enemyDexFactor > playerDexFactor || true) {
-            const damageEnemy = randomInt();
+            const damageEnemy = randomInt(__enemy.att);
             player.hp += damageEnemy;
             ret.push({
                 action: 'damagePlayer',
@@ -57,7 +73,7 @@ const calculateBattle = (player, enemy_name) => {
         ret.push({
             action: 'winEnemy', args: []
         });
-        playerData.hp = playerData.maxHP
+        player.hp = player.maxHP
     } else {
         ret.push({
             action: 'draw', args: []
@@ -67,7 +83,9 @@ const calculateBattle = (player, enemy_name) => {
 }
 
 const randomBattle = () => {
-    return calculateBattle(playerData, 'bandit_leader')
+    const enemiesNames = Object.keys(enemiesData);
+    const enemyName = enemiesNames[Math.floor(Math.random()*enemiesNames.length)];
+    return calculateBattle(playerData, enemyName)
 }
 
 export default {

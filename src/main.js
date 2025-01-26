@@ -10,6 +10,8 @@ const k = kaplay({
 k.loadRoot("./"); // A good idea for Itch.io publishing later
 k.loadSprite("player", "sprites/player.png");
 k.loadSprite("bandit_leader", "sprites/bandit_leader.png");
+k.loadSprite("pirate", "sprites/pirate.png");
+k.loadSprite("beached_bucaneer", "sprites/beached_bucaneer.png");
 k.loadSprite("beach", "sprites/beach.png");
 loadFont("jersey", "fonts/jersey.ttf");
 k.onClick(() => k.addKaboom(k.mousePos()));
