@@ -13,6 +13,7 @@ k.loadSprite("bandit_leader", "sprites/bandit_leader.png");
 k.loadSprite("pirate", "sprites/pirate.png");
 k.loadSprite("beached_bucaneer", "sprites/beached_bucaneer.png");
 k.loadSprite("treasure_chest", "sprites/treasure_chest.png");
+k.loadSprite("dreadstump_the_pirate_king", "sprites/dreadstump_the_pirate_king.png");
 k.loadSprite("beach", "sprites/beach.png", {
     sliceX: 5,
     sliceY: 5
@@ -81,6 +82,18 @@ const updateRegionCount = (regionName, count) => {
     regionWindow.width = regionLabel.width + 16
 }
 
+const inputGold = document.querySelector('input#gold')
+const updateGold = (value) => {
+    inputGold.value = value;
+}
+
+const updateAtrtibutes = ({ level, exp, dex, att }) => {
+    document.querySelector('#attribute-level').innerHTML = level;
+    document.querySelector('#attribute-exp').innerHTML = exp;
+    document.querySelector('#attribute-dex').innerHTML = dex;
+    document.querySelector('#attribute-att').innerHTML = att;
+}
+
 
 let battleActions = []
 let battleStep = 0;
@@ -89,9 +102,10 @@ let player = null;
 let enemy = null;
 
 const actions = {
-    battleStart(playerData, enemyData, regionData) {
+    battleStart({ playerData, enemyData, regionData }) {
         createBackground(regionData.spriteName);
         updateRegionCount(regionData.name, regionData.level);
+        updateAtrtibutes(playerData)
         
         if(player) player.die(k);
         player = new Entity(k, center.x, center.y+125, 'player', playerData);
@@ -100,32 +114,31 @@ const actions = {
         enemy = new Entity(k, center.x, center.y-125, enemyData.name, enemyData);
 
     },
-    damagePlayer(damage) {
+    damagePlayer({ damage }) {
         player.damage(k, damage)
     },
-    damageEnemy(damage) {
+    damageEnemy({ damage }) {
         enemy.damage(k, damage)
     },
-    winPlayer() {
+    winPlayer({ playerData }) {
+        updateGold(playerData.gold)
+        updateAtrtibutes(playerData)
         enemy.die(k);
     },
     winEnemy() {
         player.die(k);
     },
-    alert(text) {
-        createMessage(text);
-    },
-    draw() {
-        createMessage('Draw');
+    alert({ content }) {
+        createMessage(content);
     }
 }
 
 k.onUpdate(() => {
     if(enemy != null) {
-        enemy.updateLifebar('bar');
+        enemy.updateLifebar();
     }
     if(player != null) {
-        player.updateLifebar('foo');
+        player.updateLifebar();
     }
 });
 
@@ -135,20 +148,20 @@ const buttonExplore = document.querySelector('button#explore')
 buttonExplore.addEventListener('click', () => {
     if(battleStep >= battleActions.length) {
         createMessage('Exploring...');
-        battleActions = battle.randomBattle();
+        battleActions = battle.randomBattle('beach');
         battleStep = 0;
     } else {
         createMessage('Wait!');
     }
 })
 
-k.loop(.75, () => {
+k.loop(.05, () => {
     if(battleStep < battleActions.length) {
         buttonExplore.setAttribute('disabled', true);
         buttonExplore.innerHTML = 'Exploring...';
         const actioName = battleActions[battleStep].action;
-        const args = battleActions[battleStep].args;
-        actions[actioName](...args);
+        const args = battleActions[battleStep].args || {};
+        actions[actioName](args);
         battleStep++;
     } else {
         buttonExplore.removeAttribute('disabled')
