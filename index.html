@@ -3,7 +3,7 @@
 <head>
 <title>tiny_rpg_exalt</title>
 <link rel="stylesheet" href="/tiny_rpg_exalt/style.css">
-  <script type="module" crossorigin src="/tiny_rpg_exalt/assets/index-DtGcjs3P.js"></script>
+  <script type="module" crossorigin src="/tiny_rpg_exalt/assets/index-BE5tqEgz.js"></script>
   <link rel="modulepreload" crossorigin href="/tiny_rpg_exalt/assets/kaplay-DBPwJhjK.js">
 </head>
 <body style="overflow:hidden">
@@ -11,11 +11,18 @@
     <div class="info">
         <label for="region">
             Region
-            <select>
-                <option value="beach" id="region">Beach</option>
+            <select id="region">
+                <option value="beach">Beach</option>
+                <option value="mid_plains">Mid Plains</option>
             </select>
         </label>
         <button id="explore">Explore</button>
+    </div>
+    <div class="info">
+        <label for="auto-explore">
+            Auto-explore
+            <input type="checkbox" id="auto-explore" />
+        </label>
     </div>
     <hr>
     <div class="info">
@@ -45,6 +52,12 @@
                     <small>DEX</small>
                 </li>
             </ul>
+        </label>
+    </div>
+    <div class="info">
+        <label for="region">
+            Options
+            <button class="danger" id="restart-progress">Restart Progress</button>
         </label>
     </div>
 </div>

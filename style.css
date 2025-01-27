@@ -25,6 +25,7 @@ body {
         display: flex;
         flex-direction: column;
         gap: 8px;
+        width: 280px;
         .info {
             display: flex;
             flex-direction: row;
@@ -90,6 +91,9 @@ button {
     }
     &:hover {
         filter: brightness(1.1);
+    }
+    &.danger {
+        background-color: darkred;
     }
 }
 
