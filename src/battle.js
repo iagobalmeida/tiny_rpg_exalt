@@ -1,4 +1,4 @@
-import { regions } from './regions';
+import { randomEncounter, regions } from './regions';
 
 const playerData = localStorage.getItem('playerData') ? JSON.parse(localStorage.getItem('playerData')) : {
     level: 1,
@@ -11,6 +11,21 @@ const playerData = localStorage.getItem('playerData') ? JSON.parse(localStorage.
     def: 2
 }
 
+const playerAddExperience = (ammount) => {
+    playerData.exp += ammount;
+    if(playerData.exp >= playerData.level*75) {
+        playerData.exp -= playerData.level*75;
+        playerData.level++;
+        playerData.att += 1;
+        playerData.dex += 1;
+        playerData.def += 1;
+        playerData.maxHP += 15;
+        playerData.hp = playerData.maxHP;
+        return true;
+    }
+    return false;
+}
+
 const regionData = localStorage.getItem('regionData') ? JSON.parse(localStorage.getItem('regionData')) : {
     level: 1,
     maxLevel: 25,
@@ -21,10 +36,9 @@ const regionData = localStorage.getItem('regionData') ? JSON.parse(localStorage.
 
 const randomInt = (base=5) => (-1 * (Math.round(base*0.25) + Math.round(Math.random()*base*0.75)));
 
-const calculateBattle = (player, region_name, enemy_name) => {
+const calculateBattle = (player, enemyData) => {
     const ret = []
-    const enemiesData = regions[region_name].enemies
-    const __enemy = {...enemiesData[enemy_name]}
+    const __enemy = {...enemyData}
     ret.push({
         action: 'battleStart',
         args: {
@@ -46,7 +60,9 @@ const calculateBattle = (player, region_name, enemy_name) => {
         const enemyDexFactor = Math.random() * __enemy.dex;
         
         if(playerDexFactor > enemyDexFactor && player.hp > 0) {
-            const playerAttack = randomInt(player.att - __enemy.def);
+            const attackFactor = (playerDexFactor > enemyDexFactor * 2) ? 2 : 1;
+            const defFactor = Math.round(Math.random() * __enemy.def)
+            const playerAttack = attackFactor * randomInt(Math.max(0, player.att - defFactor));
             __enemy.hp += playerAttack;
             ret.push({
                 action: 'damageEnemy',
@@ -57,7 +73,9 @@ const calculateBattle = (player, region_name, enemy_name) => {
         } 
         
         if(enemyDexFactor > playerDexFactor && __enemy.hp > 0) {
-            const damageEnemy = randomInt(__enemy.att - player.def);
+            const attackFactor = (enemyDexFactor > playerDexFactor * 2) ? 2 : 1;
+            const defFactor = Math.round(Math.random() * player.def)
+            const damageEnemy = attackFactor * randomInt(Math.max(0, __enemy.att - defFactor));
             player.hp += damageEnemy;
             ret.push({
                 action: 'damagePlayer',
@@ -70,32 +88,21 @@ const calculateBattle = (player, region_name, enemy_name) => {
 
     if(player.hp > 0 && __enemy.hp <= 0) {
         regionData.level = Math.min(regionData.maxLevel, regionData.level+1);
-        const gold = __enemy.gold;
-        const exp = __enemy.exp;
         let message = []
-        if(exp) message.push(`+${exp} EXP`)
-        if(gold) message.push(`+${gold} Gold`)
+        if(__enemy.exp) message.push(`+${__enemy.exp} EXP`)
+        if(__enemy.gold) message.push(`+${__enemy.gold} Gold`)
         ret.push({
             action: 'alert',
             args: {
                 content: message.join(' ')
             }
         });
-
-        playerData.exp += exp;
-        playerData.gold += gold;
-        if(playerData.exp >= playerData.level*25) {
-            playerData.exp -= playerData.level*25;
-            playerData.level++;
-            playerData.att += 2;
-            playerData.dex += 2;
-            playerData.def += 2;
-            playerData.maxHP += 50;
-            playerData.hp = playerData.maxHP;
+        playerData.gold += __enemy.gold;
+        if(playerAddExperience(__enemy.exp)) {
             ret.push({
                 action: 'alert',
                 args: {
-                    content: 'Level Up! +2 ATT / + 2 DEX'
+                    content: 'Level Up! +1 ATT / + 1 DEX / + 1 DEF'
                 }
             });
         }
@@ -134,16 +141,8 @@ const randomBattle = (regionName) => {
         regionData.maxLevel = targetRegion.maxLevel;
     }
 
-    const enemiesNames = Object.keys(targetRegion.enemies);
-
-    const currentLevel = regionData.level;
-    const maxLevel = regionData.maxLevel;
-
-    const perc = currentLevel/maxLevel;
-    const aprox = Math.floor(enemiesNames.length * perc);
-
-    const enemyName = enemiesNames[Math.floor(Math.random()*aprox)];
-    return calculateBattle(playerData, regionName, enemyName)
+    const enemyData = randomEncounter(regionName, regionData.level)
+    return calculateBattle(playerData, enemyData)
 }
 
 export default {

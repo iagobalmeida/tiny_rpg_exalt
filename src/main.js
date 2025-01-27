@@ -86,7 +86,7 @@ const updateGold = (value) => {
 
 const updateAtrtibutes = ({ level, exp, dex, att, def }) => {
     document.querySelector('#attribute-level').innerHTML = level;
-    document.querySelector('#attribute-exp').innerHTML = `${exp}/${25*level}`;
+    document.querySelector('#attribute-exp').innerHTML = `${exp}/${75*level}`;
     document.querySelector('#attribute-dex').innerHTML = dex;
     document.querySelector('#attribute-att').innerHTML = att;
     document.querySelector('#attribute-def').innerHTML = def;
@@ -111,7 +111,7 @@ const createRegionInfo = (regionName, count) => {
         k.pos(6, 4),
         k.anchor('topleft')
     ])
-    regionLabel.text = `${regionName} ${count}/25`
+    regionLabel.text = `${regionName} ${count}`
     regionWindow.width = regionLabel.width + 16
 }
 
