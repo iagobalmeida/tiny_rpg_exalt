@@ -46,10 +46,19 @@ $ npm run deploy
     - [X] Simple battle
     - [X] Random encounter
     - [X] Simple Battle animation
-    - [ ] Die animation
-    - [ ] Background Tiling
+    - [X] Die animation
+    - [X] Background Tiling
     - [X] Transfer simple battle
     - [X] Base battles on DEX
     - [X] Base battles on DEX and ATT
+    - [X] Treasure Chest
+    - [ ] Regions based enemies list
+    - [ ] Region selection exploring
     - [ ] Transfer current HP of each entity on each turn
     - [ ] Transfer information about region on each exploration
+
+- Interface
+    - [X] Base info input
+    - [X] Region selection
+    - [X] Messages
+    - [X] Region Counter

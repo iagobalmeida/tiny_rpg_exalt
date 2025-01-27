@@ -12,52 +12,93 @@ k.loadSprite("player", "sprites/player.png");
 k.loadSprite("bandit_leader", "sprites/bandit_leader.png");
 k.loadSprite("pirate", "sprites/pirate.png");
 k.loadSprite("beached_bucaneer", "sprites/beached_bucaneer.png");
-k.loadSprite("beach", "sprites/beach.png");
+k.loadSprite("treasure_chest", "sprites/treasure_chest.png");
+k.loadSprite("beach", "sprites/beach.png", {
+    sliceX: 5,
+    sliceY: 5
+});
 loadFont("jersey", "fonts/jersey.ttf");
 k.onClick(() => k.addKaboom(k.mousePos()));
 
+const center = k.center();
 
 const createMessage = (text, duration=1) => {
-    return k.add([
-        k.text(text, { font: 'jersey' }),
-        k.pos(k.center()),
+    const width = text.length * 22;
+    const textBackground = k.add([
+        k.rect(16 + width, 48),
+        k.color(k.rgb(0,0,0)),
+        k.opacity(0.5),
+        k.pos(center.x, center.y+32),
         k.anchor('center'),
-        k.opacity(1),
+        k.move(k.vec2(0,-1), 50),
         k.lifespan(duration, { fade: 0.5 }),
     ])
+    textBackground.add([
+        k.text(text, { font: 'jersey' }),
+        k.anchor('center')
+    ])
+    return textBackground;
 }
 
-const center = k.center();
-const beach_backgroundd = k.add([
-    k.sprite('beach'),
-    k.scale(k.vec2(2,2))
-])
+const createBackground = (spriteName) => {
+    k.addLevel([
+        "1111111111",
+        "1111111111",
+        "1111111111",
+        "1111111111",
+        "1111111111",
+        "1111111111",
+        "1111111111",
+        "1111111111",
+        "1111111111",
+        "1111111111",
+    ], {
+        tileHeight: 256/5,
+        tileWidth: 256/5,
+        tiles: {
+            "1": () => [
+                k.sprite(spriteName, { frame: 1})
+            ]
+        }
+    })
+}
 
-let regionCount = 1
-const regionName = k.add([
-    k.text('Beach 1/25', { font: 'jersey', size: 24 }),
-    k.pos(16, 16),
+
+const regionWindow = k.add([
+    k.rect(0, 32),
+    k.pos(12, 12),
+    k.color(k.rgb(0,0,0)),
+    k.opacity(0.5),
+    k.z(10)
+])
+const regionLabel = regionWindow.add([
+    k.text('', { font: 'jersey', size: 24 }),
+    k.pos(6, 4),
     k.anchor('topleft')
 ])
-const updateRegionCount = (count) => {
-    regionCount = count
-    regionName.text = `Beach ${regionCount}/25`
+const updateRegionCount = (regionName, count) => {
+    regionLabel.text = `${regionName} ${count}/25`
+    regionWindow.width = regionLabel.width + 16
 }
 
 
-let battleActions = battle.randomBattle();
+let battleActions = []
 let battleStep = 0;
 
 let player = null;
 let enemy = null;
 
 const actions = {
-    battleStart(playerData, enemyData) {
-        if(player) player.die();
+    battleStart(playerData, enemyData, regionData) {
+        createBackground(regionData.spriteName);
+        updateRegionCount(regionData.name, regionData.level);
+        
+        if(player) player.die(k);
         player = new Entity(k, center.x, center.y+125, 'player', playerData);
         
-        if(enemy) enemy.die();
+        if(enemy) enemy.die(k);
         enemy = new Entity(k, center.x, center.y-125, enemyData.name, enemyData);
+
     },
     damagePlayer(damage) {
         player.damage(k, damage)
@@ -66,12 +107,13 @@ const actions = {
         enemy.damage(k, damage)
     },
     winPlayer() {
-        createMessage('Player win');
-        enemy.die();
+        enemy.die(k);
     },
     winEnemy() {
-        createMessage('Enemy win');
-        player.die();
+        player.die(k);
+    },
+    alert(text) {
+        createMessage(text);
     },
     draw() {
         createMessage('Draw');
@@ -98,14 +140,12 @@ buttonExplore.addEventListener('click', () => {
     } else {
         createMessage('Wait!');
     }
-    updateRegionCount(regionCount+1)
 })
 
-setInterval(() => {
+k.loop(.75, () => {
     if(battleStep < battleActions.length) {
         buttonExplore.setAttribute('disabled', true);
         buttonExplore.innerHTML = 'Exploring...';
-        console.log(battleActions[battleStep])
         const actioName = battleActions[battleStep].action;
         const args = battleActions[battleStep].args;
         actions[actioName](...args);
@@ -114,4 +154,4 @@ setInterval(() => {
         buttonExplore.removeAttribute('disabled')
         buttonExplore.innerHTML = 'Explore';
     }
-}, 500)
+})

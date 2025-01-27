@@ -1,14 +1,15 @@
 export class Entity {
-    constructor(k, positionX, positionY, spriteName, data) {
+    constructor(k, positionX, positionY, name, data) {
         this.positionX = positionX;
         this.positionY = positionY;
         this.data = data;
+        const spriteName = name.toLowerCase().replaceAll(' ','_');
         this.entity = k.add([
             k.pos(positionX, positionY),
             k.sprite(spriteName),
             k.anchor('center'),
             k.animate(),
-            k.opacity(1),
+            k.opacity(0),
             k.rotate(),
             k.scale(),
             {
@@ -22,6 +23,7 @@ export class Entity {
             k.pos(positionX, positionY+48),
             k.outline(3, 'black'),
             k.color(0,0,0),
+            k.opacity(0),
             k.anchor('center')
         ])
         this.lifeBar = this.lifeBarBackground.add([
@@ -30,6 +32,7 @@ export class Entity {
             k.outline(1, 'black'),
             k.color(0,255,0)
         ])
+        k.tween(0, 1, 0.5, (v) => {this.entity.opacity = v; this.lifeBarBackground.opacity = v;})
     }
 
     damage(k, ammount) {
@@ -43,7 +46,7 @@ export class Entity {
         }
         this.entity.add([
             k.text(`${Math.abs(ammount)}`, { font: 'jersey' }),
-            k.outline(2, 'black'),
+            k.outline(1, 'black'),
             k.color(color),
             k.pos(0, -20),
             k.opacity(1),
@@ -55,14 +58,17 @@ export class Entity {
     }
 
     updateLifebar() {
-        const perc = Math.round(this.entity.hp*72/this.entity.maxHP)
+        const perc = Math.ceil(this.entity.hp*72/this.entity.maxHP)
         if(perc > this.lifeBar.width) this.lifeBar.width = Math.min(72, this.lifeBar.width+1);
         if(perc < this.lifeBar.width) this.lifeBar.width = Math.max(0, this.lifeBar.width-1);
     }
     
-    die() {
-        this.entity.destroy();
-        this.lifeBarBackground.destroy();
+    die(k) {
+        k.tween(1, 0, 1, (v) => {this.entity.opacity = v; this.lifeBarBackground.opacity = v})
+        setTimeout(() => {
+            this.entity.destroy();
+            this.lifeBarBackground.destroy();
+        }, 1000);
     }
 }
 
