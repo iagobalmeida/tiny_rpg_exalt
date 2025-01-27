@@ -161,7 +161,7 @@ document.querySelector('button#restart-progress').addEventListener('click', () =
     location.reload();
 });
 
-k.loop(.25, () => {
+k.loop(.5, () => {
     if(battleStep < battleActions.length) {
         buttonExplore.setAttribute('disabled', true);
         buttonExplore.innerHTML = 'Exploring';
