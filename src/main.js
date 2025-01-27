@@ -84,11 +84,12 @@ const updateGold = (value) => {
     inputGold.value = value;
 }
 
-const updateAtrtibutes = ({ level, exp, dex, att }) => {
+const updateAtrtibutes = ({ level, exp, dex, att, def }) => {
     document.querySelector('#attribute-level').innerHTML = level;
-    document.querySelector('#attribute-exp').innerHTML = exp;
+    document.querySelector('#attribute-exp').innerHTML = `${exp}/${25*level}`;
     document.querySelector('#attribute-dex').innerHTML = dex;
     document.querySelector('#attribute-att').innerHTML = att;
+    document.querySelector('#attribute-def').innerHTML = def;
 }
 
 let battleActions = []
