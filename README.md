@@ -1,4 +1,8 @@
-# Folder structure
+# TinyRPG Exalt
+[Play it now!](https://iagobalmeida.github.io/tiny_rpg_exalt/)
+
+
+## Folder structure
 
 - `src` - source code for your kaplay project
 - `dist` - distribution folder, contains your index.html, built js bundle and static assets
@@ -52,7 +56,8 @@ $ npm run deploy
     - [X] Base battles on DEX
     - [X] Base battles on DEX and ATT
     - [X] Treasure Chest
-    - [ ] Regions based enemies list
+    - [X] Regions based enemies list
+    - [X] Region progression based enemies
     - [ ] Region selection exploring
     - [ ] Transfer current HP of each entity on each turn
     - [ ] Transfer information about region on each exploration
