@@ -38,7 +38,29 @@ body {
                 gap: 8px;
                 font-size: 22px;
                 color:white;
-                
+                ul {
+                    display: grid;
+                    grid-template-columns: auto auto;
+                    gap: 8px;
+                    list-style: none;
+                    align-items: center;
+                    justify-content: start;
+                    margin: unset;
+                    padding: unset;
+                    li {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 8px;
+                        background-color: #242424;
+                        border-radius: 8px;
+                        aspect-ratio: 1/1;
+                        span {
+                            font-size: 32px;
+                        }
+                    }
+                }
             }
         }
     }
