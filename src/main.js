@@ -155,7 +155,7 @@ buttonExplore.addEventListener('click', () => {
     }
 })
 
-k.loop(.05, () => {
+k.loop(.5, () => {
     if(battleStep < battleActions.length) {
         buttonExplore.setAttribute('disabled', true);
         buttonExplore.innerHTML = 'Exploring...';
