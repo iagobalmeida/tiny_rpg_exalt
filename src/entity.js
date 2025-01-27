@@ -20,7 +20,7 @@ export class Entity {
         ])
         this.lifeBarBackground = k.add([
             k.rect(72, 8),
-            k.pos(positionX, positionY+48),
+            k.pos(positionX, positionY+this.entity.height/1.5),
             k.outline(3, 'black'),
             k.color(0,0,0),
             k.opacity(0),
@@ -55,12 +55,8 @@ export class Entity {
             k.move(k.vec2(0, -1), 60),
         ]);
         this.entity.hp += ammount;
-    }
-
-    updateLifebar() {
         const perc = Math.ceil(this.entity.hp*72/this.entity.maxHP)
-        if(perc > this.lifeBar.width) this.lifeBar.width = Math.min(72, this.lifeBar.width+1);
-        if(perc < this.lifeBar.width) this.lifeBar.width = Math.max(0, this.lifeBar.width-1);
+        k.tween(this.lifeBar.width, perc, .5, (v) => { this.lifeBar.width = v });
     }
     
     die(k) {

@@ -9,15 +9,29 @@ const k = kaplay({
 
 k.loadRoot("./"); // A good idea for Itch.io publishing later
 k.loadSprite("player", "sprites/player.png");
-k.loadSprite("bandit_leader", "sprites/bandit_leader.png");
-k.loadSprite("pirate", "sprites/pirate.png");
-k.loadSprite("beached_bucaneer", "sprites/beached_bucaneer.png");
-k.loadSprite("treasure_chest", "sprites/treasure_chest.png");
-k.loadSprite("dreadstump_the_pirate_king", "sprites/dreadstump_the_pirate_king.png");
-k.loadSprite("beach", "sprites/beach.png", {
+
+// Beach Sprites
+k.loadSprite("bandit_leader", "sprites/beach/bandit_leader.png");
+k.loadSprite("pirate", "sprites/beach/pirate.png");
+k.loadSprite("beached_bucaneer", "sprites/beach/beached_bucaneer.png");
+k.loadSprite("treasure_chest", "sprites/beach/treasure_chest.png");
+k.loadSprite("dreadstump_the_pirate_king", "sprites/beach/dreadstump_the_pirate_king.png");
+k.loadSprite("beach", "sprites/beach/beach.png", {
     sliceX: 5,
     sliceY: 5
 });
+
+// MidPlains Sprites
+k.loadSprite("mid_plains", "sprites/mid_plains/mid_plains.png", {
+    sliceX: 5,
+    sliceY: 5
+});
+k.loadSprite("big_green_slime", "sprites/mid_plains/big_green_slime.png");
+k.loadSprite("earth_golem", "sprites/mid_plains/earth_golem.png");
+k.loadSprite("fire_sprite", "sprites/mid_plains/fire_sprite.png");
+k.loadSprite("swarm", "sprites/mid_plains/swarm.png");
+k.loadSprite("shambling_sludge", "sprites/mid_plains/shambling_sludge.png");
+
 loadFont("jersey", "fonts/jersey.ttf");
 k.onClick(() => k.addKaboom(k.mousePos()));
 
@@ -65,23 +79,6 @@ const createBackground = (spriteName) => {
 }
 
 
-const regionWindow = k.add([
-    k.rect(0, 32),
-    k.pos(12, 12),
-    k.color(k.rgb(0,0,0)),
-    k.opacity(0.5),
-    k.z(10)
-])
-const regionLabel = regionWindow.add([
-    k.text('', { font: 'jersey', size: 24 }),
-    k.pos(6, 4),
-    k.anchor('topleft')
-])
-const updateRegionCount = (regionName, count) => {
-    regionLabel.text = `${regionName} ${count}/25`
-    regionWindow.width = regionLabel.width + 16
-}
-
 const inputGold = document.querySelector('input#gold')
 const updateGold = (value) => {
     inputGold.value = value;
@@ -94,23 +91,36 @@ const updateAtrtibutes = ({ level, exp, dex, att }) => {
     document.querySelector('#attribute-att').innerHTML = att;
 }
 
-
 let battleActions = []
 let battleStep = 0;
 
 let player = null;
 let enemy = null;
 
+const createRegionInfo = (regionName, count) => {
+    const regionWindow = k.add([
+        k.rect(0, 32),
+        k.pos(12, 12),
+        k.color(k.rgb(0,0,0)),
+        k.opacity(0.5),
+        k.z(10)
+    ])
+    const regionLabel = regionWindow.add([
+        k.text('', { font: 'jersey', size: 24 }),
+        k.pos(6, 4),
+        k.anchor('topleft')
+    ])
+    regionLabel.text = `${regionName} ${count}/25`
+    regionWindow.width = regionLabel.width + 16
+}
+
 const actions = {
     battleStart({ playerData, enemyData, regionData }) {
+        k.destroyAll();
         createBackground(regionData.spriteName);
-        updateRegionCount(regionData.name, regionData.level);
+        createRegionInfo(regionData.name, regionData.level);
         updateAtrtibutes(playerData)
-        
-        if(player) player.die(k);
         player = new Entity(k, center.x, center.y+125, 'player', playerData);
-        
-        if(enemy) enemy.die(k);
         enemy = new Entity(k, center.x, center.y-125, enemyData.name, enemyData);
 
     },
@@ -133,32 +143,28 @@ const actions = {
     }
 }
 
-k.onUpdate(() => {
-    if(enemy != null) {
-        enemy.updateLifebar();
-    }
-    if(player != null) {
-        player.updateLifebar();
-    }
-});
-
-
 const buttonExplore = document.querySelector('button#explore')
 
 buttonExplore.addEventListener('click', () => {
     if(battleStep >= battleActions.length) {
         createMessage('Exploring...');
-        battleActions = battle.randomBattle('beach');
+        const region = document.querySelector('#region').value;
+        battleActions = battle.randomBattle(region);
         battleStep = 0;
     } else {
         createMessage('Wait!');
     }
 })
 
-k.loop(.5, () => {
+document.querySelector('button#restart-progress').addEventListener('click', () => {
+    localStorage.clear();
+    location.reload();
+});
+
+k.loop(.25, () => {
     if(battleStep < battleActions.length) {
         buttonExplore.setAttribute('disabled', true);
-        buttonExplore.innerHTML = 'Exploring...';
+        buttonExplore.innerHTML = 'Exploring';
         const actioName = battleActions[battleStep].action;
         const args = battleActions[battleStep].args || {};
         actions[actioName](args);
@@ -166,5 +172,8 @@ k.loop(.5, () => {
     } else {
         buttonExplore.removeAttribute('disabled')
         buttonExplore.innerHTML = 'Explore';
+        if(document.querySelector('#auto-explore').checked) {
+            buttonExplore.click();
+        }
     }
 })
