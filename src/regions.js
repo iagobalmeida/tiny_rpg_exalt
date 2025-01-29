@@ -15,6 +15,8 @@ const factoryEnemy = (spriteName, hp, dex, att, def, gold=null, exp=null) => {
         name: toTitleCase(spriteName),
         hp:hp,
         maxHP:hp,
+        mp: 0,
+        maxMP: 50+Math.round(hp/20),
         dex:dex,
         att:att,
         def:def,
@@ -31,7 +33,7 @@ const factoryEnemyChest = (spriteName, factor, hp=null) => (factoryEnemy(spriteN
 export const regions = {
     'beach': {
         level: 1,
-        maxLevel: 5,
+        maxLevel: 10,
         name: 'Beach',
         spriteName: 'beach',
         enemies: [
@@ -44,7 +46,7 @@ export const regions = {
     },
     'mid_plains': {
         level: 1,
-        maxLevel: 10,
+        maxLevel: 15,
         name: 'Mid Plains',
         spriteName: 'mid_plains',
         enemies: [
@@ -58,7 +60,6 @@ export const regions = {
     }
 }
 
-console.log(regions)
 
 export const randomEncounter = (regionName, currentLevel) => {
     const region = regions[regionName];

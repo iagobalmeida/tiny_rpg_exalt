@@ -33,21 +33,24 @@ k.loadSprite("swarm", "sprites/mid_plains/swarm.png");
 k.loadSprite("shambling_sludge", "sprites/mid_plains/shambling_sludge.png");
 
 loadFont("jersey", "fonts/jersey.ttf");
-k.onClick(() => k.addKaboom(k.mousePos()));
 
 const center = k.center();
 
-const createMessage = (text, duration=1) => {
+const createMessage = (text, duration=1, infinite=false) => {
     const width = text.length * 22;
-    const textBackground = k.add([
+    const components = [
         k.rect(16 + width, 48),
         k.color(k.rgb(0,0,0)),
-        k.opacity(0.5),
-        k.pos(center.x, center.y+32),
+        k.opacity(0.7),
+        k.pos(center.x, center.y+( infinite ? 0 : 32 )),
         k.anchor('center'),
-        k.move(k.vec2(0,-1), 50),
-        k.lifespan(duration, { fade: 0.5 }),
-    ])
+        k.z(100)
+    ]
+    if(!infinite) {
+        components.push(k.move(k.vec2(0,-1), 50))
+        components.push(k.lifespan(duration, { fade: 0.5 }))
+    }
+    const textBackground = k.add(components)
     textBackground.add([
         k.text(text, { font: 'jersey' }),
         k.anchor('center')
@@ -55,7 +58,7 @@ const createMessage = (text, duration=1) => {
     return textBackground;
 }
 
-const createBackground = (spriteName) => {
+const createBackground = ({ spriteName }) => {
     k.addLevel([
         "1111111111",
         "1111111111",
@@ -79,17 +82,14 @@ const createBackground = (spriteName) => {
 }
 
 
-const inputGold = document.querySelector('input#gold')
-const updateGold = (value) => {
-    inputGold.value = value;
-}
 
-const updateAtrtibutes = ({ level, exp, dex, att, def }) => {
+const updateInfo = ({ level, exp, dex, att, def, next, gold}) => {
     document.querySelector('#attribute-level').innerHTML = level;
-    document.querySelector('#attribute-exp').innerHTML = `${exp}/${75*level}`;
+    document.querySelector('#attribute-exp').innerHTML = `${exp}/${next}`;
     document.querySelector('#attribute-dex').innerHTML = dex;
     document.querySelector('#attribute-att').innerHTML = att;
     document.querySelector('#attribute-def').innerHTML = def;
+    document.querySelector('input#gold').value = gold;
 }
 
 let battleActions = []
@@ -98,12 +98,12 @@ let battleStep = 0;
 let player = null;
 let enemy = null;
 
-const createRegionInfo = (regionName, count) => {
+const createRegionInfo = ({ name, level, maxLevel }) => {
     const regionWindow = k.add([
         k.rect(0, 32),
         k.pos(12, 12),
         k.color(k.rgb(0,0,0)),
-        k.opacity(0.5),
+        k.opacity(0.7),
         k.z(10)
     ])
     const regionLabel = regionWindow.add([
@@ -111,35 +111,46 @@ const createRegionInfo = (regionName, count) => {
         k.pos(6, 4),
         k.anchor('topleft')
     ])
-    regionLabel.text = `${regionName} ${count}`
+    regionLabel.text = `${name} ${level}/${maxLevel}`
     regionWindow.width = regionLabel.width + 16
 }
 
 const actions = {
-    battleStart({ playerData, enemyData, regionData }) {
+    BATTLE_START({ playerData, enemyData, regionData }) {
         k.destroyAll();
-        createBackground(regionData.spriteName);
-        createRegionInfo(regionData.name, regionData.level);
-        updateAtrtibutes(playerData)
+        createBackground(regionData);
+        createRegionInfo(regionData);
+        updateInfo(playerData)
         player = new Entity(k, center.x, center.y+125, 'player', playerData);
         enemy = new Entity(k, center.x, center.y-125, enemyData.name, enemyData);
 
     },
-    damagePlayer({ damage }) {
-        player.damage(k, damage)
+    BATTLE_ENEMY_ATTACK({ playerData, enemyData, damage }) {
+        enemy.emmitAttack(k)
+        player.updateMP(k, playerData.mp)
+        enemy.updateMP(k, enemyData.mp)
+        k.wait(0.5, () => {
+            player.damage(k, damage)
+        })
     },
-    damageEnemy({ damage }) {
-        enemy.damage(k, damage)
+    BATTLE_PLAYER_ATTACK({ playerData, enemyData, damage }) {
+        player.emmitAttack(k)
+        player.updateMP(k, playerData.mp)
+        enemy.updateMP(k, enemyData.mp)
+        k.wait(0.5, () => {
+            enemy.damage(k, damage)
+        })
+
     },
-    winPlayer({ playerData }) {
-        updateGold(playerData.gold)
-        updateAtrtibutes(playerData)
+    BATTLE_WIN({ playerData }) {
+        updateInfo(playerData)
         enemy.die(k);
     },
-    winEnemy() {
+    BATTLE_DIE() {
         player.die(k);
+        // document.querySelector('#auto-explore').checked = false;
     },
-    alert({ content }) {
+    MESSAGE({ content }) {
         createMessage(content);
     }
 }
@@ -149,9 +160,11 @@ const buttonExplore = document.querySelector('button#explore')
 buttonExplore.addEventListener('click', () => {
     if(battleStep >= battleActions.length) {
         createMessage('Exploring...');
-        const region = document.querySelector('#region').value;
-        battleActions = battle.randomBattle(region);
-        battleStep = 0;
+        k.wait(0.5, () => {
+            const region = document.querySelector('#region').value;
+            battleActions = battle.randomBattle(region);
+            battleStep = 0;
+        })
     } else {
         createMessage('Wait!');
     }
@@ -162,13 +175,23 @@ document.querySelector('button#restart-progress').addEventListener('click', () =
     location.reload();
 });
 
-k.loop(.5, () => {
+k.add([
+    k.rect(480,480),
+    k.color(k.rgb(0,0,0))
+])
+
+createMessage('Start Exploring', 1, true);
+
+const battleExecuteStep = () => {
+    let duration = .5;
     if(battleStep < battleActions.length) {
         buttonExplore.setAttribute('disabled', true);
         buttonExplore.innerHTML = 'Exploring';
-        const actioName = battleActions[battleStep].action;
-        const args = battleActions[battleStep].args || {};
-        actions[actioName](args);
+        const actionName = battleActions[battleStep].action;
+        const actionArgs = battleActions[battleStep].args || {};
+        const actionDuration = battleActions[battleStep].duration || duration;
+        duration = actionDuration;
+        actions[actionName](actionArgs);
         battleStep++;
     } else {
         buttonExplore.removeAttribute('disabled')
@@ -177,4 +200,11 @@ k.loop(.5, () => {
             buttonExplore.click();
         }
     }
+    k.wait(duration, () => {
+        battleExecuteStep();
+    })
+}
+
+k.wait(1, () => {
+    battleExecuteStep();
 })

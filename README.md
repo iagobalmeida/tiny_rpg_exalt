@@ -58,12 +58,17 @@ $ npm run deploy
     - [X] Treasure Chest
     - [X] Regions based enemies list
     - [X] Region progression based enemies
-    - [ ] Region selection exploring
-    - [ ] Transfer current HP of each entity on each turn
-    - [ ] Transfer information about region on each exploration
+    - [X] Region selection exploring
+    - [X] Skill with mana
+    - [X] LocalStorage
+    - [X] LocalStorage version verifier
+    - [X] Server side action duration
+    - [X] Transfer information about region on each exploration
 
 - Interface
     - [X] Base info input
     - [X] Region selection
     - [X] Messages
     - [X] Region Counter
+    - [X] Attributes
+    - [X] Attack projectiles
