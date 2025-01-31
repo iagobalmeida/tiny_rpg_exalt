@@ -32,7 +32,6 @@ const playerData = {
     maxHP: BASE_LEVEL_HP,
     mp: 0,
     maxMP: 50,
-    gold: 10,
     dex: 10,
     att: 10,
     def: 2
@@ -156,20 +155,19 @@ const calculateBattle = (player, enemyData) => {
 
     if(player.hp > 0 && __enemy.hp <= 0) {
         regionData.level = Math.min(regionData.maxLevel, regionData.level+1);
-        playerData.gold += __enemy.gold;
-
-        let message = []
-        if(__enemy.exp) message.push(`+${__enemy.exp} EXP`)
-        if(__enemy.gold) message.push(`+${__enemy.gold} Gold`)
-        ret.push(communicationAction(CommunicationActions.MESSAGE, {
-            content: message.join(' ')
-        }));
         
         ret.push(communicationAction(CommunicationActions.BATTLE_WIN, { playerData }));
 
+        let message = []
+        if(__enemy.exp) message.push(`+${__enemy.exp} EXP`)
+        ret.push(communicationAction(CommunicationActions.MESSAGE, {
+            content: message.join(' ')
+        }));
+
         if(playerAddExperience(__enemy.exp)) {
             ret.push(communicationAction(CommunicationActions.MESSAGE, {
-                content: 'Level Up!'
+                content: 'Level Up!',
+                playerData: {...player}
             }));
             ret.push(communicationAction(CommunicationActions.MESSAGE, {
                 content: '+1 ATT / + 1 DEX / + 1 DEF'

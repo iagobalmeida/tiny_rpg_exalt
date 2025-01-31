@@ -6,10 +6,9 @@ function toTitleCase(str) {
   }
   
 
-const factoryEnemy = (spriteName, hp, dex, att, def, gold=null, exp=null) => {
+const factoryEnemy = (spriteName, hp, dex, att, def, exp=null) => {
     const baseFactor = Math.round((dex+att+def)/5)
     const hpFactor = Math.round(hp/baseFactor)
-    const goldFactor = gold  != null ? gold : baseFactor + hpFactor;
     const expFactor = exp != null ? exp : baseFactor * 2 + hpFactor;
     return {
         name: toTitleCase(spriteName),
@@ -20,7 +19,6 @@ const factoryEnemy = (spriteName, hp, dex, att, def, gold=null, exp=null) => {
         dex:dex,
         att:att,
         def:def,
-        gold: goldFactor,
         exp: expFactor
     }
 }
