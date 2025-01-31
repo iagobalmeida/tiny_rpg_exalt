@@ -1,6 +1,6 @@
 import battle from "./battle";
 import k from "./kaplayMain";
-import { Entity, attackProjectile, createBackground, createMessage, createRegionInfo, damageText } from "./kaplayUtils";
+import { createBackground, createDamageText, createEntity, createMessage, createProjectile, createRegionInfo } from "./kaplayUtils";
 
 createBackground();
 
@@ -25,25 +25,24 @@ const actions = {
         k.destroyAll();
         createBackground(regionData.spriteName);
         createRegionInfo(regionData);
-        player = new Entity(center.x, center.y+125, 'player', playerData);
-        enemy = new Entity(center.x, center.y-125, enemyData.name, enemyData);
+        player = createEntity(center.x, center.y+125, 'player', playerData)
+        enemy = createEntity(center.x, center.y-125, enemyData.name, enemyData)
     },
     BATTLE_ENEMY_ATTACK({ playerData, damage }) {
-        attackProjectile(enemy.entity, player.entity, [255,0,0]);
+        createProjectile(enemy.entity, player.entity, {
+            color: [255,0,0]
+        });
         k.wait(0.5, () => {
-            damageText(player.entity, damage);
-            player.entity.hp = playerData.hp;
-            player.lifeBar.update(playerData.hp);
+            createDamageText(player.entity, damage);
+            player.hp = playerData.hp;
         })
     },
     BATTLE_PLAYER_ATTACK({ enemyData, damage }) {
-        attackProjectile(player.entity, enemy.entity);
+        createProjectile(player.entity, enemy.entity, {});
         k.wait(0.5, () => {
-            damageText(enemy.entity, damage);
-            enemy.entity.hp = enemyData.hp;
-            enemy.lifeBar.update(enemyData.hp);
+            createDamageText(enemy.entity, damage);
+            enemy.hp = enemyData.hp;
         })
-
     },
     BATTLE_WIN({ playerData }) {
         updateInfo(playerData)
@@ -89,17 +88,14 @@ const battleExecuteStep = () => {
 
         if(player && 'playerData' in actionArgs) {
             updateInfo(actionArgs['playerData']);
-            player.entity.mp = actionArgs['playerData'].mp;
-            player.manaBar.update(player.entity.mp);
+            player.mp = actionArgs['playerData'].mp;
             if(actionName == 'MESSAGE') {
-                player.entity.hp = actionArgs['playerData'].hp;
-                player.lifeBar.update(player.entity.hp);
+                player.hp = actionArgs['playerData'].hp;
             }
         }
 
         if(enemy && 'enemyData' in actionArgs) {
-            enemy.entity.mp = actionArgs['enemyData'].mp;
-            enemy.manaBar.update(enemy.entity.mp);
+            enemy.mp = actionArgs['enemyData'].mp;
         }
 
         battleStep++;
