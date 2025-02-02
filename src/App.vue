@@ -1,6 +1,6 @@
 <template>
-    <canvas :aria-loading="loading" id="game" v-if="playing"></canvas>
-    <div :aria-loading="loading" class="info-wrapper" v-if="playing">
+    <canvas :aria-loading="loading" id="game" v-show="playing" width="480" height="480"></canvas>
+    <div :aria-loading="loading" class="info-wrapper" v-show="playing">
         <div class="info">
             <label >
                 Region
@@ -272,19 +272,23 @@ import { createBackground, createDamageText, createEntity, createLifeBar, create
             }
         },
         clickItem(e) {
-            let itemIndex = e.target.getAttribute('data-index');
-            if(!this.inventory[itemIndex]) return;
-            let itemType = this.inventory[itemIndex].type;
-            let isActivating = !this.inventory[itemIndex].active;
+            this.loading = true;
+            setTimeout(() => {
+                let itemIndex = e.target.getAttribute('data-index');
+                if(!this.inventory[itemIndex]) return;
+                let itemType = this.inventory[itemIndex].type;
+                let isActivating = !this.inventory[itemIndex].active;
 
-            this.inventory.forEach((item, index) => {
-                if(!item) return;
-                if(index == itemIndex) {
-                    item.active = !item.active
-                } else {
-                    item.active = isActivating ? (item.active && item.type != itemType) : item.active
-                }
-            });
+                this.inventory.forEach((item, index) => {
+                    if(!item) return;
+                    if(index == itemIndex) {
+                        item.active = !item.active
+                    } else {
+                        item.active = isActivating ? (item.active && item.type != itemType) : item.active
+                    }
+                });
+                this.loading = false;
+            }, 1500);
         },
         login() {
             if(this.username != 'admin' || this.password != 'admin') {
@@ -306,8 +310,6 @@ import { createBackground, createDamageText, createEntity, createLifeBar, create
         logout() {
             location.reload();
         }
-    },
-    mounted() {
     }
   };
   </script>
