@@ -7,10 +7,11 @@ function toTitleCase(str) {
   
 
 const factoryEnemy = (spriteName, hp, dex, att, def, exp=null) => {
-    const baseFactor = Math.round((dex+att+def)/5)
+    const baseFactor = Math.round((dex+att+def)/4)
     const hpFactor = Math.round(hp/baseFactor)
-    const expFactor = exp != null ? exp : baseFactor * 2 + hpFactor;
+    const expFactor = exp != null ? exp : (baseFactor ^ 2) + hpFactor * 2;
     return {
+        spriteName: spriteName,
         name: toTitleCase(spriteName),
         hp:hp,
         maxHP:hp,
@@ -26,7 +27,7 @@ const factoryEnemy = (spriteName, hp, dex, att, def, exp=null) => {
 const factoryEnemyDEX = (spriteName, factor, hp=null) => (factoryEnemy(spriteName, hp != null ? hp : 30*factor, 16*factor, 8*factor, 2*factor))
 const factoryEnemyATT = (spriteName, factor, hp=null) => (factoryEnemy(spriteName, hp != null ? hp : 40*factor, 8*factor, 16*factor, 2*factor))
 const factoryEnemyDEF = (spriteName, factor, hp=null) => (factoryEnemy(spriteName, hp != null ? hp : 60*factor, 2*factor, 8*factor, 8*factor))
-const factoryEnemyChest = (spriteName, factor, hp=null) => (factoryEnemy(spriteName, hp != null ? hp : 30*factor, 0, 0, 0, 50*factor, 0))
+const factoryEnemyChest = (spriteName, factor, hp=null) => (factoryEnemy(spriteName, hp != null ? hp : 30*factor, 0, 0, 0, 4*factor))
 
 export const regions = {
     'beach': {
@@ -52,7 +53,7 @@ export const regions = {
             factoryEnemyDEX('fire_sprite', 2),
             factoryEnemyDEX('swarm', 2),
             factoryEnemyDEF('earth_golem', 2),
-            factoryEnemyChest('treasure_chest', 2),
+            factoryEnemyChest('beach/treasure_chest', 2),
             factoryEnemyATT('shambling_sludge', 3, 1000)
         ]
     }

@@ -5,16 +5,28 @@
     font-style: normal;  /* Pode ser normal, italic, etc. */
 }
 
+@font-face {
+    font-family: 'jersey';
+    src: url('./fonts/jersey.ttf') format('truetype');
+    font-weight: normal; /* Pode ser normal, bold, etc. */
+    font-style: normal;  /* Pode ser normal, italic, etc. */
+}
+
 * {
     font-family: 'jersey';
 }
 
 body {
+    background: #121212;
+}
+
+.main {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: row-reverse;
-    background: #121212;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
     gap: 16px;
     canvas {
         border-radius: 4px;
@@ -26,6 +38,11 @@ body {
         flex-direction: column;
         gap: 8px;
         width: 300px;
+        .error {
+            color: red;
+            font-size: 22px;
+            margin-bottom: 0px;
+        }
         .info {
             display: flex;
             flex-direction: row;
@@ -55,7 +72,7 @@ body {
                         justify-content: center;
                         padding: 8px;
                         background-color: #242424;
-                        border-radius: 8px;
+                        border-radius: 4px;
                         span {
                             font-size: 32px;
                         }
@@ -107,6 +124,9 @@ body {
                                         border-radius: 4px;
                                     }
                                 }
+                            }
+                            &.empty {
+                                opacity: .5;
                             }
                             &:not(.empty) {
                                 cursor: pointer;
@@ -161,4 +181,9 @@ button {
 hr {
     border: 1px solid white;
     width: 100%;
+}
+
+[aria-loading=true] {
+    pointer-events: none;
+    opacity: 0.5;
 }

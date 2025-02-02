@@ -99,7 +99,7 @@ const calculateBattle = (player, enemyData) => {
 
     ret.push(communicationAction(CommunicationActions.MESSAGE, {
         content: `${__enemy.name} found!`
-    }, 1.5));
+    }, .5));
 
 
     while(player.hp > 0 && __enemy.hp > 0) {
@@ -116,6 +116,7 @@ const calculateBattle = (player, enemyData) => {
                 player.mp = 0;
             }
             player.mp = Math.min(player.maxMP, player.mp + 5)
+            __enemy.mp = Math.min(__enemy.maxMP, __enemy.mp + 2.5)
 
             const attackFactor = (playerDexFactor > enemyDexFactor * 2) ? 2 : 1;
             const defFactor = Math.round(Math.random() * __enemy.def)
@@ -139,6 +140,7 @@ const calculateBattle = (player, enemyData) => {
                 __enemy.mp = 0;
             }
             __enemy.mp = Math.min(__enemy.maxMP, __enemy.mp + 5)
+            player.mp = Math.min(player.maxMP, player.mp + 2.5)
 
             const attackFactor = (enemyDexFactor > playerDexFactor * 2) ? 2 : 1;
             const defFactor = Math.round(Math.random() * player.def)
@@ -156,7 +158,7 @@ const calculateBattle = (player, enemyData) => {
     if(player.hp > 0 && __enemy.hp <= 0) {
         regionData.level = Math.min(regionData.maxLevel, regionData.level+1);
         
-        ret.push(communicationAction(CommunicationActions.BATTLE_WIN, { playerData }));
+        ret.push(communicationAction(CommunicationActions.BATTLE_WIN));
 
         let message = []
         if(__enemy.exp) message.push(`+${__enemy.exp} EXP`)

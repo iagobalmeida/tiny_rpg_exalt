@@ -1,3 +1,4 @@
+import vue from '@vitejs/plugin-vue';
 import { defineConfig } from "vite";
 
 const kaplayCongrats = () => {
@@ -32,6 +33,7 @@ export default defineConfig({
     },
     plugins: [
         // Disable messages removing this line
+        vue(),
         kaplayCongrats(),
     ],
 });

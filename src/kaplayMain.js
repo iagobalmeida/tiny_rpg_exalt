@@ -1,41 +1,38 @@
-import kaplay from "kaplay";
+import kaplay from 'kaplay';
+import { regions } from "./regions";
 
-const k = kaplay({
-    width: 480,
-    height: 480
-});
 
-k.loadRoot("./");
-k.loadSprite("player", "sprites/player.png");
+export let k;
 
-// Beach Sprites
-const sprites = {
-    'beach': [
-        'bandit_leader',
-        'pirate',
-        'beached_bucaneer',
-        'treasure_chest',
-        'dreadstump_the_pirate_king',
-    ],
-    'mid_plains': [
-        'big_green_slime',
-        'earth_golem',
-        'fire_sprite',
-        'swarm',
-        'shambling_sludge'
-    ]
+export const loadAssets = (k) => {
+    k.loadRoot("./");
+    k.loadSprite("player", "sprites/player.png");
+
+    Object.keys(regions).forEach(regionName => {
+        k.loadSprite(regionName, `sprites/${regionName}/${regionName}.png`, {
+            sliceX: 5,
+            sliceY: 5
+        });
+        regions[regionName].enemies.forEach(enemy => {
+            if(enemy.spriteName.includes('/')) k.loadSprite(enemy.spriteName, `sprites/${enemy.spriteName}.png`);
+            else k.loadSprite(enemy.spriteName, `sprites/${regionName}/${enemy.spriteName}.png`);
+        })
+    });
+
+    loadFont("jersey", "fonts/jersey.ttf");
 }
 
-Object.keys(sprites).forEach(spritesFolder => {
-    k.loadSprite(spritesFolder, `sprites/${spritesFolder}/${spritesFolder}.png`, {
-        sliceX: 5,
-        sliceY: 5
-    });
-    sprites[spritesFolder].forEach(spriteName => {
-        k.loadSprite(spriteName, `sprites/${spritesFolder}/${spriteName}.png`);
-    })
-});
+export const init = (canvas='#game', width=480, height=480, autoLoad=true) => {
+    if(!k) {
+        k = kaplay({
+            width: width,
+            height: height,
+            canvas: document.querySelector(canvas)
+        });
+        if(autoLoad) {
+            loadAssets(k);
+        }
+    }
+    return k;
+}
 
-loadFont("jersey", "fonts/jersey.ttf");
-
-export default k;

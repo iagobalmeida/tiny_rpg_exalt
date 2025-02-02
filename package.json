@@ -9,7 +9,9 @@
 		"deploy": "npm run build && gh-pages -d dist"
 	},
 	"dependencies": {
-		"kaplay": "^3001.0.9"
+		"@vitejs/plugin-vue": "^5.2.1",
+		"kaplay": "^3001.0.9",
+		"vue": "^3.5.13"
 	},
 	"devDependencies": {
 		"@types/node": "^22.10.10",

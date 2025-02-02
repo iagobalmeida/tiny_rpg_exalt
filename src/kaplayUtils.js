@@ -1,9 +1,9 @@
-import k from "./kaplayMain";
+import { k } from "./kaplayMain";
 
-function createProgressBar(positionX, positionY, curr, max, {height=8, width=72, tweenDuration=.25, color=[0,255,0], colorSteps=[]}) {
+export const createProgressBar = (entity, curr, max, {height=8, width=72, tweenDuration=.25, color=[0,255,0], colorSteps=[], distance=0}) => {
     let kRectBackground = k.add([
         k.rect(width, height),
-        k.pos(positionX, positionY),
+        k.pos(entity.pos.x, entity.pos.y + entity.height/1.5 + distance),
         k.outline(2, 'black'),
         k.opacity(1),
         k.color(0,0,0),
@@ -17,14 +17,19 @@ function createProgressBar(positionX, positionY, curr, max, {height=8, width=72,
         {
             maxWidth: width,
             foregroundWidth: Math.round(width*curr/max),
-            curr: curr,
+            value: curr,
             max: max
         }
     ]);
     colorSteps = colorSteps.sort((a,b) =>(b.porc - a.porc))
-    let update = (value) => {
-        let porc = value/kRectForeground.max
-        kRectForeground.foregroundWidth = Math.round(kRectForeground.maxWidth*porc);
+    let destroy = () => {
+        k.tween(1, 0, tweenDuration, (o) => { kRectBackground.opacity = o });
+        k.wait(tweenDuration, () => {
+            kRectBackground.destroy();
+            kRectForeground.destroy();
+        })
+    }
+    let updateColor = () => {
         if(colorSteps) {
             colorSteps.forEach(v => {
                 let __porc = kRectForeground.width/kRectForeground.maxWidth
@@ -36,28 +41,44 @@ function createProgressBar(positionX, positionY, curr, max, {height=8, width=72,
             });
         }
     }
-    let destroy = () => {
-        k.tween(1, 0, tweenDuration, (o) => { kRectBackground.opacity = o });
-        k.wait(tweenDuration, () => {
-            kRectBackground.destroy();
-            kRectForeground.destroy();
-        })
-    }
     k.loop(tweenDuration, () => {
         k.tween(kRectForeground.width, kRectForeground.foregroundWidth, tweenDuration, (v) => { kRectForeground.width = v });
     })
+    updateColor();
     return {
-        kRectBackground,
-        kRectForeground,
-        update,
+        get value() {
+            return kRectForeground.value
+        },
+        set value(value) {
+            let porc = value/kRectForeground.max
+            kRectForeground.foregroundWidth = Math.min(kRectForeground.maxWidth, Math.round(kRectForeground.maxWidth*porc));
+            updateColor();
+        },
         destroy
     }
 }
 
+export const createLifeBar = (entity, curr, max) => {
+    return createProgressBar(entity, curr, max, {
+        color: [0,255,0], 
+        colorSteps: [
+            { porc:0.5, color: [255, 200, 0]},
+            { porc:0.3, color: [255,0,0]}
+        ]
+    });
+}
+
+export const createManaBar = (entity, curr, max) => {
+    return createProgressBar(entity, curr, max, {
+        color: [0,0,255],
+        distance: 8
+    });
+}
+
 export const createMessage = (text, duration=1, infinite=false) => {
-    const center = k.center();
-    const width = text.length * 22;
-    const components = [
+    let center = k.center();
+    let width = text.length * 22;
+    let components = [
         k.rect(16 + width, 48),
         k.color(k.rgb(0,0,0)),
         k.opacity(0.7),
@@ -69,7 +90,7 @@ export const createMessage = (text, duration=1, infinite=false) => {
         components.push(k.move(k.vec2(0,-1), 50))
         components.push(k.lifespan(duration, { fade: 0.5 }))
     }
-    const textBackground = k.add(components)
+    let textBackground = k.add(components)
     textBackground.add([
         k.text(text, { font: 'jersey' }),
         k.anchor('center')
@@ -109,14 +130,14 @@ export const createBackground = (spriteName=null) => {
 }
 
 export const createRegionInfo = (regionData) => {
-    const regionWindow = k.add([
+    let regionWindow = k.add([
         k.rect(0, 32),
         k.pos(12, 12),
         k.color(k.rgb(0,0,0)),
         k.opacity(0.7),
         k.z(10)
     ])
-    const regionLabel = regionWindow.add([
+    let regionLabel = regionWindow.add([
         k.text('', { font: 'jersey', size: 24 }),
         k.pos(6, 4),
         k.anchor('topleft')
@@ -125,68 +146,32 @@ export const createRegionInfo = (regionData) => {
     regionWindow.width = regionLabel.width + 16
 }
 
-export const createEntity = (positionX, positionY, name, entityData) => {
+export const createEntity = (positionX, positionY, name) => {
     let spriteName = name.toLowerCase().replaceAll(' ', '_');
     let entity = k.add([
         k.pos(positionX, positionY),
         k.sprite(spriteName),
         k.anchor('center'),
         k.animate(),
-        k.opacity(0),
+        k.opacity(1),
         k.rotate(),
-        k.scale(),
-        {
-            ...entityData,
-        }
+        k.scale()
     ]);
-
-    let barPositionY = positionY + entity.height/1.5;
-    let lifeBar = createProgressBar(positionX, barPositionY, entityData.hp, entityData.maxHP, {
-        color: [0,255,0], 
-        colorSteps: [
-            { porc:0.5, color: [255, 200, 0]},
-            { porc:0.3, color: [255,0,0]}
-        ]
-    });
-    let manaBar = createProgressBar(positionX, barPositionY+8, entityData.mp, entityData.maxMP, {
-        color: [0,0,255]
-    });
-
     let direction = entity.pos.y > k.center().y ? 1 : -1;
     k.tween(0, 1, 0.5, (v) => {
         entity.opacity = v;
         entity.pos.y = positionY + ((1 - v) * direction * 20)
     });
-    
-    const ret = {
-        get hp() {
-            return entity.hp
-        },
-        get mp() {
-            return entity.mp
-        },
-        set hp(value) {
-            entity.hp = value;
-            lifeBar.update(value);
-        },
-        set mp(value) {
-            entity.mp = value;
-            manaBar.update(value);
-        },
-        die() {
-            lifeBar.destroy();
-            manaBar.destroy();
-            k.tween(1, 0, 1, (v) => {
-                entity.opacity = v;
-            });
-            k.wait(1, () => {
+    const destroy = () => {
+        k.tween(1, 0, 1, (v) => {
+            entity.opacity = v;
+            if(v == 1) {
                 entity.destroy();
-            })
-        },
-        entity
+            }
+        });
     }
-
-    return ret
+    
+    return { ...entity, destroy };
 }
 
 export function createDamageText(entity, ammount, lifeSpan=1) {
@@ -208,7 +193,6 @@ export function createDamageText(entity, ammount, lifeSpan=1) {
 export function createProjectile(entity, entityTarget, { color=[255,255,255], speed=300, offset=30 }) {
     const __offset = (-1 * offset) + (Math.random()*offset*2)
     const angle = entityTarget.pos.angle(k.vec2(entity.pos.x + __offset, entity.pos.y));
-    console.log(angle);
     k.add([
         k.rect(8,32),
         k.anchor('center'),
