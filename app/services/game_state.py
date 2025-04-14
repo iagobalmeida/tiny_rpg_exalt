@@ -34,6 +34,7 @@ class GameState:
         """Retorna os dados necessários para o frontend."""
         ret = {
             "jogador": self.jogador.get_websocket_data() if self.jogador else None,
+            "atributos_equipamentos_jogador": self.atributos_equipamentos_jogador if self.jogador else None,
             "inimigo": self.combate.inimigo.model_dump() if self.combate else None,
             "masmorra": self.masmorra.get_websocket_data() if self.masmorra else None,
             "inventario": [
@@ -59,7 +60,9 @@ class GameState:
 
         inventario_json = """
         [
-            {"nome":"faca_de_cozinha","quantidade":1,"em_uso":true}
+            {"nome":"faca_de_cozinha","quantidade":1,"em_uso":true},
+            {"nome":"faca_de_cozinha","quantidade":1,"em_uso":false},
+            {"nome":"gorro_de_la","quantidade":1,"em_uso":false}
         ]
         """
 
@@ -129,6 +132,23 @@ class GameState:
         if self.jogador:
             self.jogador.subir_nivel_classe(classe)
 
+    @property
+    def atributos_equipamentos_jogador(self):
+        retorno = {
+            'forca': 0,
+            'resistencia': 0,
+            'agilidade': 0,
+            'inteligencia': 0
+        }
+        for i in self.inventario:
+            if not i.tipo == 'EQUIPAMENTO' or not i.em_uso:
+                continue
+            retorno['forca'] += i.forca
+            retorno['resistencia'] += i.resistencia
+            retorno['agilidade'] += i.agilidade
+            retorno['inteligencia'] += i.inteligencia
+        return retorno
+
     async def processar_turno(self):
         """Processa um turno do jogo."""
         try:
@@ -146,7 +166,7 @@ class GameState:
                 self.iniciar_combate()
                 return
 
-            vencedor = await self.combate.executar_turno()
+            vencedor = await self.combate.executar_turno(self.atributos_equipamentos_jogador)
             if not vencedor:
                 return
 
@@ -207,8 +227,20 @@ class GameState:
         if item_indice >= len(self.inventario):
             return
         
-        self.inventario[item_indice].usar(self.jogador)
-        self.remover_item(self.inventario[item_indice].model_copy())
+        item = self.inventario[item_indice]
+
+        if item.tipo == 'EQUIPAMENTO':
+            if item.em_uso:
+                item.em_uso = False
+            else:
+                equipamento_tipo = item.equipamento_tipo
+                for i in self.inventario:
+                    if i.tipo == 'EQUIPAMENTO' and i.em_uso and i.equipamento_tipo == equipamento_tipo:
+                        i.em_uso = False
+                item.em_uso = True
+        elif item.tipo == 'CONSUMIVEL':
+            self.inventario[item_indice].usar(self.jogador)
+            self.remover_item(self.inventario[item_indice].model_copy())
 
     @staticmethod
     def hour() -> str:
