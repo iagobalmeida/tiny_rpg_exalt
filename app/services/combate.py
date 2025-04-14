@@ -88,19 +88,31 @@ class Combate:
 
         return random.randint(1, 100) <= chance_final
 
-    async def executar_turno_jogador(self) -> Tuple[bool, List[str]]:
+    async def executar_turno_jogador(self, atributos_equipamentos:dict={}) -> Tuple[bool, List[str]]:
         if self.jogador.vida <= 0:
             return True
+        
+        jogador_equipado = self.jogador.model_copy()
+        jogador_equipado.forca += atributos_equipamentos.get('forca', 0)
+        jogador_equipado.agilidade += atributos_equipamentos.get('agilidade', 0)
+        jogador_equipado.resistencia += atributos_equipamentos.get('resistencia', 0)
+        jogador_equipado.inteligencia += atributos_equipamentos.get('inteligencia', 0)
 
-        if self.calcular_chance_acerto(self.jogador, self.inimigo):
-            dano = self.calcular_dano(self.jogador, self.inimigo)
+        if self.calcular_chance_acerto(jogador_equipado, self.inimigo):
+            dano = self.calcular_dano(jogador_equipado, self.inimigo)
             self.inimigo.vida = max(0, self.inimigo.vida - dano)
 
         return False
 
-    async def executar_turno_inimigo(self) -> Tuple[bool, List[str]]:
+    async def executar_turno_inimigo(self, atributos_equipamentos:dict={}) -> Tuple[bool, List[str]]:
         if self.inimigo.vida <= 0:
             return True
+        
+        jogador_equipado = self.jogador.model_copy()
+        jogador_equipado.forca += atributos_equipamentos.get('forca', 0)
+        jogador_equipado.agilidade += atributos_equipamentos.get('agilidade', 0)
+        jogador_equipado.resistencia += atributos_equipamentos.get('resistencia', 0)
+        jogador_equipado.inteligencia += atributos_equipamentos.get('inteligencia', 0)
 
         if self.calcular_chance_acerto(self.inimigo, self.jogador):
             dano = self.calcular_dano(self.inimigo, self.jogador)
@@ -122,15 +134,15 @@ class Combate:
 
         return True
 
-    async def executar_turno(self) -> Union[bool, str]:
+    async def executar_turno(self, atributos_equipamentos_jogador:dict={}) -> Union[bool, str]:
 
-        jogador_morreu = await self.executar_turno_jogador()
+        jogador_morreu = await self.executar_turno_jogador(atributos_equipamentos_jogador)
         if jogador_morreu:
             return 'inimigo'
 
         await self.executar_acao_jogador()
 
-        inimigo_morreu = await self.executar_turno_inimigo()
+        inimigo_morreu = await self.executar_turno_inimigo(atributos_equipamentos_jogador)
         if inimigo_morreu:
             return 'jogador'
 

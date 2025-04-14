@@ -451,13 +451,13 @@
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Força" @click="jogador.pontos_disponiveis && aumentarAtributo('forca')">
                                             <span class="material-symbols-outlined">fitness_center</span>
-                                            {{ jogador.forca }}
+                                            {{ jogador.forca }} {{ atributos_equipamentos_jogador['forca'] ? `(+${atributos_equipamentos_jogador['forca']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Agilidade" @click="jogador.pontos_disponiveis && aumentarAtributo('agilidade')">
                                             <span class="material-symbols-outlined">directions_run</span>
-                                            {{ jogador.agilidade }}
+                                            {{ jogador.agilidade }} {{ atributos_equipamentos_jogador['agilidade'] ? `(+${atributos_equipamentos_jogador['agilidade']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -469,13 +469,13 @@
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Resistência" @click="jogador.pontos_disponiveis && aumentarAtributo('resistencia')">
                                             <span class="material-symbols-outlined">shield</span>
-                                            {{ jogador.resistencia }}
+                                            {{ jogador.resistencia }} {{ atributos_equipamentos_jogador['resistencia'] ? `(+${atributos_equipamentos_jogador['resistencia']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Inteligência" @click="jogador.pontos_disponiveis && aumentarAtributo('inteligencia')">
                                             <span class="material-symbols-outlined">psychology</span>
-                                            {{ jogador.inteligencia }}
+                                            {{ jogador.inteligencia }} {{ atributos_equipamentos_jogador['inteligencia'] ? `(+${atributos_equipamentos_jogador['inteligencia']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -822,6 +822,7 @@
                     masmorra: null,
                     inventario_espacos: 8,
                     inventario: [],
+                    atributos_equipamentos_jogador: null,
                     logs: [],
                     messages: [],
                     conexoes: {},
@@ -994,8 +995,8 @@
                                 this.criarParticulas({'alvo': 'jogador', 'cor': colorExperience, 'duracao': 4500, 'tamanho': 3, 'quantidade': 60})
                             }
                             if(data.inventario){
-                                const ids_entrada = data.inventario.map((i) => (`${i.nome}-${i.quantidade}`)).join('')
-                                const ids_locais = this.inventario.map((i) => (`${i.nome}-${i.quantidade}`)).join('')
+                                const ids_entrada = data.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
+                                const ids_locais = this.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
                                 if(ids_entrada != ids_locais) {
                                     this.inventario = data.inventario
                                     setTimeout(() => {
@@ -1011,6 +1012,7 @@
                             this.inimigo = data.inimigo
                             this.masmorra = data.masmorra
                             this.masmorras = data.masmorras
+                            this.atributos_equipamentos_jogador = data.atributos_equipamentos_jogador
                             this.logs = [...data.logs, ...this.logs]
                             if(this.jogador && !this.autenticado) {
                                 this.autenticado = true;
