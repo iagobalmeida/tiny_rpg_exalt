@@ -1,6 +1,19 @@
 # Tiny RPG
 
-## Instalação
+![tiny_rpg](demo.png)
+
+Gerencie sua jornada até os fins dos tempos passando por diferentes regiões em batalhas em tempo real contra diferentes inimigos!
+
+Conquiste o placar de líderes da temporada para garantir recompensas exclusivas!
+
+*Este é um projeto que pretende reviver um jogo que criei na faculdade, junto com a comunidade do [jp_amis](https://www.twitch.tv/jp_amis).*
+
+## Contribuindo
+O jogo está em desenvolvimento e qualquer colaboração (desde que de acordo com o projeto) é bem-vinda! Você pode ver o que está em prioridade no momento conferindo as `Issues` do repositório.
+
+*Todas as colaborações passam por revisão e só serão adicionadas a versão final caso estejam alinhadas com o conceito do jogo*
+
+### Instalação
 ```bash
 cd app
 python3 -m venv .venv
@@ -8,38 +21,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Execução
+### Execução
 ```bash
 cd app
 source .venv/bin/activate
 python main.py
 ```
-
-## Todo
-- [ ] Inventário
-    - [X] Renderização
-        - [X] Exibir quantidade
-        - [X] Popover para descrição
-            - [X] Ação de usar
-            - [X] Ação de descartar
-            - [X] Ação de descartar todos
-            - [X] Detalhamento atributos
-        - [X] Identificador quantidade
-        - [X] Identificador "Em uso"
-        - [X] Atualização condicionada
-    - [ ] Classe Item, Consumivel, ConsumivelCura e Equipamento
-        - [X] Cadastrar itens iniciais
-        - [X] Uso de item de cura
-        - [ ] Uso de item equipamento
-        - [ ] Considerar atributos de equipamentos em cálculo combate
-        - [ ] Exibir atributos de equipamentos em atributos jogador
-
-
-- [ ] Placar de Líderes
-
-- [ ] Banco de dados
-- [ ] Criação de conta
-- [ ] Verificação de e-mail
-
-- [ ] Deploy railway
-- [ ] Rate Limit
