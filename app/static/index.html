@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiny RPG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+25&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #111;
+            --card-bg: #3f2631;
+            --card-border: #835869;
+            --text-light: #e0e0e0;
+            --masmorra-bg: url('/static/default_bg.png');
+        }
+        @media (min-width: 768px) {
+            .w-md-auto {
+                width: auto !important;
+            }
+        }
+
+        [data-bs-toggle] {
+            cursor: pointer;
+            transition: all ease-in-out 125ms;
+            &:hover {
+                filter: brightness(1.1)
+            }
+        }
+
+        * {
+            font-family: "Jersey 25", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card, .modal-content {
+            background: var(--card-bg);
+            background: linear-gradient(#111 50%, var(--card-bg));
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-body {
+            color: var(--text-light);
+        }
+
+        .card.jogador-card, .card.inimigo-card {
+            background: url('/static/tiles.png') linear-gradient(#111 50%, var(--card-bg));
+        }
+
+        .sprite-container {
+            animation: respirar infinite alternate-reverse ease-in-out 500ms;
+            transform-origin: bottom;
+            margin-top:16px;
+            margin-bottom: 16px;
+            margin-left: auto;
+            margin-right: auto;
+            width: calc(32px * 3);
+            height: calc(32px * 3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes respirar {
+            0% {
+                transform: scaleY(1);
+            }
+
+            100% {
+                transform: scaleY(0.9);
+            }
+        }
+
+        .sprite {
+            --size: calc(32px * 3);
+            --size-negativo: calc(var(--size) * -1);
+            width: var(--size);
+            height: var(--size);
+            margin: 0 auto;
+            image-rendering: pixelated;
+            transition: opacity 0.5s ease-out;
+            background-position: calc(var(--size-negativo) * var(--sprite-x)) calc(var(--size-negativo) * var(--sprite-y));
+            
+            -webkit-filter: drop-shadow(1px 1px 0 black)
+                            drop-shadow(-1px 1px 0 black)
+                            drop-shadow(1px -1px 0 black)
+                            drop-shadow(-1px -1px 0 black);
+
+            filter: drop-shadow(1px 1px 0 black)
+                    drop-shadow(-1px 1px 0 black)
+                    drop-shadow(1px -1px 0 black)
+                    drop-shadow(-1px -1px 0 black);
+        }
+
+        .sprite.morto {
+            opacity: 0;
+        }
+
+
+        .jogador-card .sprite {
+            transform: rotateY(180deg);
+        }
+
+        .atributo {
+            --bs-border-color: #111;
+            background-color: rgba(2, 2, 2, 0.25);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 125ms ease-in-out;
+            border-color: #111;
+        }
+
+        .material-symbols-outlined {
+            font-size: 24px;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #1976d2;
+            border-color: #1976d2;
+        }
+
+        .btn-primary:hover {
+            background-color: #1565c0;
+            border-color: #1565c0;
+        }
+
+        .messages-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .messages-list li {
+            background-color: rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .progress {
+            height: 32px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            background: #0A0A0A;
+        }
+
+        .progress-bar {
+            background-color: #1976d2;
+        }
+
+        .vida-bar {
+            background-color: #198754;
+            border-bottom: 1px solid darkgreen;
+            border-top: 1px solid limegreen;
+        }
+
+        .energia-bar {
+            background-color: #1976d2;
+            border-bottom: 1px solid darkblue;
+            border-top: 1px solid cyan;
+        }
+
+        .status-bars {
+            margin-bottom: 18px;
+        }
+
+        [data-bs-toggle="tooltip"] {
+            cursor: help;
+        }
+
+        .particula {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #d32f2f;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particula var(--duracao) ease-out forwards;
+            animation-direction: var(--direcao);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 4px #d32f2f;
+        }
+
+        @keyframes particula {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0);
+                opacity: 0;
+            }
+        }
+        .texto-flutuante {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-weight: bold;
+            animation: texto-flutuante 2s ease-out forwards;
+            
+            -webkit-filter: drop-shadow(1px 1px 0 black)
+                            drop-shadow(-1px 1px 0 black)
+                            drop-shadow(1px -1px 0 black)
+                            drop-shadow(-1px -1px 0 black);
+
+            filter: drop-shadow(1px 1px 0 black)
+                    drop-shadow(-1px 1px 0 black)
+                    drop-shadow(1px -1px 0 black)
+                    drop-shadow(-1px -1px 0 black);
+        }
+
+        @keyframes texto-flutuante {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(0, -250%) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        .entity-container {
+            margin-bottom: -8px;
+        }
+
+        .entity-info {
+            background: var(--bg-dark)
+        }
+
+        .card, .row {
+            transition: all 125ms ease-in-out;
+        }
+
+        .dropdown-menu li {
+            cursor: pointer;
+        }
+
+        .popover {
+            --bs-popover-border-color: white;
+            --bs-popover-header-bg: #3f2631;
+            --bs-popover-bg: #111;
+            --bs-popover-body-color: var(--bs-white);
+            --bs-popover-header-color: var(--bs-white);
+        }
+
+        .item {
+            position: relative;
+            transition: all 125ms ease-in-out;
+            &:not(.vazio){
+                cursor: pointer;
+                border: 1px solid white;
+                &:hover{
+                    filter: brightness(1.1);
+                    .sprite {
+                        transform: scale(1.1);
+                        transition: all 125ms ease-in-out;
+                    }
+                }
+            }
+            span {
+                position: absolute;
+                padding: 0px 8px 0px 8px;
+                min-width: 16px;
+                text-align: center;
+                &.informacao-adicional {
+                    left: -8px;
+                    top: -8px;
+                }
+                &.quantidade {
+                    right: -8px;
+                    bottom: -8px;
+                }
+            }
+            &.vazio {
+                cursor: not-allowed;
+                pointer-events: none;
+                border: none;
+                outline: none;
+                .sprite {
+                    filter: brightness(0);
+                    opacity: 50%;
+                }
+                span {
+                    display: none;
+                }
+            }
+            &.em-uso {
+                .sprite {
+                    animation: item_em_uso 500ms ease-in-out alternate-reverse infinite;
+                    transform-origin: center;
+                }
+            }
+        }
+        
+        @keyframes item_em_uso {
+            0% {
+                transform: rotateZ(-4deg)
+            }       
+            100% {
+                transform: rotateZ(4deg)
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <h1 class="text-center mb-4">Tiny RPG</h1>
+
+        <div v-if="!autenticado">
+            <div class="card">
+                <form class="card-body" @submit.prevent="login">
+                    <div class="form-group mb-3">
+                        <label for="email">E-mail</label>
+                        <input v-model="email" type="email" class="form-control" name="email">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="senha">Senha</label>
+                        <input v-model="senha" type="password" class="form-control" name="senha">
+                    </div>
+                    <button class="btn btn-light">Entrar</button>
+                </form>
+            </div>
+        </div>
+
+        <div v-if="autenticado">
+            <div class="card mb-3" :class="{'opacity-50': !pode_enviar_acao}" v-if="masmorra">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3 class="card-title d-flex align-items-center justify-content-start gap-2 mb-1">
+                                <div class="material-symbols-outlined text-lg">location_on</div>
+                                <span>
+                                    {{ masmorra.nome }}
+                                </span>
+                            </h3>
+                            <p class="mb-1">{{ masmorra.descricao }}</p>
+                            <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-0">
+                                <div class="material-symbols-outlined">target</div>
+                                <p class="mb-0">Matar {{jogador_proxima_missao[0]}} / {{jogador_proxima_missao[1]}} {{jogador_proxima_missao[2]}}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-light w-100 d-flex flex-row gap-2 mb-3" @click="pausarMasmorra">
+                                <div class="material-symbols-outlined text-black">{{ this.masmorra.pausado ? 'play_arrow' : 'pause' }}</div>
+                                {{ this.masmorra.pausado ? 'Continuar' : 'Pausar' }}
+                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-light dropdown-toggle w-100  d-flex flex-row gap-2 align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="material-symbols-outlined text-black">map</div>
+                                    Viajar
+                                </button>
+                                <ul class="dropdown-menu w-100">
+                                    <li v-for="masmorra in masmorras">
+                                        <a class="dropdown-item" @click="mudarMasmorra(masmorra.chave)" v-if="!Object.keys(jogador.missoes).includes(masmorra.chave) || jogador.missoes[masmorra.chave][3]">{{ masmorra.nome }}</a>
+                                        <a class="dropdown-item text-muted d-flex align-items-center gap-1" data-bs-toggle="tooltip" :data-bs-title="`Mate ${jogador.missoes[masmorra.chave][1]} ${jogador.missoes[masmorra.chave][2]}`" v-else>
+                                            <div class="material-symbols-outlined text-muted">lock</div>
+                                            {{ masmorra.nome }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="row mb-3 gap-3 gap-md-0" :class="{'opacity-50': !pode_enviar_acao}">
+                <div class="col-md-5"> 
+                    <div class="card jogador-card " v-if="jogador">
+                        <div class="card-body p-0">
+                            <div class="entity-container p-3 rounded d-flex flex-column" data-bs-toggle="collapse" data-bs-target=".row.collapse.jogador" :style="{
+                                '--masmorra-bg': `url('/static/${masmorra.imagem_background}')`,
+                                'background': `linear-gradient(var(--bg-dark), transparent 30%), linear-gradient(transparent, var(--bg-dark) 70%), var(--masmorra-bg)`,
+                                'background-size': 'cover',
+                                'background-position': 'center'
+                            }">
+                                <div class="d-flex justify-content-between">
+                                    <h3 class="card-title">
+                                        {{ jogador.nome }}
+                                    </h3>
+                                    <h3 class="opacity-50">
+                                        Lv {{jogador.level}}
+                                    </h3>
+                                </div>
+                                <div class="text-center my-2">
+                                    <div class="sprite-container"  :style="{'animation-duration': `${500*jogador.resistencia/jogador.agilidade}ms`}">
+                                        <div class="sprite" 
+                                             :class="{ 'morto': jogador.vida <= 0 }"
+                                             :style="{
+                                                 '--sprite-x': jogador.sprite_x, 
+                                                 '--sprite-y': jogador.sprite_y,
+                                                 'background-image': `url('/static/${jogador.sprite_nome}')`,
+                                                 'background-size': `${jogador.sprite_largura}px ${jogador.sprite_altura}px`
+                                             }"></div>
+                                    </div>
+                                </div>
+                                <p class="text-center mb-0">{{ jogador.descricao }}</p>
+                            </div>
+                            <div class="entity-info p-3 rounded">
+                                <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.jogador" >
+                                    <div class="progress">
+                                        <div class="progress-bar vida-bar" role="progressbar" 
+                                             :style="{ width: (jogador.vida / jogador.vida_maxima * 100) + '%' }"
+                                             :aria-valuenow="jogador.vida" 
+                                             :aria-valuemin="0" 
+                                             :aria-valuemax="jogador.vida_maxima">
+                                            {{ jogador.vida }}
+                                        </div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar energia-bar" role="progressbar" 
+                                             :style="{ width: (jogador.energia / jogador.energia_maxima * 100) + '%' }"
+                                             :aria-valuenow="jogador.energia" 
+                                             :aria-valuemin="0" 
+                                             :aria-valuemax="jogador.energia_maxima">
+                                            {{ jogador.energia }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row collapse show jogador">
+                                    <div class="col-md-6">
+                                        <div class="atributo border" :class="{ 'text-info border border-info': jogador.pontos_disponiveis}" data-bs-toggle="tooltip" data-bs-title="Pontos Disponíveis">
+                                            <span class="material-symbols-outlined" :class="{'text-info': jogador.pontos_disponiveis}">adjust</span>
+                                            {{ jogador.pontos_disponiveis }}
+                                        </div>
+        
+                                        <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Força" @click="jogador.pontos_disponiveis && aumentarAtributo('forca')">
+                                            <span class="material-symbols-outlined">fitness_center</span>
+                                            {{ jogador.forca }}
+                                            <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
+                                        </div>
+        
+                                        <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Agilidade" @click="jogador.pontos_disponiveis && aumentarAtributo('agilidade')">
+                                            <span class="material-symbols-outlined">directions_run</span>
+                                            {{ jogador.agilidade }}
+                                            <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="atributo border text-info border border-info" data-bs-toggle="tooltip" data-bs-title="Próximo Level">
+                                            <span class="material-symbols-outlined text-info">grain</span>
+                                            {{ jogador.experiencia }} / {{ jogador.experiencia_proximo_nivel }}
+                                        </div>
+        
+                                        <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Resistência" @click="jogador.pontos_disponiveis && aumentarAtributo('resistencia')">
+                                            <span class="material-symbols-outlined">shield</span>
+                                            {{ jogador.resistencia }}
+                                            <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
+                                        </div>
+        
+                                        <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Inteligência" @click="jogador.pontos_disponiveis && aumentarAtributo('inteligencia')">
+                                            <span class="material-symbols-outlined">psychology</span>
+                                            {{ jogador.inteligencia }}
+                                            <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex flex-row flex-md-column gap-3">
+                    <div class="w-100 card" v-if="masmorra">
+                        <div class="card-body d-flex flex-column justify-content-start align-items-center gap-1" data-bs-toggle="tooltip" data-bs-title="Passos">
+                            <div class="material-symbols-outlined">
+                                steps
+                            </div>
+                            {{ `${masmorra.passos} / ${masmorra.total_passos}` }}
+                        </div>
+                    </div>
+                    <div class="w-100 card" v-if="jogador">
+                        <div class="card-body d-flex flex-column justify-content-start align-items-center gap-1" data-bs-toggle="tooltip" data-bs-title="Ouro">
+                            <div class="material-symbols-outlined">paid</div>
+                            {{ jogador.ouro }}
+                        </div>
+                    </div>
+                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador" @click="enviar_acao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
+                        <div class="material-symbols-outlined text-black">star_shine</div>
+                        <span >GLP. ESP.</span>
+                    </button>
+                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.habilidade_ii_nome" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
+                        <div class="material-symbols-outlined text-black">star_shine</div>
+                        <span >{{jogador.classe.habilidade_ii_nome}}</span>
+                    </button>
+                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.habilidade_iii_nome" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
+                        <div class="material-symbols-outlined text-black">star_shine</div>
+                        <span >{{jogador.classe.habilidade_iii_nome}}</span>
+                    </button>
+                    <button class="w-100 btn btn-info d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.nivel < 3" data-bs-toggle="modal" data-bs-target="#modal_evolucao">
+                        <div class="material-symbols-outlined text-black">arrow_upload_ready</div>
+                        <span >Evolução</span>
+                    </button>
+                </div>
+                <div class="col-md-5">
+                    <div class="card inimigo-card " v-if="inimigo">
+                        <div class="card-body p-0">
+                            <div class="entity-container rounded p-3 rounded d-flex flex-column" data-bs-toggle="collapse" data-bs-target=".row.collapse.inimigo"  :style="{
+                                '--masmorra-bg': `url('/static/${masmorra.imagem_background}')`,
+                                'background': `linear-gradient(var(--bg-dark), transparent 30%), linear-gradient(transparent, var(--bg-dark) 70%), var(--masmorra-bg)`,
+                                'background-size': 'cover',
+                                'background-position': 'center'
+                            }">
+                                <div class="d-flex justify-content-between">
+                                    <h3 class="card-title">
+                                        {{ inimigo.nome }}
+                                    </h3>
+                                    <h3 class="opacity-50">
+                                        Lv {{inimigo.level}}
+                                    </h3>
+                                </div>
+                                <div class="text-center my-2">
+                                    <div class="sprite-container"  :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
+                                        <div class="sprite" 
+                                             :class="{ 'morto': inimigo.vida <= 0 }"
+                                             :style="{
+                                                 '--sprite-x': inimigo.sprite_x, 
+                                                 '--sprite-y': inimigo.sprite_y,
+                                                 'background-image': `url('/static/${inimigo.sprite_nome}')`,
+                                                 'background-size': `${inimigo.sprite_largura}px ${inimigo.sprite_altura}px`
+                                             }"></div>
+                                    </div>
+                                </div>
+                                <p class="text-center mb-0">{{ inimigo.descricao }}</p>
+                            </div>
+                            <div class="entity-info p-3 rounded">
+                                <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.inimigo" >
+                                    <div class="progress">
+                                        <div class="progress-bar vida-bar" role="progressbar" 
+                                            :style="{ width: (inimigo.vida / inimigo.vida_maxima * 100) + '%' }"
+                                            :aria-valuenow="inimigo.vida" 
+                                            :aria-valuemin="0" 
+                                            :aria-valuemax="inimigo.vida_maxima">
+                                            {{ inimigo.vida }}
+                                        </div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar energia-bar" role="progressbar" 
+                                            :style="{ width: (inimigo.energia / inimigo.energia_maxima * 100) + '%' }"
+                                            :aria-valuenow="inimigo.energia" 
+                                            :aria-valuemin="0" 
+                                            :aria-valuemax="inimigo.energia_maxima">
+                                            {{ inimigo.energia }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row collapse show inimigo">
+                                    <div class="col-md-6">
+                                        <div class="atributo border text-warning border border-warning" data-bs-toggle="tooltip" data-bs-title="Ouro">
+                                            <span class="material-symbols-outlined text-warning">paid</span>
+                                            {{ inimigo.ouro }}
+                                        </div>
+                                        <div class="atributo border" data-bs-toggle="tooltip" data-bs-title="Força">
+                                            <span class="material-symbols-outlined">fitness_center</span>
+                                            {{ inimigo.forca }}
+                                        </div>
+                                        <div class="atributo border" data-bs-toggle="tooltip" data-bs-title="Agilidade">
+                                            <span class="material-symbols-outlined">directions_run</span>
+                                            {{ inimigo.agilidade }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="atributo border text-info border border-info" data-bs-toggle="tooltip" data-bs-title="Experiência">
+                                            <span class="material-symbols-outlined text-info">grain</span>
+                                            {{ inimigo.experiencia }}
+                                        </div>
+                                        <div class="atributo border" data-bs-toggle="tooltip" data-bs-title="Resistência">
+                                            <span class="material-symbols-outlined">shield</span>
+                                            {{ inimigo.resistencia }}
+                                        </div>
+                                        <div class="atributo border" data-bs-toggle="tooltip" data-bs-title="Inteligência">
+                                            <span class="material-symbols-outlined">psychology</span>
+                                            {{ inimigo.inteligencia }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h3 class="d-flex align-items-center gap-2 card-title text-white mb-3">
+                        <div class="material-symbols-outlined">business_center</div>
+                        Inventário
+                    </h3>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center align-items-center">
+                        <button
+                        :class="`item p-1 rounded ${inventarioClasse(n-1)}`"
+                        style="background:rgba(2, 2, 2, 0.25)" v-for="n in inventario_espacos"
+                        data-bs-toggle="popover"
+                        :data-bs-title="inventarioBsTitle(n-1)"
+                        data-bs-custom-class="popover"
+                        data-bs-html="true"
+                        :data-bs-content="inventarioBsContent(n-1)"
+                        >
+                            <div class="sprite" :style="{
+                                '--size': 'calc(2 * 32px)',
+                                '--sprite-x': inventarioSpriteX(n-1),
+                                '--sprite-y':inventarioSpriteY(n-1),
+                                'background-image': `url('/static/items.png')`,
+                                'background-size': 'calc(2 * 352px) calc(2 * 832px)'
+                            }">
+                            </div>
+                            <span class="bg-white text-black rounded border-white quantidade">
+                                {{inventarioSpanQuantidade(n-1)}}
+                            </span>
+                            <span class="bg-white text-black rounded border-white informacao-adicional">
+                                {{inventarioSpanInformacaoAdicional(n-1)}}
+                            </span>
+                        </button>
+                        <button class="btn btn-light w-100">
+                            +8 espaços
+                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                <div class="material-symbols-outlined text-black">paid</div> 50000
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="card mb-3" :class="{'opacity-50': !pode_enviar_acao}">
+                <div class="card-body d-flex flex-column flex-md-row gap-3">
+                    <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_bestiario">Bestiário</button>
+                    <button class="btn btn-light">Placar de Líderes</button>
+                    <button class="btn btn-danger ms-md-auto" onclick="location.reload()">Sair</button>
+                    <ul class="messages-list list-unstyled" v-if="false">
+                        <li v-for="log in logs">{{ log }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal_bestiario" tabindex="-1" v-if="masmorras">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Bestiário</h5>
+                            <button type="button" class="btn p-0 ms-auto" data-bs-dismiss="modal" aria-label="Close">
+                                <div class="material-symbols-outlined text-white">close</div>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="card mb-3" v-for="masmorra in masmorras">
+                                <div class="card-header text-white" data-bs-toggle="collapse" :data-bs-target="`#collapse_regiao_${masmorra.id_unico}`" style="cursor: pointer;">
+                                    <h5>{{masmorra.nome}}</h5>
+                                    <p class="mb-0">{{masmorra.descricao}}</p>
+                                </div>
+                                <div class="card-body collapse p-0" :id="`collapse_regiao_${masmorra.id_unico}`">
+                                    <div class="d-flex gap-3 flex-wrap align-items-center justify-content-center p-3 pb-5">
+                                        <div v-for="inimigo in masmorra.lista_inimigos" class="border w-100 w-md-auto entity-container rounded p-3 text-white" data-bs-toggle="collapse" data-bs-target=".row.collapse"  :style="{
+                                            '--masmorra-bg': `url('/static/${masmorra.imagem_background}')`,
+                                            'background': `linear-gradient(var(--bg-dark), transparent 30%), linear-gradient(transparent, var(--bg-dark) 70%), var(--masmorra-bg)`,
+                                            'background-size': 'cover',
+                                            'background-position': 'center'
+                                        }">
+                                            <h3 class="card-title d-flex">{{ inimigo.nome }}</h3>
+                                            <div class="text-center my-2">
+                                                <div class="sprite-container" :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
+                                                    <div class="sprite" 
+                                                            :class="{ 'morto': inimigo.vida <= 0 }"
+                                                            :style="{
+                                                                '--sprite-x': inimigo.sprite_x, 
+                                                                '--sprite-y': inimigo.sprite_y,
+                                                                'background-image': `url('/static/${inimigo.sprite_nome}')`,
+                                                                'background-size': `${inimigo.sprite_largura}px ${inimigo.sprite_altura}px`,
+                                                            }"></div>
+                                                </div>
+                                            </div>
+                                            <p class="text-center mb-0">{{ inimigo.descricao }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="modal fade" id="modal_evolucao" tabindex="-1" v-if="jogador">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Evolução {{jogador.classe.nivel}}</h5>
+                            <button type="button" class="btn p-0 ms-auto" data-bs-dismiss="modal" aria-label="Close">
+                                <div class="material-symbols-outlined text-white">close</div>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div  v-if="jogador.classe.nivel == 1">
+                                <div class="alert alert-warning" v-if="jogador.classe.nivel == 1 && (jogador.level < 15 || jogador.ouro < 1500)">
+                                    Você precisa atingir o nível 15 e ter 1500 ouro para poder evoluir.
+                                </div>
+                                <div class="alert alert-warning" v-if="jogador.classe.nivel == 2 && (jogador.level < 30 || jogador.ouro < 100000)">
+                                    Você precisa atingir o nível 30 e ter 100000 ouro para poder evoluir.
+                                </div>
+                                <p>Você está prestes a evoluir para a próxima classe. Isso irá aumentar seu nível e seus atributos, além de desbloquear uma nova habilidade.</p>
+                                <div class="row gap-3 px-3 justify-content-center">
+                                    <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('GUERREIRO')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
+                                        <div class="card-body">
+                                            <div class="sprite-container" style="animation-duration: 700ms">
+                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 1; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
+                                            </div>
+                                            <h4>GUERREIRO</h4>
+                                            <p class="d-flex align-items-center justify-content-center gap-2">
+                                                <span class="material-symbols-outlined">paid</span>
+                                                1500
+                                            </p>
+                                            <p>Foco em resistência.</p>
+                                        </div>
+                                    </button>
+                                    <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('MAGO')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
+                                        <div class="card-body">
+                                            <div class="sprite-container"  style="animation-duration: 900ms">
+                                                <div class="sprite" style="--sprite-x: 5; --sprite-y: 2; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
+                                            </div>
+                                            <h4>MAGO</h4>
+                                            <p class="d-flex align-items-center justify-content-center gap-2">
+                                                <span class="material-symbols-outlined">paid</span>
+                                                1500
+                                            </p>
+                                            <p>Foco em inteligência.</p>
+                                        </div>
+                                    </button>
+                                    <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('SELVAGEM')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
+                                        <div class="card-body">
+                                            <div class="sprite-container" style="animation-duration: 600ms">
+                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 3; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
+                                            </div>
+                                            <h4>SELVAGEM</h4>
+                                            <p class="d-flex align-items-center justify-content-center gap-2">
+                                                <span class="material-symbols-outlined">paid</span>
+                                                1500
+                                            </p>
+                                            <p>Foco em força.</p>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                            <div v-if="jogador.classe.nivel == 2">
+                                <div class="alert alert-warning" v-if="jogador.level < 30">
+                                    Você precisa atingir o nível 30 para poder evoluir.
+                                </div>
+                                <p>Você está prestes a evoluir para a próxima classe. Isso irá aumentar seu nível e seus atributos, além de desbloquear uma nova habilidade.</p>
+                                <button class="btn card mx-auto" @click="subirNivelClasse('')" data-bs-dismiss="modal" :disabled="jogador.level < 30">
+                                    <div class="card-body">
+                                        <div class="sprite-container" style="filter:brightness(0)">
+                                            <div class="sprite" style="--sprite-x: 2; --sprite-y: 2; background-image: url('/static/monsters.png'); background-size: 384px 416px;"></div>
+                                        </div>
+                                        <h4>????</h4>
+                                        <p class="d-flex align-items-center gap-2">
+                                            <span class="material-symbols-outlined">paid</span>
+                                            100000
+                                        </p>
+                                        <p>Progresse para a próxima classe.</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        const middlewareBotaoInventario = (el) => {
+            const id = el.getAttribute('data-id')
+            const acao = el.getAttribute('data-acao')
+            const event = new CustomEvent('middleware-botao-inventario:click', {
+                detail: {
+                    id: id,
+                    acao: acao
+                }
+            });
+            document.dispatchEvent(event);
+        }
+
+        const { createApp } = Vue
+        const colorDamage = '#d32f2f'
+        const colorHeal = '#49F7B4'
+        const colorEnergy = '#1976d2'
+        const colorExperience = '#0DCAF0'
+        const colorMiss = '#ffff'
+
+        createApp({
+            data() {
+                return {
+                    autenticado: false,
+                    pode_enviar_acao: true,
+                    jogador: null,
+                    inimigo: null,
+                    masmorra: null,
+                    inventario_espacos: 8,
+                    inventario: [],
+                    logs: [],
+                    messages: [],
+                    conexoes: {},
+                    email: '',
+                    senha: '',
+                    conexao_atual: null
+                }
+            },
+            mounted() {
+                this.connectWebSocket()
+            },
+            computed: {
+                jogador_proxima_missao(){
+                    if(!this.jogador) return;
+                    const chaves = Object.keys(this.jogador.missoes);
+                    for(missao_chave in this.jogador.missoes) {
+                        const missao = this.jogador.missoes[missao_chave];
+                        if(!missao[3]) return missao;
+                    }
+                    return null;
+                },
+                jogador_sprite_classes() {
+                    petrificado = false
+                    envenenado = false
+
+                },
+                inimigo_sprite_classes() {
+
+                }
+            },
+            methods: {
+                inventarioClasse(indice) {
+                    if(indice >= this.inventario.length) return 'vazio';
+                    if(this.inventario[indice]['tipo'] == 'EQUIPAMENTO') {
+                        return this.inventario[indice]['em_uso'] ? 'em-uso' : '';
+                    }
+                    return ''
+                },
+                inventarioAcao(indice) {
+                    if(indice >= this.inventario.length) return 'Vazio';
+                    if(this.inventario[indice]['tipo'] == 'CONSUMIVEL') return 'Usar'
+                    if(this.inventario[indice]['tipo'] == 'EQUIPAMENTO') {
+                        return this.inventario[indice]['em_uso'] ? 'Remover' : 'Equipar';
+                    }
+                },
+                inventarioBsTitle(indice){
+                    if(indice >= this.inventario.length) return 'Vazio';
+                    return this.inventario[indice]['nome'];
+                },
+                inventarioBsContent(indice) {
+                    if(indice >= this.inventario.length) return 'Nada aqui...';
+                    let descricao = this.inventario[indice]['descricao'].map((linha) => {
+                        _linha = linha.replace('ATTR_FORCA', '<span class="material-symbols-outlined">fitness_center</span>')
+                        _linha = _linha.replace('ATTR_AGILIDADE', '<span class="material-symbols-outlined">directions_run</span>')
+                        _linha = _linha.replace('ATTR_RESISTENCIA', '<span class="material-symbols-outlined">shield</span>')
+                        _linha = _linha.replace('ATTR_INTELIGENCIA', '<span class="material-symbols-outlined">psychology</span>')
+                        _linha = _linha.replace('ATTR_VIDA', '<span class="font-bold" style="color:#198754">Pontos de Vida</span>')
+                        return `<span class="d-flex align-items-center gap-1 w-full mb-1">${_linha}</span>`;
+                    }, '').join('');
+                    let botoes = `
+                        <a class="btn btn-sm btn-light w-100 mt-1" onclick="middlewareBotaoInventario(this)" data-id='${indice}' data-acao='usar'>
+                            ${this.inventarioAcao(indice)}
+                        </a>
+                        <a class="btn btn-sm  btn-light w-100 mt-1" onclick="middlewareBotaoInventario(this)" data-id='${indice}' data-acao='descartar'>
+                            Descartar
+                        </a>
+                    `;
+                    if(this.inventario[indice]['quantidade'] > 1) botoes += `
+                        <a class="btn btn-sm  btn-light w-100 mt-1" onclick="middlewareBotaoInventario(this)" data-id='${indice}' data-acao='descartar_todos'>
+                            Descartar Todos
+                        </a>
+                    `;
+                    return `
+                        ${descricao}
+                        ${botoes}
+                    `
+                },
+                inventarioSpriteX(indice) {
+                    if(indice >= this.inventario.length) return 3;
+                    return this.inventario[indice]['sprite_x'];
+                },
+                inventarioSpriteY(indice) {
+                    if(indice >= this.inventario.length) return 24;
+                    return this.inventario[indice]['sprite_y'];
+                },
+                inventarioSpanQuantidade(indice) {
+                    if(indice >= this.inventario.length) return 0;
+                    return this.inventario[indice]['quantidade'];
+                },
+                inventarioSpanInformacaoAdicional(indice) {
+                    if(indice >= this.inventario.length) return '';
+                    if(this.inventario[indice]['tipo'] != 'EQUIPAMENTO') return '';
+                    if(this.inventario[indice]['tipo'] == 'EQUIPAMENTO') {
+                        return this.inventario[indice]['em_uso'] ? 'Em uso' : '';
+                    }
+                },
+                connectWebSocket() {
+                    const ws = new WebSocket('ws://localhost:8000/ws')
+                    const conexaoId = Date.now().toString()
+                    
+                    ws.onopen = () => {
+                        this.conexoes[conexaoId] = ws
+                        this.conexao_atual = conexaoId
+                        console.log(`Conexão ${conexaoId} estabelecida`)
+                    }
+                    
+                    ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data)
+                        if(data.type == 'update') {
+                            // Verifica se houve dano no jogador
+                            if(this.jogador) {
+                                if(data.inimigo.vida > 0) {
+                                    if (data.jogador.vida < this.jogador.vida) {
+                                        const quantidade = this.jogador.vida - data.jogador.vida
+                                        this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorDamage)
+                                        this.criarParticulas({'alvo': 'jogador', 'cor': colorDamage, 'origem_aleatoria': true})
+                                    } else if (data.jogador.vida > this.jogador.vida) {
+                                        const quantidade = data.jogador.vida - this.jogador.vida
+                                        this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorHeal)
+                                        this.criarParticulas({'alvo': 'jogador', 'cor': colorHeal, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
+                                    } else {
+                                        if(this.masmorra.nome != 'Casa') {
+                                            this.criarTextoFlutuante(`Errou!`, 'jogador', colorMiss, 18)
+                                        }
+                                    }
+                                }
+
+                                if (data.jogador.energia < this.jogador.energia) {
+                                    const quantidade = this.jogador.energia - data.jogador.energia
+                                    this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorEnergy)
+                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorEnergy, 'origem_aleatoria': true})
+                                } else if (data.jogador.energia > this.jogador.energia) {
+                                    const quantidade = data.jogador.energia - this.jogador.energia
+                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorEnergy)
+                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorEnergy, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
+                                }
+
+                                if (data.jogador.experiencia > this.jogador.experiencia) {
+                                    const quantidade = data.jogador.experiencia - this.jogador.experiencia
+                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorExperience)
+                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorExperience, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
+                                }
+
+                                if (data.jogador.level > this.jogador.level) {
+                                    this.criarTextoFlutuante(`Level UP!`, 'jogador', colorExperience, 18)
+                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorExperience, 'duracao': 1500, 'tamanho': 3, 'quantidade': 30})
+                                }
+
+                            }
+                            if(this.inimigo && this.inimigo.id_unico == data.inimigo.id_unico) {
+                                if (data.inimigo.vida < this.inimigo.vida) {
+                                    const quantidade = this.inimigo.vida - data.inimigo.vida
+                                    this.criarTextoFlutuante(`${quantidade}`, 'inimigo', colorDamage)
+                                    this.criarParticulas({'alvo': 'inimigo', 'cor': colorDamage, 'origem_aleatoria': true})
+                                } else if (data.inimigo.vida > this.inimigo.vida) {
+                                    const quantidade = data.inimigo.vida - this.inimigo.vida
+                                    this.criarTextoFlutuante(`+${quantidade}`, 'inimigo', colorHeal)
+                                    this.criarParticulas({'alvo': 'inimigo', 'cor': colorHeal, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
+                                } else {
+                                    if(this.masmorra.nome != 'Casa') {
+                                        this.criarTextoFlutuante(`Errou!`, 'inimigo', colorMiss, 18)
+                                    }
+                                }
+                            }
+                        }
+                        if (data.type === 'update' || data.type === 'paused' || data.type == 'action_response') {
+                            this.pode_enviar_acao = true;
+                            if(this.jogador && data.jogador.classe.nivel > this.jogador.classe.nivel) {
+                                this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18)
+                                this.criarParticulas({'alvo': 'jogador', 'cor': colorExperience, 'duracao': 4500, 'tamanho': 3, 'quantidade': 60})
+                            }
+                            if(data.inventario){
+                                const ids_entrada = data.inventario.map((i) => (`${i.nome}-${i.quantidade}`)).join('')
+                                const ids_locais = this.inventario.map((i) => (`${i.nome}-${i.quantidade}`)).join('')
+                                if(ids_entrada != ids_locais) {
+                                    this.inventario = data.inventario
+                                    setTimeout(() => {
+                                        document.querySelectorAll('[role="tooltip"]').forEach(el => {
+                                            el.remove();
+                                        })
+                                        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+                                        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, { trigger: 'focus', sanitize: false }))
+                                    }, 200)
+                                }
+                            }
+                            this.jogador = data.jogador
+                            this.inimigo = data.inimigo
+                            this.masmorra = data.masmorra
+                            this.masmorras = data.masmorras
+                            this.logs = [...data.logs, ...this.logs]
+                            if(this.jogador && !this.autenticado) {
+                                this.autenticado = true;
+                                setTimeout(() => {
+                                    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+                                    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+                                    document.addEventListener('middleware-botao-inventario:click', (ev) => {
+                                        const detalhes = ev.detail;
+                                        if(detalhes.acao == 'usar') {
+                                            this.usarItem(detalhes.id);
+                                        } else if(detalhes.acao == 'descartar') {
+                                            this.descartarItem(detalhes.id);
+                                        } else if(detalhes.acao == 'descartar_todos') {
+                                            this.descartarItemTodos(detalhes.id);
+                                        }
+                                    });
+                                }, 500)
+                            }
+                        }
+                    }
+                    
+                    ws.onclose = () => {
+                        console.log(`Conexão ${conexaoId} fechada`)
+                        delete this.conexoes[conexaoId]
+                        if (this.conexao_atual === conexaoId) {
+                            this.conexao_atual = Object.keys(this.conexoes)[0] || null
+                        }
+                    }
+
+                    ws.onerror = (error) => {
+                        console.error(`Erro na conexão ${conexaoId}:`, error)
+                    }
+                },
+                getConexaoAtual() {
+                    return this.conexoes[this.conexao_atual]
+                },
+                criarTextoFlutuante(texto, alvo, cor, tamanho=32) {
+                    setTimeout(() => {
+                        const container = document.querySelector(`.${alvo}-card .sprite-container`)
+                        const textoFlutuante = document.createElement('div')
+                        textoFlutuante.className = 'texto-flutuante'
+                        textoFlutuante.style.color = cor
+                        textoFlutuante.style.fontSize = tamanho + 'px'
+                        textoFlutuante.textContent = texto
+                        textoFlutuante.style.left = Math.random() * 75 + '%'
+                        container.appendChild(textoFlutuante)
+                        setTimeout(() => {
+                            textoFlutuante.remove()
+                        }, 1000)
+                    }, Math.random()*250)
+                },
+                criarParticulas({alvo, cor, duracao=1000, tamanho=1, quantidade=10, reverso=false, origem_aleatoria=false}) {
+                    return
+                    setTimeout(() => {
+                        const container = document.querySelector(`.${alvo}-card .sprite-container`)
+
+                        let top = '50%'
+                        let left = '50%'
+                        if(origem_aleatoria) {
+                            top = Math.random() * 100 + '%'
+                            left = Math.random() * 100 + '%'
+                        }
+
+                        for (let i = 0; i < quantidade; i++) {
+                            const particula = document.createElement('div')
+                            particula.className = 'particula'
+                            particula.style.backgroundColor = cor
+                            particula.style.boxShadow = `0 0 4px ${cor}`
+                            particula.style.top = top
+                            particula.style.left = left
+                            
+                            // Gera ângulo aleatório
+                            const angle = Math.random() * Math.PI * 2
+                            const distance = 20 + Math.random() * 30
+                            
+                            // Calcula posição final
+                            const tx = Math.cos(angle) * distance * tamanho
+                            const ty = Math.sin(angle) * distance * tamanho
+                            
+                            particula.style.setProperty('--tx', `${tx}px`)
+                            particula.style.setProperty('--ty', `${ty}px`)
+                            particula.style.setProperty('--duracao', `${duracao}ms`)
+                            if(reverso) {
+                                particula.style.setProperty('--direcao', 'reverse')
+                            }
+                            
+                            container.appendChild(particula)
+                            
+                            // Remove a partícula após a animação
+                            setTimeout(() => {
+                                particula.remove()
+                            }, duracao)
+                        }
+                    }, Math.random()*250)
+                },
+                login() {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'login',
+                            data: {
+                                email: this.email,
+                                senha: this.senha
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                },
+                usarItem(item_id) {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'usar_item',
+                            data: {
+                                item_indice: item_id
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                },
+                descartarItem(item_id) {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'descartar_item',
+                            data: {
+                                item_indice: item_id
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                },
+                descartarItemTodos(item_id) {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'descartar_item_todos',
+                            data: {
+                                item_indice: item_id
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                },
+                mudarMasmorra(novaMasmorra) {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'mudar_masmorra',
+                            data: {
+                                masmorra: novaMasmorra
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                },
+                pausarMasmorra() {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'pausar',
+                            data: {
+                                pausado: !this.masmorra.pausado
+                            }
+                        })) 
+                        this.pode_enviar_acao = false
+                    }
+                },
+                aumentarAtributo(atributo) {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'aumentar_atributo',
+                            data: {
+                                atributo: atributo
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                },
+                enviar_acao(acao) {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'acao_jogador',
+                            data: { 
+                                acao: acao
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                },
+                subirNivelClasse(classe) {
+                    const ws = this.getConexaoAtual()
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'subir_nivel_classe',
+                            data: {
+                                classe: classe
+                            }
+                        }))
+                        this.pode_enviar_acao = false
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html> 
