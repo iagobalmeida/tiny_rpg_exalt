@@ -34,13 +34,6 @@ python main.py
         - [ ] Considerar atributos de equipamentos em cálculo combate
         - [ ] Exibir atributos de equipamentos em atributos jogador
 
-- [ ] Programar habilidades II e III
-    - [ ] Selvagem
-    - [ ] Bárbaro
-    - [ ] Guerreiro 
-    - [ ] Paladino
-    - [ ] Mago
-    - [ ] Feiticeiro
 
 - [ ] Placar de Líderes
 
