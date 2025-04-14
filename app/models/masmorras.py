@@ -1,13 +1,6 @@
-from app.models.masmorra import Masmorra
-from app.models.inimigos import (
-    rato, ratazana, rato_lanceiro, rato_guerreiro,
-    lobo, urso, tigre, dragão,
-    esqueleto, zumbi, vampiro, lich,
-    goblin, orc, troll, ogro,
-    slime, slime_venenoso, slime_elétrico, slime_fogo,
-    fantasma, espectro, wraith, banshee,
-    demônio, diabo, arquidemônio, príncipe_das_trevas
-)
+from models import inimigos, itens
+from models.masmorra import Masmorra
+from models.npcs import mae
 
 # Definição das masmorras
 casa = Masmorra(
@@ -22,61 +15,126 @@ esgoto = Masmorra(
     descricao='Um esgoto meio sujo.',
     imagem_background='bg_esgoto.png',
     lista_inimigos=[
-        rato, ratazana, rato_lanceiro, rato_guerreiro
+        inimigos.rato,
+        inimigos.ratazana,
+        inimigos.rato_lanceiro,
+        inimigos.rato_guerreiro,
+    ],
+    lista_itens=[
+        (0.99, itens.queijo),
+        (0.5, itens.pocao_pequena)
     ]
 )
 
 floresta = Masmorra(
     nome='Floresta',
-    descricao='Uma floresta densa e misteriosa.',
+    descricao='Uma floresta aberta.',
     imagem_background='bg_floresta.png',
     lista_inimigos=[
-        lobo, urso, tigre, dragão
+        inimigos.gnomo,
+        inimigos.gnomo_guerreiro,
+        inimigos.gnomo_mago,
+        inimigos.gnomo_espadachim,
+        inimigos.gnomo_bruto,
+        inimigos.gnomo_anciao
     ]
 )
 
 mata_fechada = Masmorra(
     nome='Mata Fechada',
-    descricao='Uma mata fechada e perigosa.',
-    imagem_background='bg_mata.png',
+    descricao='Uma mata fechada com muitas árvores.',
+    imagem_background='bg_mata_fechada.png',
     lista_inimigos=[
-        esqueleto, zumbi, vampiro, lich
+        inimigos.golem_de_pedra,
+        inimigos.entedidade_florestal,
+        inimigos.entidade_animal,
+        inimigos.entidade_obscura,
     ]
 )
 
 castelo_abandonado = Masmorra(
     nome='Castelo Abandonado',
-    descricao='Um castelo antigo e abandonado.',
-    imagem_background='bg_castelo.png',
+    descricao='Já foi uma grande civilização.',
+    imagem_background='bg_castelo_abandonado.png',
     lista_inimigos=[
-        goblin, orc, troll, ogro
+        inimigos.esqueleto,
+        inimigos.esqueleto_arqueiro,
+        inimigos.esqueleto_mago,
+        inimigos.armadura_fantasma,
+        inimigos.zumbi,
+        inimigos.morto_vivo,
     ]
 )
 
 cemiterio = Masmorra(
     nome='Cemitério',
-    descricao='Um cemitério assombrado.',
+    descricao='Uma conexão com outro plano.',
     imagem_background='bg_cemiterio.png',
     lista_inimigos=[
-        slime, slime_venenoso, slime_elétrico, slime_fogo
+        inimigos.alma_penada,
+        inimigos.sentenca_final,
+        inimigos.mensageiro_indesejado,
+        inimigos.guia_dos_mortos,
+        inimigos.protetora_das_catacumbas,
     ]
 )
 
 catacumbas = Masmorra(
     nome='Catacumbas',
-    descricao='Catacumbas escuras e úmidas.',
+    descricao='Um lugar com energia negativa.',
     imagem_background='bg_catacumbas.png',
     lista_inimigos=[
-        fantasma, espectro, wraith, banshee
+        inimigos.alma_penada,
+        inimigos.sentenca_final,
+        inimigos.bispo_corrompido,
+        inimigos.sacerdote_renegado,
     ]
 )
 
 calabouco = Masmorra(
-    nome='Calabouço',
-    descricao='Um calabouço sombrio e perigoso.',
+    nome='Calabouco dos Dragões',
+    descricao='Parece ter um tesouro escondido.',
     imagem_background='bg_calabouco.png',
     lista_inimigos=[
-        demônio, diabo, arquidemônio, príncipe_das_trevas
+        inimigos.filhote_de_dragao,
+        inimigos.dragao_jovem,
+        inimigos.dragao_violento,
+        inimigos.dragao_adulto,
+        inimigos.dragao_anciao,
+    ]
+)
+
+laboratorio_secreto = Masmorra(
+    nome='Laboratório Secreto',
+    descricao='Que tipo de coisa faziam aqui?',
+    imagem_background='bg_laboratorio_secreto.jpg',
+    lista_inimigos=[
+        inimigos.experimento_i,
+        inimigos.experimento_ii,
+        inimigos.experimento_iv,
+    ]
+)
+
+submundo = Masmorra(
+    nome='Submundo',
+    descricao='Eu não deveria estar aqui.',
+    imagem_background='bg_submundo.png',
+    lista_inimigos=[
+        inimigos.serpente_infecciosa,
+        inimigos.peste_sangrenta,
+        inimigos.peste_sangrenta_gigante,
+        inimigos.amon,
+        inimigos.astaroth,
+        inimigos.barbathos,
+    ]
+)
+
+nulo = Masmorra(
+    nome='Nulo',
+    descricao='O começo de tudo.',
+    imagem_background='bg_nulo.png',
+    lista_inimigos=[
+        inimigos.nulo
     ]
 )
 
@@ -89,5 +147,8 @@ MASMORRAS = {
     'castelo_abandonado': castelo_abandonado,
     'cemiterio': cemiterio,
     'catacumbas': catacumbas,
-    'calabouco': calabouco
-} 
+    'calabouco': calabouco,
+    'laboratorio_secreto': laboratorio_secreto,
+    'submundo': submundo,
+    'nulo': nulo
+}

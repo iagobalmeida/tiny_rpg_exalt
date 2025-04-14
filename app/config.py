@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any, Dict
 
 # Configurações do servidor
 SERVER_CONFIG = {
@@ -29,9 +29,10 @@ SPRITE_CONFIG = {
 
 # Configurações de combate
 COMBAT_CONFIG = {
-    "timeout_turno": 0.25,
+    "timeout_turno": 0.75,
     "tempo_entre_acoes": 1.5
 }
+
 
 def get_config() -> Dict[str, Any]:
     """Retorna todas as configurações do jogo."""
@@ -40,4 +41,4 @@ def get_config() -> Dict[str, Any]:
         "game": GAME_CONFIG,
         "sprite": SPRITE_CONFIG,
         "combat": COMBAT_CONFIG
-    } 
+    }

@@ -1,17 +1,42 @@
-from typing import List, Tuple
 import random
 from datetime import datetime
+from typing import List, Tuple, Union
 
-from app.config import get_config
-from app.models.entidade import Entidade
+from config import get_config
+from models.entidade import Entidade
+from models.jogador import Jogador
+
 
 class Combate:
-    def __init__(self, jogador: Entidade, inimigo: Entidade):
+
+    def __init__(self, jogador: Jogador, inimigo: Entidade):
         self.config = get_config()
         self.jogador = jogador
         self.inimigo = inimigo
         self.acao_jogador = None
         self.acao_inimigo = None
+
+    def calcular_dano_magico(self, de: Entidade, para: Entidade) -> int:
+        """Calcula o dano causado por uma entidade em outra."""
+        # Base do dano é a força do atacante
+        dano_base = de.inteligencia
+
+        # Fator de força: quanto maior a diferença, mais impacto tem
+        diferenca_forca = de.inteligencia - para.resistencia
+        fator_forca = 1 + (diferenca_forca / 20)  # Limita o impacto da diferença
+
+        # Fator de resistência: reduz o dano baseado na resistência do alvo
+        fator_resistencia = max(0.5, 1 - (para.resistencia / (de.inteligencia + 10)))
+
+        # Adiciona um fator aleatório entre 0.8 e 1.2
+        fator_aleatorio = random.uniform(
+            self.config["game"]["fator_aleatorio_min"],
+            self.config["game"]["fator_aleatorio_max"]
+        )
+
+        # Cálculo final do dano
+        dano = round(dano_base * fator_forca * fator_resistencia * fator_aleatorio)
+        return max(self.config["game"]["dano_minimo"], dano)
 
     def calcular_dano(self, de: Entidade, para: Entidade) -> int:
         """Calcula o dano causado por uma entidade em outra."""
@@ -63,60 +88,55 @@ class Combate:
 
         return random.randint(1, 100) <= chance_final
 
-    async def executar_turno_jogador(self, logs: List[str]) -> Tuple[bool, List[str]]:
-        """Executa o turno do jogador."""
+    async def executar_turno_jogador(self) -> Tuple[bool, List[str]]:
         if self.jogador.vida <= 0:
-            logs.append(f'{self.hour()} - {self.jogador.nome} morreu')
-            return True, logs
+            return True
 
         if self.calcular_chance_acerto(self.jogador, self.inimigo):
             dano = self.calcular_dano(self.jogador, self.inimigo)
-            self.inimigo.vida -= dano
-            logs.append(f'{self.hour()} - {self.jogador.nome} causou {dano} de dano em {self.inimigo.nome}')
-        else:
-            logs.append(f'{self.hour()} - {self.jogador.nome} errou o ataque')
+            self.inimigo.vida = max(0, self.inimigo.vida - dano)
 
+        return False
+
+    async def executar_turno_inimigo(self) -> Tuple[bool, List[str]]:
         if self.inimigo.vida <= 0:
-            logs.append(f'{self.hour()} - {self.inimigo.nome} morreu')
-            return True, logs
-
-        return False, logs
-
-    async def executar_turno_inimigo(self, logs: List[str]) -> Tuple[bool, List[str]]:
-        """Executa o turno do inimigo."""
-        if self.inimigo.vida <= 0:
-            return True, logs
+            return True
 
         if self.calcular_chance_acerto(self.inimigo, self.jogador):
             dano = self.calcular_dano(self.inimigo, self.jogador)
-            self.jogador.vida -= dano
-            logs.append(f'{self.hour()} - {self.inimigo.nome} causou {dano} de dano em {self.jogador.nome}')
-        else:
-            logs.append(f'{self.hour()} - {self.inimigo.nome} errou o ataque')
+            self.jogador.vida = max(0, self.jogador.vida - dano)
 
-        if self.jogador.vida <= 0:
-            logs.append(f'{self.hour()} - {self.jogador.nome} morreu')
-            return True, logs
+        return False
 
-        return False, logs
+    async def executar_acao_jogador(self) -> Tuple[bool, List[str]]:
+        if self.acao_jogador is None:
+            return False
 
-    async def executar_turno(self) -> Tuple[bool, List[str]]:
-        """Executa um turno completo de combate."""
-        logs = []
-        combate_acabou = False
+        if self.acao_jogador == 'golpe_espiritual' and self.jogador.energia >= 10:
+            self.jogador.energia -= 10
+            dano = self.calcular_dano_magico(self.jogador, self.inimigo) * 2
+            self.inimigo.vida = max(0, self.inimigo.vida - dano)
 
-        # Turno do jogador
-        if self.acao_jogador == "ataque":
-            combate_acabou, logs = await self.executar_turno_jogador(logs)
-            self.acao_jogador = None
 
-        # Turno do inimigo
-        if not combate_acabou:
-            combate_acabou, logs = await self.executar_turno_inimigo(logs)
+        self.acao_jogador = None
 
-        return combate_acabou, logs
+        return True
+
+    async def executar_turno(self) -> Union[bool, str]:
+
+        jogador_morreu = await self.executar_turno_jogador()
+        if jogador_morreu:
+            return 'inimigo'
+
+        await self.executar_acao_jogador()
+
+        inimigo_morreu = await self.executar_turno_inimigo()
+        if inimigo_morreu:
+            return 'jogador'
+
+        return False
 
     @staticmethod
     def hour() -> str:
         """Retorna a hora atual formatada."""
-        return datetime.now().strftime('%H:%M:%S') 
+        return datetime.now().strftime('%H:%M:%S')

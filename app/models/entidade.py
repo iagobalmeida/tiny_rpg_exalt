@@ -1,15 +1,17 @@
-from typing import Literal, Optional
+from typing import Literal
+from uuid import uuid4
+
 from pydantic import BaseModel, Field
 
-OBJETOS_TIPOS = Literal['OBJETO', 'EQUIPAMENTO', 'NPC', 'INIMIGO', 'HUMANO', 'MASMORRA', 'JOGADOR']
-EQUIPAMENTO_TIPOS = Literal['CAPACETE', 'ARMADURA', 'ARMA', 'ACESSÓRIO']
+OBJETOS_TIPOS = Literal['OBJETO', 'CONSUMIVEL', 'EQUIPAMENTO', 'NPC', 'INIMIGO', 'HUMANO', 'MASMORRA', 'JOGADOR']
+
 
 class Objeto(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid4()))
+    id_unico: str = Field(default_factory=lambda: str(uuid4()))
     nome: str
     descricao: str
     tipo: OBJETOS_TIPOS = Field(default='OBJETO')
-    equipamento_tipo: Optional[EQUIPAMENTO_TIPOS] = Field(default=None)
+
 
 class Entidade(Objeto):
     level: int = Field(default=1)
@@ -23,6 +25,11 @@ class Entidade(Objeto):
     agilidade: int
     resistencia: int
     inteligencia: int
+    sprite_x: int = Field(default=0)
+    sprite_y: int = Field(default=0)
+    sprite_nome: str = Field(default='rogues.png')
+    sprite_largura: int = Field(default=224*3)
+    sprite_altura: int = Field(default=224*3)
 
     def model_post_init(self, __context):
         if self.vida_maxima == 0:
@@ -37,4 +44,5 @@ class Entidade(Objeto):
         values = self.model_dump()
         values['vida'] = self.vida_maxima
         values['energia'] = self.energia_maxima
-        return classname(**values) 
+        values['id_unico'] = str(uuid4())
+        return classname(**values)

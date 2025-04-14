@@ -1,589 +1,137 @@
-from app.models.entidade import Entidade
+import math
 
-# Inimigos do Esgoto
-rato = Entidade(
-    nome='Rato',
-    descricao='Um rato comum.',
-    tipo='INIMIGO',
-    level=1,
-    vida=20,
-    energia=10,
-    experiencia=5,
-    ouro=2,
-    forca=5,
-    agilidade=8,
-    resistencia=3,
-    inteligencia=2,
-    sprite_x=0,
-    sprite_y=0,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+from models.entidade import Entidade
 
-ratazana = Entidade(
-    nome='Ratazana',
-    descricao='Uma ratazana grande e agressiva.',
-    tipo='INIMIGO',
-    level=3,
-    vida=40,
-    energia=15,
-    experiencia=10,
-    ouro=5,
-    forca=8,
-    agilidade=10,
-    resistencia=5,
-    inteligencia=3,
-    sprite_x=1,
-    sprite_y=0,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+BASE_EXP = 5
+FATOR_EXP = 6
 
-rato_lanceiro = Entidade(
-    nome='Rato Lanceiro',
-    descricao='Um rato armado com uma lança.',
-    tipo='INIMIGO',
-    level=5,
-    vida=60,
-    energia=20,
-    experiencia=15,
-    ouro=8,
-    forca=10,
-    agilidade=12,
-    resistencia=7,
-    inteligencia=5,
-    sprite_x=2,
-    sprite_y=0,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+BASE_VIDA = 10
+FATOR_VIDA = 22
 
-rato_guerreiro = Entidade(
-    nome='Rato Guerreiro',
-    descricao='Um rato treinado em combate.',
-    tipo='INIMIGO',
-    level=7,
-    vida=80,
-    energia=25,
-    experiencia=20,
-    ouro=12,
-    forca=12,
-    agilidade=15,
-    resistencia=10,
-    inteligencia=7,
-    sprite_x=3,
-    sprite_y=0,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+BASE_ATTR = 1
+FATOR_ATTR = 3
 
-# Inimigos da Floresta
-lobo = Entidade(
-    nome='Lobo',
-    descricao='Um lobo selvagem.',
-    tipo='INIMIGO',
-    level=10,
-    vida=100,
-    energia=30,
-    experiencia=25,
-    ouro=15,
-    forca=15,
-    agilidade=18,
-    resistencia=12,
-    inteligencia=8,
-    sprite_x=0,
-    sprite_y=1,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+BASE_OURO = 1
+FATOR_OURO = 4
 
-urso = Entidade(
-    nome='Urso',
-    descricao='Um urso poderoso.',
-    tipo='INIMIGO',
-    level=15,
-    vida=150,
-    energia=40,
-    experiencia=35,
-    ouro=25,
-    forca=20,
-    agilidade=15,
-    resistencia=18,
-    inteligencia=10,
-    sprite_x=1,
-    sprite_y=1,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-tigre = Entidade(
-    nome='Tigre',
-    descricao='Um tigre feroz.',
-    tipo='INIMIGO',
-    level=20,
-    vida=200,
-    energia=50,
-    experiencia=45,
-    ouro=35,
-    forca=25,
-    agilidade=20,
-    resistencia=15,
-    inteligencia=12,
-    sprite_x=2,
-    sprite_y=1,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+def inimigo_attrs(level: int, atributos_principais: dict):
+    return {
+        'forca': int(BASE_ATTR + ((FATOR_ATTR + atributos_principais.get('forca', 0))*level)),
+        'agilidade': int(BASE_ATTR + ((FATOR_ATTR + atributos_principais.get('agilidade', 0))*level)),
+        'resistencia': int(BASE_ATTR + ((FATOR_ATTR + atributos_principais.get('resistencia', 0))*level)),
+        'inteligencia': int(BASE_ATTR + ((FATOR_ATTR + atributos_principais.get('inteligencia', 0))*level)),
+        'vida': int(BASE_VIDA + ((FATOR_VIDA + atributos_principais.get('vida', 0))*level ^ 3)),
+        'energia': int(BASE_VIDA + ((FATOR_VIDA + atributos_principais.get('energia', 0))*level ^ 3)),
+        'experiencia': int(BASE_EXP + ((FATOR_EXP + atributos_principais.get('experiencia', 0))*level ^ 2)),
+        'ouro': int(BASE_OURO + ((FATOR_OURO + atributos_principais.get('ouro', 0))*level)),
+        'level': math.ceil(level),
+    }
 
-dragão = Entidade(
-    nome='Dragão',
-    descricao='Um dragão lendário.',
-    tipo='INIMIGO',
-    level=25,
-    vida=300,
-    energia=70,
-    experiencia=60,
-    ouro=50,
-    forca=30,
-    agilidade=25,
-    resistencia=25,
-    inteligencia=20,
-    sprite_x=3,
-    sprite_y=1,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-# Inimigos da Mata Fechada
-esqueleto = Entidade(
-    nome='Esqueleto',
-    descricao='Um esqueleto reanimado.',
-    tipo='INIMIGO',
-    level=30,
-    vida=250,
-    energia=60,
-    experiencia=70,
-    ouro=40,
-    forca=22,
-    agilidade=15,
-    resistencia=20,
-    inteligencia=10,
-    sprite_x=0,
-    sprite_y=2,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+def gerar_inimigo(nome: str, descricao: str, sprite_x: int, sprite_y: int, level: int, atributos_principais: dict = {}):
+    return Entidade(
+        nome=nome,
+        descricao=descricao,
+        sprite_nome="monsters.png",
+        sprite_altura=416*3,
+        sprite_largura=384*3,
+        sprite_x=sprite_x,
+        sprite_y=sprite_y,
+        **inimigo_attrs(level, atributos_principais)
+    )
 
-zumbi = Entidade(
-    nome='Zumbi',
-    descricao='Um zumbi lento mas resistente.',
-    tipo='INIMIGO',
-    level=35,
-    vida=350,
-    energia=80,
-    experiencia=85,
-    ouro=55,
-    forca=25,
-    agilidade=10,
-    resistencia=28,
-    inteligencia=5,
-    sprite_x=1,
-    sprite_y=2,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-vampiro = Entidade(
-    nome='Vampiro',
-    descricao='Um vampiro sedento por sangue.',
-    tipo='INIMIGO',
-    level=40,
-    vida=400,
-    energia=100,
-    experiencia=100,
-    ouro=70,
-    forca=28,
-    agilidade=25,
-    resistencia=22,
-    inteligencia=30,
-    sprite_x=2,
-    sprite_y=2,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+def gerar_inimigo_rapido(nome: str, descricao: str, sprite_x: int, sprite_y: int, level: int):
+    return gerar_inimigo(nome, descricao, sprite_x, sprite_y, level, {
+        'agilidade': math.ceil(level/20)
+    })
 
-lich = Entidade(
-    nome='Lich',
-    descricao='Um lich poderoso.',
-    tipo='INIMIGO',
-    level=45,
-    vida=450,
-    energia=120,
-    experiencia=120,
-    ouro=90,
-    forca=20,
-    agilidade=15,
-    resistencia=25,
-    inteligencia=40,
-    sprite_x=3,
-    sprite_y=2,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-# Inimigos do Castelo Abandonado
-goblin = Entidade(
-    nome='Goblin',
-    descricao='Um goblin pequeno e ágil.',
-    tipo='INIMIGO',
-    level=50,
-    vida=300,
-    energia=90,
-    experiencia=140,
-    ouro=80,
-    forca=18,
-    agilidade=30,
-    resistencia=15,
-    inteligencia=12,
-    sprite_x=0,
-    sprite_y=3,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+def gerar_inimigo_bruto(nome: str, descricao: str, sprite_x: int, sprite_y: int, level: int):
+    return gerar_inimigo(nome, descricao, sprite_x, sprite_y, level, {
+        'forca':  math.ceil(level/20)
+    })
 
-orc = Entidade(
-    nome='Orc',
-    descricao='Um orc forte e brutal.',
-    tipo='INIMIGO',
-    level=55,
-    vida=500,
-    energia=110,
-    experiencia=160,
-    ouro=100,
-    forca=35,
-    agilidade=20,
-    resistencia=30,
-    inteligencia=15,
-    sprite_x=1,
-    sprite_y=3,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-troll = Entidade(
-    nome='Troll',
-    descricao='Um troll gigante e regenerativo.',
-    tipo='INIMIGO',
-    level=60,
-    vida=600,
-    energia=130,
-    experiencia=180,
-    ouro=120,
-    forca=40,
-    agilidade=15,
-    resistencia=35,
-    inteligencia=10,
-    sprite_x=2,
-    sprite_y=3,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+def gerar_inimigo_resistente(nome: str, descricao: str, sprite_x: int, sprite_y: int, level: int):
+    return gerar_inimigo(nome, descricao, sprite_x, sprite_y, level, {
+        'resistencia':  math.ceil(level/20)
+    })
 
-ogro = Entidade(
-    nome='Ogro',
-    descricao='Um ogro enorme e poderoso.',
-    tipo='INIMIGO',
-    level=65,
-    vida=700,
-    energia=150,
-    experiencia=200,
-    ouro=150,
-    forca=45,
-    agilidade=10,
-    resistencia=40,
-    inteligencia=8,
-    sprite_x=3,
-    sprite_y=3,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-# Inimigos do Cemitério
-slime = Entidade(
-    nome='Slime',
-    descricao='Um slime básico.',
-    tipo='INIMIGO',
-    level=70,
-    vida=400,
-    energia=100,
-    experiencia=220,
-    ouro=100,
-    forca=20,
-    agilidade=5,
-    resistencia=25,
-    inteligencia=5,
-    sprite_x=0,
-    sprite_y=4,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+def gerar_inimigo_mago(nome: str, descricao: str, sprite_x: int, sprite_y: int, level: int):
+    return gerar_inimigo(nome, descricao, sprite_x, sprite_y, level, {
+        'inteligencia':  math.ceil(level/20)
+    })
 
-slime_venenoso = Entidade(
-    nome='Slime Venenoso',
-    descricao='Um slime que exala veneno.',
-    tipo='INIMIGO',
-    level=75,
-    vida=450,
-    energia=120,
-    experiencia=240,
-    ouro=120,
-    forca=25,
-    agilidade=5,
-    resistencia=30,
-    inteligencia=15,
-    sprite_x=1,
-    sprite_y=4,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-slime_elétrico = Entidade(
-    nome='Slime Elétrico',
-    descricao='Um slime que emite eletricidade.',
-    tipo='INIMIGO',
-    level=80,
-    vida=500,
-    energia=140,
-    experiencia=260,
-    ouro=140,
-    forca=30,
-    agilidade=10,
-    resistencia=35,
-    inteligencia=25,
-    sprite_x=2,
-    sprite_y=4,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+def gerar_inimigo_chefe(nome: str, descricao: str, sprite_x: int, sprite_y: int, level: int):
+    return gerar_inimigo(nome, descricao, sprite_x, sprite_y, level, {
+        'forca':  math.ceil(level/20),
+        'resistencia':  math.ceil(level/20),
+        'vida':  math.ceil(level/20) * 2
+    })
 
-slime_fogo = Entidade(
-    nome='Slime de Fogo',
-    descricao='Um slime que queima tudo ao redor.',
-    tipo='INIMIGO',
-    level=85,
-    vida=550,
-    energia=160,
-    experiencia=280,
-    ouro=160,
-    forca=35,
-    agilidade=15,
-    resistencia=40,
-    inteligencia=35,
-    sprite_x=3,
-    sprite_y=4,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
 
-# Inimigos das Catacumbas
-fantasma = Entidade(
-    nome='Fantasma',
-    descricao='Um fantasma assombrador.',
-    tipo='INIMIGO',
-    level=90,
-    vida=600,
-    energia=180,
-    experiencia=300,
-    ouro=180,
-    forca=25,
-    agilidade=30,
-    resistencia=20,
-    inteligencia=40,
-    sprite_x=0,
-    sprite_y=5,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Esgoto
+rato = gerar_inimigo_rapido('Rato', '"Skweek skweek"', 11, 6, 0)
+ratazana = gerar_inimigo('Ratazana', '"Skeeek"', 10, 6, 1)
+rato_lanceiro = gerar_inimigo('Rato Lanceiro', '"Você não é bem-vindo!"', 0, 9, 2)
+rato_guerreiro = gerar_inimigo_resistente('Rato Guerreiro', '"Daqui você não passa"', 1, 9, 2)
 
-espectro = Entidade(
-    nome='Espectro',
-    descricao='Um espectro mais poderoso.',
-    tipo='INIMIGO',
-    level=95,
-    vida=650,
-    energia=200,
-    experiencia=320,
-    ouro=200,
-    forca=30,
-    agilidade=35,
-    resistencia=25,
-    inteligencia=45,
-    sprite_x=1,
-    sprite_y=5,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Floresta
+gnomo = gerar_inimigo_rapido('Gnomo', '"Humano fedorento!"', 2, 0, 4)
+gnomo_guerreiro = gerar_inimigo('Gnomo Guerreiro', '"Ossos grandes, humano!"', 5, 0, 5)
+gnomo_mago = gerar_inimigo_mago('Gnomo Mago', '"Sinta o gosto do fogo!"', 6, 0, 6)
+gnomo_espadachim = gerar_inimigo_bruto('Gnomo Espadachim', '"Sua cabeça será minha!"', 3, 0, 6)
+gnomo_bruto = gerar_inimigo_bruto('Gnomo Bruto', '"Mim matar humano!"', 0, 0, 6)
+gnomo_anciao = gerar_inimigo_chefe('Gnomo Ancião', '"Humano fedorento!"', 1, 0, 8)
 
-wraith = Entidade(
-    nome='Wraith',
-    descricao='Um wraith sombrio.',
-    tipo='INIMIGO',
-    level=100,
-    vida=700,
-    energia=220,
-    experiencia=340,
-    ouro=220,
-    forca=35,
-    agilidade=40,
-    resistencia=30,
-    inteligencia=50,
-    sprite_x=2,
-    sprite_y=5,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Mata Fechada
+golem_de_pedra = gerar_inimigo_resistente('Golem de Pedra', '"..."', 2, 7, 10)
+entedidade_florestal = gerar_inimigo('Entidade Florestal', '"Sua energia é estranha..."', 0, 7, 11)
+entidade_animal = gerar_inimigo('Entidade Animal', '"Você não faz parte do meu reino!"', 1, 7, 11)
+entidade_obscura = gerar_inimigo_chefe('Entidade Obscura', '"A escuridão..."', 5, 7, 11)
 
-banshee = Entidade(
-    nome='Banshee',
-    descricao='Uma banshee aterrorizante.',
-    tipo='INIMIGO',
-    level=105,
-    vida=750,
-    energia=240,
-    experiencia=360,
-    ouro=240,
-    forca=40,
-    agilidade=45,
-    resistencia=35,
-    inteligencia=55,
-    sprite_x=3,
-    sprite_y=5,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Castelo Abandonado
+esqueleto = gerar_inimigo('Esqueleto', '"cLiCk"', 0, 4, 12)
+esqueleto_arqueiro = gerar_inimigo_rapido('Esqueleto Arqueiro', '"cLaCk cLiCk"', 1, 4, 12)
+esqueleto_mago = gerar_inimigo_mago('Esqueleto Mago', '"cLiCk cLaCk BoOm"', 2, 4, 12)
+armadura_fantasma = gerar_inimigo_resistente('Armadura Fantasma', '"..."', 3, 4, 13)
+zumbi = gerar_inimigo('Zumbi', '"Ghurr..."', 4, 4, 13)
+morto_vivo = gerar_inimigo_chefe('Morto Vivo', '"GHAAA!"', 5, 4, 15)
 
-# Inimigos do Calabouço
-demônio = Entidade(
-    nome='Demônio',
-    descricao='Um demônio menor.',
-    tipo='INIMIGO',
-    level=110,
-    vida=800,
-    energia=260,
-    experiencia=380,
-    ouro=260,
-    forca=45,
-    agilidade=35,
-    resistencia=40,
-    inteligencia=45,
-    sprite_x=0,
-    sprite_y=6,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Cemitério
+alma_penada = gerar_inimigo('Alma Penada', '"Eu...não lembro..."', 0, 5, 16)
+sentenca_final = gerar_inimigo_rapido('Sentença Final', '"Sua hora chegou!"', 1, 5, 16)
+mensageiro_indesejado = gerar_inimigo_mago('Mensageiro Indesejado', '"Venha comigo..."', 2, 5, 17)
+guia_dos_mortos = gerar_inimigo_mago('Guia dos Mortos', '"A luz, a luz!"', 3, 5, 17)
+protetora_das_catacumbas = gerar_inimigo_chefe('Protetora das Catacumbas', '"Você desequilibrou tudo!"', 4, 5, 19)
 
-diabo = Entidade(
-    nome='Diabo',
-    descricao='Um diabo poderoso.',
-    tipo='INIMIGO',
-    level=115,
-    vida=850,
-    energia=280,
-    experiencia=400,
-    ouro=280,
-    forca=50,
-    agilidade=40,
-    resistencia=45,
-    inteligencia=50,
-    sprite_x=1,
-    sprite_y=6,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Catacumbas
+bispo_corrompido = gerar_inimigo_mago('Bispo Corrompido', '"Vou te guiar até o submundo."', 0, 3, 21)
+sacerdote_renegado = gerar_inimigo_chefe('Sacerdote Renegado', '"A verdade é sangrenta..."', 1, 3, 21)
 
-arquidemônio = Entidade(
-    nome='Arquidemônio',
-    descricao='Um arquidemônio temível.',
-    tipo='INIMIGO',
-    level=120,
-    vida=900,
-    energia=300,
-    experiencia=420,
-    ouro=300,
-    forca=55,
-    agilidade=45,
-    resistencia=50,
-    inteligencia=55,
-    sprite_x=2,
-    sprite_y=6,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Calabouco
+filhote_de_dragao = gerar_inimigo_rapido('Filhote de Dragão', '"Vou contar pra minha mãe!"', 3, 8, 22)
+dragao_jovem = gerar_inimigo('Dragão Jovem', '"Carne humana, finalmente..."', 4, 8, 22)
+dragao_violento = gerar_inimigo_bruto('Dragão Violento', '"Me passa tudo!"', 0, 8, 23)
+dragao_adulto = gerar_inimigo_resistente('Dragão Adulto', '"Esse tesouro não te percente!"', 1, 8, 23)
+dragao_anciao = gerar_inimigo_chefe('Dragão Ancião', '"Um oponente digno, talvez?"', 2, 8, 25)
 
-príncipe_das_trevas = Entidade(
-    nome='Príncipe das Trevas',
-    descricao='O príncipe das trevas, o inimigo final.',
-    tipo='INIMIGO',
-    level=125,
-    vida=1000,
-    energia=350,
-    experiencia=500,
-    ouro=500,
-    forca=60,
-    agilidade=50,
-    resistencia=55,
-    inteligencia=60,
-    sprite_x=3,
-    sprite_y=6,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-)
+# Laboratório Secreto
+experimento_i = gerar_inimigo('Experimento I', '"Una-se a nós..."', 0, 12, 27)
+experimento_ii = gerar_inimigo_resistente('Experimento II', '"Una-se a mim..."', 1, 12, 27)
+experimento_iv = gerar_inimigo_chefe('Experimento IV', '"Humano, deixe-me te ajudar!"', 2, 12, 27)
 
-# NPCs
-mae = Entidade(
-    nome='Mãe',
-    descricao='Sua mãe amorosa.',
-    tipo='NPC',
-    level=1,
-    vida=100,
-    energia=50,
-    experiencia=0,
-    ouro=0,
-    forca=5,
-    agilidade=5,
-    resistencia=5,
-    inteligencia=5,
-    sprite_x=0,
-    sprite_y=7,
-    sprite_nome='inimigos.png',
-    sprite_largura=32,
-    sprite_altura=32
-) 
+# Submundo
+serpente_infecciosa = gerar_inimigo_rapido('Serpente Infecciosa', '"Skssss!"', 0, 6, 29)
+peste_sangrenta = gerar_inimigo('Peste Sangrenta', '"..."', 1, 6, 29)
+peste_sangrenta_gigante = gerar_inimigo_resistente('Peste Sangrenta Gigante', '"..."', 2, 6, 31)
+amon = gerar_inimigo('Amon', '"Tão inocente..."', 3, 6, 31)
+astaroth = gerar_inimigo_rapido('Astaroth', '"O sofrimento te chama!"', 4, 6, 33)
+barbathos = gerar_inimigo_chefe('Barbathos', '"Sua dor, meu prazer!"', 1, 11, 35)
+
+# Nulo
+nulo = gerar_inimigo_chefe('Nulo', '"Volte..."', 0, 11, 50)
