@@ -15,28 +15,30 @@ log = getLogger('uvicorn')
 
 CLASSE_TIPOS = Literal['APRENDIZ', 'SELVAGEM', 'BARBARO', 'MAGO', 'FEITICEIRO', 'GUERREIRO', 'TEMPLARIO']
 
+
 @dataclass
 class Classe():
-    nome:str
-    sprite_x:int
-    sprite_y:int
+    nome: str
+    sprite_x: int
+    sprite_y: int
     nivel: int = 1
-    proxima_classe:Optional[str] = None
-    habilidade_ii_nome:Optional[str] = None
-    habilidade_ii_descricao:Optional[str] = None
-    habilidade_iii_nome:Optional[str] = None
-    habilidade_iii_descricao:Optional[str] = None
+    proxima_classe: Optional[str] = None
+    habilidade_ii_nome: Optional[str] = None
+    habilidade_ii_descricao: Optional[str] = None
+    habilidade_iii_nome: Optional[str] = None
+    habilidade_iii_descricao: Optional[str] = None
+
 
 class Classes(Enum):
     # Todas as habilidades são afetadas por INT e ATTR principal
-    
-    APRENDIZ=Classe(
+
+    APRENDIZ = Classe(
         nome='APRENDIZ',
         sprite_x=1,
         sprite_y=5
     )
 
-    SELVAGEM=Classe(
+    SELVAGEM = Classe(
         # Aumenta o dano a cada ataque
         nome='SELVAGEM',
         nivel=2,
@@ -47,7 +49,7 @@ class Classes(Enum):
         habilidade_ii_descricao='Fúria'
     )
 
-    BARBARO=Classe(
+    BARBARO = Classe(
         # Aumenta ainda mais o dano a cada ataque
         # Aumenta o dano quanto menos vida tiver
         nome='BÁRBARO',
@@ -60,7 +62,7 @@ class Classes(Enum):
         habilidade_iii_descricao='Execução',
     )
 
-    MAGO=Classe(
+    MAGO = Classe(
         # Recupera energia a cada turno
         nome='MAGO',
         nivel=2,
@@ -71,7 +73,7 @@ class Classes(Enum):
         habilidade_ii_descricao='Bola de Fogo'
     )
 
-    FEITICEIRO=Classe(
+    FEITICEIRO = Classe(
         # Recupera mais energia a cada turno
         # Recupera energia conforme leva dano
         nome='FEITICEIRO',
@@ -85,7 +87,7 @@ class Classes(Enum):
         habilidade_iii_descricao='Congelar',
     )
 
-    GUERREIRO=Classe(
+    GUERREIRO = Classe(
         # Aumenta a resistência conforme leva dano
         nome='GUERREIRO',
         nivel=2,
@@ -96,7 +98,7 @@ class Classes(Enum):
         habilidade_ii_descricao='Benção'
     )
 
-    TEMPLARIO=Classe(
+    TEMPLARIO = Classe(
         # Aumenta resistência confome leva dano
         # Recupera vida a cada turno
         nome='TEMPLÁRIO',
@@ -128,9 +130,8 @@ class Jogador(Entidade):
         'nulo': (0, 250, 'Amon', False)
     })
 
-
     @classmethod
-    def primeiro_nivel(cls, nome: str, descricao: str, email: str, senha: str, classe: Classes, inventario_json:str=None):
+    def primeiro_nivel(cls, nome: str, descricao: str, email: str, senha: str, classe: Classes):
         """Cria um novo jogador no primeiro nível."""
         config = get_config()
 
@@ -159,7 +160,7 @@ class Jogador(Entidade):
     @property
     def deve_subir_nivel(self):
         return self.experiencia >= self.experiencia_proximo_nivel
-    
+
     def get_websocket_data(self):
         base_dict = self.model_dump()
         base_dict['classe'] = self.classe.__dict__
@@ -211,7 +212,7 @@ class Jogador(Entidade):
             self.sprite_x = self.classe.sprite_x
             self.sprite_y = self.classe.sprite_y
 
-    def progredir_missao(self, nome_inimigo:str):
+    def progredir_missao(self, nome_inimigo: str):
         try:
             for nome_masmorra in self.missoes:
                 if self.missoes[nome_masmorra][2] == nome_inimigo:
@@ -221,7 +222,7 @@ class Jogador(Entidade):
                         self.missoes[nome_masmorra][2],
                         self.missoes[nome_masmorra][3],
                     )
-                
+
                 if self.missoes[nome_masmorra][0] >= self.missoes[nome_masmorra][1]:
                     self.missoes[nome_masmorra] = (
                         self.missoes[nome_masmorra][0],

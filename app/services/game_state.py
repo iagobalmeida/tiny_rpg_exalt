@@ -5,13 +5,17 @@ from logging import getLogger
 from typing import Any, Dict, List
 
 from config import get_config
+from fastapi import Depends, HTTPException
 from models.item import UNION_ITEM
 from models.itens import ITEMS
 from models.jogador import Classes, Jogador
 from models.masmorra import Masmorra
 from services.combate import Combate
+from services.db import get_inventario_by_usuario_id, get_usuario_by_email
 
 log = getLogger('uvicorn')
+
+
 class GameState:
     def __init__(self, timeout_turno: float):
         self.config = get_config()
@@ -27,7 +31,8 @@ class GameState:
 
     @property
     def deve_executar(self):
-        if not self.ultima_execucao: return True
+        if not self.ultima_execucao:
+            return True
         return (datetime.now() - self.ultima_execucao).total_seconds() > self.timeout_turno
 
     def get_websocket_data(self) -> Dict[str, Any]:
@@ -49,7 +54,7 @@ class GameState:
         logs = self.logs.copy()
         self.logs.clear()
         return logs
-    
+
     async def logout(self):
         # TODO: Armazena no banco estado do jogador
         pass
@@ -58,36 +63,30 @@ class GameState:
         """Inicializa um novo jogador."""
         classe = Classes[classe]
 
-        inventario_json = """
-        [
-            {"nome":"faca_de_cozinha","quantidade":1,"em_uso":true},
-            {"nome":"faca_de_cozinha","quantidade":1,"em_uso":false},
-            {"nome":"gorro_de_la","quantidade":1,"em_uso":false}
-        ]
-        """
+        usuario = get_usuario_by_email(email=email)
+        if usuario.senha != senha:
+            raise HTTPException(401, 'Não autorizado')
+
+        inventarios_banco = get_inventario_by_usuario_id(usuario.id)
 
         self.inventario = []
-        if inventario_json:
-            inventario_entrada = json.loads(inventario_json)
-            for i in inventario_entrada:
-                item_objeto = ITEMS.get(i['nome'], None)
-                if not item_objeto:
-                    continue
-                item_objeto = item_objeto.model_copy()
-                item_objeto.quantidade = i['quantidade']
-                if i.get('em_uso', False):
-                    item_objeto.em_uso = True
-                self.inventario.append(item_objeto)
+        for i in inventarios_banco:
+            item_objeto = ITEMS.get(i.item_nome, None)
+            if not item_objeto:
+                continue
+            item_objeto = item_objeto.model_copy()
+            item_objeto.quantidade = i.quantidade
+            if i.get('em_uso', False):
+                item_objeto.em_uso = True
+            self.inventario.append(item_objeto)
 
-        
         # TODO: Carrega do banco o estado do jogador
         self.jogador = Jogador.primeiro_nivel(
             nome=nome,
             descricao=descricao,
             email=email,
             senha=senha,
-            classe=classe,
-            inventario_json=inventario_json
+            classe=classe
         )
         self.masmorra = Masmorra.casa()
         self.iniciar_combate(renascer=True)
@@ -120,7 +119,7 @@ class GameState:
         if self.jogador:
             self.jogador.atribuir_ponto(atributo)
 
-    def set_acao_jogador(self, acao: str, item_indice:int=None):
+    def set_acao_jogador(self, acao: str, item_indice: int = None):
         """Define a ação do jogador no combate."""
         if self.combate:
             self.combate.acao_jogador = acao
@@ -207,7 +206,7 @@ class GameState:
                 return
         self.inventario.append(item)
 
-    def remover_item(self, item: UNION_ITEM, quantidade:int=1):
+    def remover_item(self, item: UNION_ITEM, quantidade: int = 1):
         for inventario_item in self.inventario:
             if inventario_item.nome == item.nome:
                 inventario_item.quantidade = max(inventario_item.quantidade - quantidade, 0)
@@ -215,7 +214,7 @@ class GameState:
         # Remove itens com quantidade 0
         self.inventario = [i for i in self.inventario if i.quantidade > 0]
 
-    def descartar_item(self, item_indice:int, todos:bool=False):
+    def descartar_item(self, item_indice: int, todos: bool = False):
         if item_indice >= len(self.inventario):
             return
         if todos:
@@ -223,10 +222,10 @@ class GameState:
             return
         self.remover_item(self.inventario[item_indice].model_copy())
 
-    def usar_item(self, item_indice:int):
+    def usar_item(self, item_indice: int):
         if item_indice >= len(self.inventario):
             return
-        
+
         item = self.inventario[item_indice]
 
         if item.tipo == 'EQUIPAMENTO':
