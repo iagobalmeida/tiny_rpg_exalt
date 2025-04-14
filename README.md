@@ -13,17 +13,8 @@ O jogo está em desenvolvimento e qualquer colaboração (desde que de acordo co
 
 *Todas as colaborações passam por revisão e só serão adicionadas a versão final caso estejam alinhadas com o conceito do jogo*
 
-### Instalação
+### Instalação & Execução
 ```bash
-cd app
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+docker-compose up --build
 ```
 
-### Execução
-```bash
-cd app
-source .venv/bin/activate
-python main.py
-```
