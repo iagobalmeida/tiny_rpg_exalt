@@ -5,6 +5,15 @@ CREATE TABLE IF NOT EXISTS Usuario (
     senha VARCHAR(100) NOT NULL,
     nivel INTEGER DEFAULT 1,
     experiencia INTEGER DEFAULT 0,
+    classe	VARCHAR(100)
+    level	INTEGER DEFAULT 1,
+    forca	INTEGER DEFAULT 1,
+    agilidade	INTEGER DEFAULT 1,
+    resistencia	INTEGER DEFAULT 1,
+    inteligencia	INTEGER DEFAULT 1,
+    pontos_disponiveis	INTEGER DEFAULT 1,
+    tamanho_inventario	INTEGER DEFAULT 1,
+    missoes	    VARCHAR(2560),
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -13,7 +22,7 @@ CREATE INDEX IF NOT EXISTS idx_usuario_email ON Usuario(email);
 CREATE TABLE IF NOT EXISTS UsuarioInventario (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES Usuario(id),
-    item_id INTEGER NOT NULL,
+    item_nome VARCHAR(100) NOT NULL,
     quantidade INTEGER DEFAULT 1,
     data_adicao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
