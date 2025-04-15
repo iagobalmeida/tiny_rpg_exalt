@@ -5,6 +5,7 @@ from config import get_config
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from services.db import create_db_and_tables, criar_usuario
 from services.websocket import websocket_manager
 
 app = FastAPI()
@@ -15,6 +16,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def get():
+    try:
+        criar_usuario('Teste', 'teste@email.com', 'teste')
+    except Exception as ex:
+        print(ex)
+        pass
     return FileResponse('static/index.html')
 
 
@@ -33,6 +39,7 @@ async def websocket_endpoint(websocket: WebSocket):
 @app.on_event("startup")
 async def startup_event():
     # Inicia o loop do jogo em background
+    create_db_and_tables()
     asyncio.create_task(websocket_manager.process_game_loop())
 
 if __name__ == "__main__":

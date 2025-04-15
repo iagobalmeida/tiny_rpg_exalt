@@ -2,3 +2,5 @@ fastapi[standard]
 uvicorn
 websockets
 python-multipart
+sqlmodel
+psycopg2-binary
