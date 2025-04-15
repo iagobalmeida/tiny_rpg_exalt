@@ -112,6 +112,7 @@
                     drop-shadow(-1px -1px 0 black);
         }
 
+
         .sprite.morto {
             opacity: 0;
         }
@@ -344,29 +345,42 @@
             right: -8px;
         }
 
-        .congelado {
-            animation: congelado 500ms ease-in-out alternate-reverse infinite;
+        .congelado::after {
+            content: "";
+            width: 32px;
+            position: absolute;
+            height: 32px;
+            background: #11ddff;
+            filter: blur(16px);
+            display: block;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            mix-blend-mode: plus-lighter;
+            animation: fadeInOut 500ms ease-in-out alternate-reverse infinite;
         }
 
-        @keyframes congelado {
+        .sangramento::after {
+            content: "";
+            width: 32px;
+            position: absolute;
+            height: 32px;
+            background: red;
+            filter: blur(16px);
+            display: block;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            mix-blend-mode: plus-lighter;
+            animation: fadeInOut 500ms ease-in-out alternate-reverse infinite;
+        }
+
+        @keyframes fadeInOut {
             0% {
-                filter: invert(0.34) brightness(2) drop-shadow(0px 0px 4px cyan);
+                opacity: 0%;
             }
             100% {
-                filter: invert(0.34) brightness(2) drop-shadow(0px 0px 0px cyan);
-            }
-        }
-
-        .sangramento {
-            animation: sangramento 500ms ease-in-out alternate-reverse infinite;
-        }
-
-        @keyframes sangramento {
-            0% {
-                filter: drop-shadow(0px 0px 4px red);
-            }
-            100% {
-                filter: drop-shadow(0px 0px 0px red);
+                opacity: 100%;
             }
         }
     </style>
