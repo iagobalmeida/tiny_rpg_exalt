@@ -88,23 +88,25 @@ class GameState:
         await asyncio.sleep(0.75)
 
     async def logout(self):
-        payload = self.jogador.model_dump()
-        payload['missoes'] = json.dumps(payload['missoes'])
-        payload['classe'] = self.jogador.classe.nome
-        payload['energia'] = self.jogador.energia_maxima
-        payload['vida'] = self.jogador.vida_maxima
-        db.update_usuario(self.jogador.id, payload)
+        if self.jogador:
+            payload = self.jogador.model_dump()
+            payload['missoes'] = json.dumps(payload['missoes'])
+            payload['classe'] = self.jogador.classe.nome
+            payload['energia'] = self.jogador.energia_maxima
+            payload['vida'] = self.jogador.vida_maxima
+            db.update_usuario(self.jogador.id, payload)
 
-        inventario_registros = [
-            db.UsuarioInventario(
-                usuario_id=self.jogador.id,
-                item_nome=i.nome,
-                quantidade=i.quantidade,
-                em_uso=getattr(i, 'em_uso', False)
-            )
-            for i in self.inventario
-        ]
-        db.update_inventario_by_usuario_id(self.jogador.id, inventario_registros)
+        if self.inventario:
+            inventario_registros = [
+                db.UsuarioInventario(
+                    usuario_id=self.jogador.id,
+                    item_nome=i.nome,
+                    quantidade=i.quantidade,
+                    em_uso=getattr(i, 'em_uso', False)
+                )
+                for i in self.inventario
+            ]
+            db.update_inventario_by_usuario_id(self.jogador.id, inventario_registros)
 
     def iniciar_combate(self, renascer: bool = False):
         """Inicia um novo combate na masmorra."""

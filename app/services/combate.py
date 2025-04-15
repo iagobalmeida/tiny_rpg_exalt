@@ -104,63 +104,52 @@ class Combate:
         return jogador
 
     async def executar_turno_jogador(self, atributos_equipamentos: dict = {}) -> bool:
-        if self.jogador.vida <= 0:
-            return True
-
         jogador_equipado = self.jogador_com_atributos_bonus(atributos_equipamentos)
-
         if self.calcular_chance_acerto(jogador_equipado, self.inimigo):
             dano = self.calcular_dano(jogador_equipado, self.inimigo)
             self.inimigo.vida = max(0, self.inimigo.vida - dano)
 
-        return False
-
     async def executar_turno_inimigo(self, atributos_equipamentos: dict = {}) -> bool:
-        if self.inimigo.vida <= 0:
-            return True
-
         jogador_equipado = self.jogador_com_atributos_bonus(atributos_equipamentos)
-
         if self.calcular_chance_acerto(self.inimigo, jogador_equipado):
             dano = self.calcular_dano(self.inimigo, jogador_equipado)
             self.jogador.vida = max(0, self.jogador.vida - dano)
 
-        return False
-
     async def executar_acao_jogador(self, atributos_equipamentos) -> bool:
+        # TODO: Achar uma forma de lidar sempre com `float` com até 1 casa decimal, no jogo todo
         if self.acao_jogador is None:
             return False
 
         jogador_equipado = self.jogador_com_atributos_bonus(atributos_equipamentos)
-        custo_habilidade_i = max(10, self.jogador.inteligencia*2)
-        custo_habilidade_ii = int(custo_habilidade_i*1.5)
-        custo_habilidade_iii = int(custo_habilidade_ii*3)
+        custo_habilidade_i, custo_habilidade_ii, custo_habilidade_iii = self.jogador.custo_habilidades
 
         if self.acao_jogador == 'golpe_espiritual' and self.jogador.energia >= 10:
             self.jogador.energia -= custo_habilidade_i
             dano = self.calcular_dano_magico(jogador_equipado, self.inimigo) * 2
             self.inimigo.vida = max(0, self.inimigo.vida - dano)
 
-        # SELVAGEM & BÁRBARO
+        # SELVAGEM & BARBARO
         if self.acao_jogador == 'Fúria' and self.jogador.classe in [Classes.SELVAGEM.value, Classes.BARBARO.value] and self.jogador.energia >= custo_habilidade_ii:
             self.jogador.energia -= custo_habilidade_ii
-            self.jogador.bonus_atributos_classe['agilidade'] += max(3, self.jogador.inteligencia/20)
+            self.jogador.bonus_atributos_classe['agilidade'] += max(3, self.jogador.inteligencia/5)
 
         if self.acao_jogador == 'Execução' and self.jogador.classe == Classes.BARBARO.value and self.jogador.energia >= custo_habilidade_iii:
             self.jogador.energia -= custo_habilidade_iii
             if self.inimigo.vida <= self.inimigo.vida_maxima/2:
                 self.inimigo.vida = 0
             else:
-                self.inimigo.vida = max(0, self.inimigo.vida - math.ceil(self.jogador.forca*10/self.inimigo.vida_maxima))
+                self.inimigo.vida = max(0, self.inimigo.vida - self.inimigo.vida_maxima/3)
 
         # MAGO & FEITICEIRO
         if self.acao_jogador == 'Bola de Fogo' and self.jogador.classe in [Classes.MAGO.value, Classes.FEITICEIRO.value] and self.jogador.energia >= custo_habilidade_ii:
             self.jogador.energia -= custo_habilidade_ii
-            dano = self.calcular_dano_magico(jogador_equipado, self.inimigo) * 3
+            dano = self.calcular_dano_magico(jogador_equipado, self.inimigo) * 4
             self.inimigo.vida = max(0, self.inimigo.vida - dano)
 
         if self.acao_jogador == 'Congelar' and self.jogador.classe == Classes.FEITICEIRO.value and self.jogador.energia >= custo_habilidade_iii:
             self.jogador.energia -= custo_habilidade_iii
+            dano = self.calcular_dano_magico(jogador_equipado, self.inimigo) * 8
+            self.inimigo.vida = max(0, self.inimigo.vida - dano)
             # TODO: Implementar status "congelado"
 
         # GUERREIRO & PALADINO
@@ -171,41 +160,36 @@ class Combate:
         if self.acao_jogador == 'Redenção' and self.jogador.classe == Classes.TEMPLARIO.value and self.jogador.energia >= custo_habilidade_iii:
             self.jogador.energia = 0
             self.jogador.vida = self.jogador.vida_maxima
-            self.jogador.bonus_atributos_classe['resistencia'] += max(3, int(self.jogador.nivel/3))
+            self.jogador.bonus_atributos_classe['resistencia'] += max(3, int(self.jogador.inteligencia/5))
 
         self.acao_jogador = None
 
     async def executar_passiva_jogador_classe(self):
         if self.jogador.classe == Classes.SELVAGEM.value:
-            self.jogador.bonus_atributos_classe['forca'] = self.contagem_turno * math.ceil(self.jogador.level/60)
+            self.jogador.bonus_atributos_classe['forca'] = self.contagem_turno * math.ceil(self.jogador.level/64)
         elif self.jogador.classe == Classes.BARBARO.value:
-            self.jogador.bonus_atributos_classe['forca'] = self.contagem_turno * math.ceil(self.contagem_turno/30)
+            self.jogador.bonus_atributos_classe['forca'] = self.contagem_turno * math.ceil(self.contagem_turno/24)
         elif self.jogador.classe == Classes.MAGO.value:
-            self.jogador.energia += math.ceil(self.jogador.level/30)
+            self.jogador.energia = min(self.jogador.energia_maxima, self.jogador.energia + math.ceil(self.jogador.level/12))
         elif self.jogador.classe == Classes.FEITICEIRO.value:
-            self.jogador.energia += math.ceil(self.jogador.level/15)
+            self.jogador.energia = min(self.jogador.energia_maxima, self.jogador.energia + math.ceil(self.jogador.level/6))
         elif self.jogador.classe == Classes.GUERREIRO.value:
-            self.jogador.vida += math.ceil(self.jogador.level/15)
+            self.jogador.vida = min(self.jogador.vida_maxima, self.jogador.vida + math.ceil(self.jogador.level/24))
         elif self.jogador.classe == Classes.TEMPLARIO.value:
-            self.jogador.vida += math.ceil(self.jogador.level/3)
+            self.jogador.vida = min(self.jogador.vida_maxima, self.jogador.vida + math.ceil(self.jogador.level/4))
 
     async def executar_turno(self, atributos_equipamentos_jogador: dict = {}) -> Union[bool, str]:
         self.contagem_turno += 1
 
-        jogador_morreu = await self.executar_turno_jogador(atributos_equipamentos_jogador)
-        if jogador_morreu:
-            return 'inimigo'
+        await self.executar_turno_jogador(atributos_equipamentos_jogador)
+        if self.inimigo.vida <= 0:
+            return 'jogador'
 
         await self.executar_acao_jogador(atributos_equipamentos_jogador)
         await self.executar_passiva_jogador_classe()
 
-        inimigo_morreu = await self.executar_turno_inimigo(atributos_equipamentos_jogador)
-        if inimigo_morreu:
-            return 'jogador'
+        await self.executar_turno_inimigo(atributos_equipamentos_jogador)
+        if self.jogador.vida <= 0:
+            return 'inimigo'
 
         return False
-
-    @staticmethod
-    def hour() -> str:
-        """Retorna a hora atual formatada."""
-        return datetime.now().strftime('%H:%M:%S')

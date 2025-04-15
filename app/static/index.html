@@ -325,6 +325,22 @@
                 transform: rotateZ(4deg)
             }
         }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .-top-8 {
+            top: -8px;
+        }
+
+        .-right-8 {
+            right: -8px;
+        }
     </style>
 </head>
 <body>
@@ -512,16 +528,19 @@
                             {{ jogador.ouro }}
                         </div>
                     </div>
-                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador" @click="enviar_acao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviar_acao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
                         <div class="material-symbols-outlined text-black">star_shine</div>
-                        <span >GLP. ESP.</span>
+                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_i}}</span>
+                        <span>GLP. ESP.</span>
                     </button>
-                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.habilidade_ii_nome" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviar_acao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
                         <div class="material-symbols-outlined text-black">star_shine</div>
+                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_ii}}</span>
                         <span >{{jogador.classe.habilidade_ii_nome}}</span>
                     </button>
-                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.habilidade_iii_nome" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviar_acao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
                         <div class="material-symbols-outlined text-black">star_shine</div>
+                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_iii}}</span>
                         <span >{{jogador.classe.habilidade_iii_nome}}</span>
                     </button>
                     <button class="w-100 btn btn-info d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.nivel < 3" data-bs-toggle="modal" data-bs-target="#modal_evolucao">

@@ -23,7 +23,7 @@ class Usuario(SQLModel, table=True):
     resistencia: int = Field(default=1)
     inteligencia: int = Field(default=1)
     pontos_disponiveis: int = Field(default=1)
-    tamanho_inventario: int = Field(default=1)
+    tamanho_inventario: int = Field(default=8)
     missoes: str = Field(default='')
     data_criacao: datetime = Field(default_factory=lambda: datetime.now())
 
@@ -39,7 +39,7 @@ class UsuarioInventario(SQLModel, table=True):
 
 config = get_config()
 
-engine = create_engine(os.environ.get('DATABASE_URL'), echo=True)
+engine = create_engine(os.environ.get('DATABASE_URL'), echo=False)
 
 
 def create_db_and_tables():
@@ -52,14 +52,46 @@ def get_session() -> Generator[Session, Any, Any]:
         yield session
 
 
-def criar_usuario(nome: str, email: str, senha: str):
+def criar_usuario(nome: str, email: str, senha: str, **kwargs):
     with get_session() as session:
+        print(f'Criando usuário {nome}...')
         session.add(Usuario(
             nome=nome,
             email=email,
-            senha=senha
+            senha=senha,
+            **kwargs
         ))
         session.commit()
+
+
+def __criar_usuario_de_teste(classe: str, level: int = 16):
+    try:
+        criar_usuario(
+            nome=f'{classe.title()} Teste',
+            email=f'{classe.lower()}@teste.com',
+            senha='teste',
+            classe=classe,
+            level=level,
+            vida=level*5,
+            energia=level*5,
+            forca=int(level*3/4),
+            resistencia=int(level*3/4),
+            agilidade=int(level*3/4),
+            inteligencia=int(level*3/4),
+            tamanho_inventario=16
+        )
+    except Exception as ex:
+        print(ex)
+        pass
+
+
+def criar_usuarios_de_teste():
+    __criar_usuario_de_teste('SELVAGEM')
+    __criar_usuario_de_teste('BARBARO', 32)
+    __criar_usuario_de_teste('MAGO')
+    __criar_usuario_de_teste('FEITICEIRO', 32)
+    __criar_usuario_de_teste('GUERREIRO')
+    __criar_usuario_de_teste('TEMPLARIO', 32)
 
 
 def get_usuario_by_email(email: str) -> Usuario:

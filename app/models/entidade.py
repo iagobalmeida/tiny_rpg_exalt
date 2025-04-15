@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -30,6 +30,8 @@ class Entidade(Objeto):
     sprite_nome: str = Field(default='rogues.png')
     sprite_largura: int = Field(default=224*3)
     sprite_altura: int = Field(default=224*3)
+    estado_nome: Optional[str] = Field(default=None)
+    estado_duracao: Optional[int] = Field(default=None)
 
     def model_post_init(self, __context):
         if self.vida_maxima == 0:
