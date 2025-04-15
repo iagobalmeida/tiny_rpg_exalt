@@ -5,13 +5,14 @@ from typing import Annotated, List
 from config import get_config
 from fastapi import Depends
 from models.jogador import CLASSE_TIPOS
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, create_engine, delete, select
 
 
 class Usuario(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     nome: str
-    email: str = Field(index=True)
+    descricao: str = Field(default='Caçar, evoluir, caçar!')
+    email: str = Field(index=True, unique=True)
     senha: str
     nivel: int = Field(default=1)
     experiencia: int = Field(default=0)
@@ -32,6 +33,7 @@ class UsuarioInventario(SQLModel, table=True):
     usuario_id: int = Field(index=True)
     item_nome: str
     quantidade: int = Field(default=1)
+    em_uso: bool = Field(default=False)
     data_criacao: datetime = Field(default_factory=datetime.now())
 
 
@@ -50,12 +52,34 @@ def get_session():
         yield session
 
 
+def criar_usuario(nome: str, email: str, senha: str, session: Session = Depends(get_session)):
+    session.add(Usuario(
+        nome=nome,
+        email=email,
+        senha=senha
+    ))
+
+
 def get_usuario_by_email(email: str, session: Session = Depends(get_session)) -> Usuario:
     return session.exec(select(Usuario).where(Usuario.email == email)).first()
 
 
+def update_usuario(usuario_id: int, valores: dict, session: Session = Depends(get_session)):
+    usuario = session.get(Usuario, usuario_id)
+    if not usuario:
+        raise ValueError(f'Usuário com id {usuario_id} não encontrado')
+    usuario.sqlmodel_update(valores)
+    session.commit()
+
+
 def get_inventario_by_usuario_id(usuario_id: int, session: Session = Depends(get_session)) -> List[UsuarioInventario]:
     return session.exec(select(UsuarioInventario).where(UsuarioInventario.usuario_id == usuario_id)).all()
+
+
+def update_inventario_by_usuario_id(usuario_id: int, inventario: List[UsuarioInventario], session: Session = Depends(get_session)):
+    session.exec(delete(UsuarioInventario).where(UsuarioInventario.usuario_id == usuario_id))
+    session.add_all(inventario)
+    session.commit()
 
 
 SessionDep = Annotated[Session, Depends(get_session)]

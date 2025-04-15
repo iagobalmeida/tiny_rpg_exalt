@@ -114,8 +114,8 @@ class Classes(Enum):
 
 
 class Jogador(Entidade):
+    id: int
     email: str
-    senha: str
     classe: Classe
     pontos_disponiveis: int = Field(default=0)
     missoes: Dict[str, Tuple[int, int, str, bool]] = Field(default_factory=lambda: {
@@ -131,11 +131,12 @@ class Jogador(Entidade):
     })
 
     @classmethod
-    def primeiro_nivel(cls, nome: str, descricao: str, email: str, senha: str, classe: Classes):
+    def primeiro_nivel(cls, id: int, nome: str, descricao: str, email: str, senha: str, classe: Classes):
         """Cria um novo jogador no primeiro nível."""
         config = get_config()
 
         return cls(
+            id=id,
             nome=nome,
             descricao=descricao,
             email=email,

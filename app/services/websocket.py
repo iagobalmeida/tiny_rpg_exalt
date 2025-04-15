@@ -55,13 +55,9 @@ class WebSocketManager:
                 await game_state.mudar_masmorra(message["data"]["masmorra"])
 
             elif message["type"] == "login":
-                nome = message["data"]["email"].split('@')[0]
                 await game_state.login(
-                    nome=nome,
-                    descricao='"Caçar, evoluir, caçar!"',
                     email=message["data"]["email"],
-                    senha=message["data"]["senha"],
-                    classe="APRENDIZ"
+                    senha=message["data"]["senha"]
                 )
 
             elif message["type"] == "pausar":
@@ -102,7 +98,7 @@ class WebSocketManager:
                 "message": str(e)
             })
 
-    async def send_update(self, player_id:int):
+    async def send_update(self, player_id: int):
         game_state = self.game_states[player_id]
         update_payload = {
             "type": "update",
