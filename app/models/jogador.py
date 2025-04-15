@@ -3,12 +3,10 @@ import math
 from dataclasses import dataclass
 from enum import Enum
 from logging import getLogger
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, Literal, Optional, Tuple
 
 from config import get_config
 from models.entidade import Entidade
-from models.item import Consumivel, Equipamento
-from models.itens import ITEMS
 from pydantic import Field
 
 log = getLogger('uvicorn')
@@ -39,7 +37,6 @@ class Classes(Enum):
     )
 
     SELVAGEM = Classe(
-        # Aumenta o dano a cada ataque
         nome='SELVAGEM',
         nivel=2,
         sprite_x=0,
@@ -50,8 +47,6 @@ class Classes(Enum):
     )
 
     BARBARO = Classe(
-        # Aumenta ainda mais o dano a cada ataque
-        # Aumenta o dano quanto menos vida tiver
         nome='BÁRBARO',
         nivel=3,
         sprite_x=1,
@@ -63,7 +58,6 @@ class Classes(Enum):
     )
 
     MAGO = Classe(
-        # Recupera energia a cada turno
         nome='MAGO',
         nivel=2,
         sprite_x=5,
@@ -74,8 +68,6 @@ class Classes(Enum):
     )
 
     FEITICEIRO = Classe(
-        # Recupera mais energia a cada turno
-        # Recupera energia conforme leva dano
         nome='FEITICEIRO',
         nivel=3,
         sprite_x=6,
@@ -88,7 +80,6 @@ class Classes(Enum):
     )
 
     GUERREIRO = Classe(
-        # Aumenta a resistência conforme leva dano
         nome='GUERREIRO',
         nivel=2,
         sprite_x=0,
@@ -99,8 +90,6 @@ class Classes(Enum):
     )
 
     TEMPLARIO = Classe(
-        # Aumenta resistência confome leva dano
-        # Recupera vida a cada turno
         nome='TEMPLÁRIO',
         nivel=3,
         sprite_x=4,
@@ -128,6 +117,12 @@ class Jogador(Entidade):
         'laboratorio_secreto': (0, 100, 'Dragão Jovem', False),
         'submundo': (0, 200, 'Experimento IV', False),
         'nulo': (0, 250, 'Amon', False)
+    })
+    bonus_atributos_classe: Dict[str, int] = Field(default_factory=lambda: {
+        'forca': 0,
+        'resistencia': 0,
+        'agilidade': 0,
+        'inteligencia': 0
     })
 
     @classmethod
