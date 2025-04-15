@@ -3,7 +3,7 @@ import json
 import math
 from datetime import datetime
 from logging import getLogger
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from config import get_config
 from fastapi import HTTPException
@@ -22,6 +22,7 @@ class GameState:
         self.config = get_config()
         self.jogador: Jogador = None
         self.inventario: List[UNION_ITEM] = []
+        self.tamanho_inventario: Optional[int] = 8
         self.masmorra: Masmorra = None
         self.combate: Combate = None
         self.combate_acabou: bool = False
@@ -43,6 +44,7 @@ class GameState:
             "atributos_equipamentos_jogador": self.atributos_equipamentos_jogador if self.jogador else None,
             "inimigo": self.combate.inimigo.model_dump() if self.combate else None,
             "masmorra": self.masmorra.get_websocket_data() if self.masmorra else None,
+            "tamanho_inventario": self.tamanho_inventario,
             "inventario": [
                 i.model_dump()
                 for i in self.inventario
@@ -71,6 +73,7 @@ class GameState:
 
         inventario_registros = db.get_inventario_by_usuario_id(usuario_registro.id)
 
+        self.tamanho_inventario = usuario_registro.tamanho_inventario
         self.inventario = []
         for i in inventario_registros:
             item_objeto = ITEMS.get(i.item_nome.lower(), None)
@@ -88,23 +91,25 @@ class GameState:
         await asyncio.sleep(0.75)
 
     async def logout(self):
-        payload = self.jogador.model_dump()
-        payload['missoes'] = json.dumps(payload['missoes'])
-        payload['classe'] = self.jogador.classe.nome
-        payload['energia'] = self.jogador.energia_maxima
-        payload['vida'] = self.jogador.vida_maxima
-        db.update_usuario(self.jogador.id, payload)
+        if self.jogador:
+            payload = self.jogador.model_dump()
+            payload['missoes'] = json.dumps(payload['missoes'])
+            payload['classe'] = self.jogador.classe.nome
+            payload['energia'] = self.jogador.energia_maxima
+            payload['vida'] = self.jogador.vida_maxima
+            db.update_usuario(self.jogador.id, payload)
 
-        inventario_registros = [
-            db.UsuarioInventario(
-                usuario_id=self.jogador.id,
-                item_nome=i.nome,
-                quantidade=i.quantidade,
-                em_uso=getattr(i, 'em_uso', False)
-            )
-            for i in self.inventario
-        ]
-        db.update_inventario_by_usuario_id(self.jogador.id, inventario_registros)
+        if self.inventario:
+            inventario_registros = [
+                db.UsuarioInventario(
+                    usuario_id=self.jogador.id,
+                    item_nome=i.nome,
+                    quantidade=i.quantidade,
+                    em_uso=getattr(i, 'em_uso', False)
+                )
+                for i in self.inventario
+            ]
+            db.update_inventario_by_usuario_id(self.jogador.id, inventario_registros)
 
     def iniciar_combate(self, renascer: bool = False):
         """Inicia um novo combate na masmorra."""
@@ -217,16 +222,18 @@ class GameState:
     def adicionar_item(self, item: UNION_ITEM):
         for inventario_item in self.inventario:
             if inventario_item.nome == item.nome:
-                inventario_item.quantidade += item.quantidade
+                if inventario_item.quantidade < 99:
+                    inventario_item.quantidade = min(99, inventario_item.quantidade+item.quantidade)
                 return
-        self.inventario.append(item)
+
+        if len(self.inventario) < self.tamanho_inventario:
+            self.inventario.append(item)
 
     def remover_item(self, item: UNION_ITEM, quantidade: int = 1):
         for inventario_item in self.inventario:
             if inventario_item.nome == item.nome:
                 inventario_item.quantidade = max(inventario_item.quantidade - quantidade, 0)
                 break
-        # Remove itens com quantidade 0
         self.inventario = [i for i in self.inventario if i.quantidade > 0]
 
     def descartar_item(self, item_indice: int, todos: bool = False):
@@ -255,8 +262,3 @@ class GameState:
         elif item.tipo == 'CONSUMIVEL':
             self.inventario[item_indice].usar(self.jogador)
             self.remover_item(self.inventario[item_indice].model_copy())
-
-    @staticmethod
-    def hour() -> str:
-        """Retorna a hora atual formatada."""
-        return datetime.now().strftime('%H:%M:%S')

@@ -66,7 +66,6 @@
         }
 
         .sprite-container {
-            animation: respirar infinite alternate-reverse ease-in-out 500ms;
             transform-origin: bottom;
             margin-top:16px;
             margin-bottom: 16px;
@@ -77,6 +76,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            &:not(:has(.congelado)){
+                animation: respirar infinite alternate-reverse ease-in-out 500ms;
+            }
         }
 
         @keyframes respirar {
@@ -325,6 +327,48 @@
                 transform: rotateZ(4deg)
             }
         }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .-top-8 {
+            top: -8px;
+        }
+
+        .-right-8 {
+            right: -8px;
+        }
+
+        .congelado {
+            animation: congelado 500ms ease-in-out alternate-reverse infinite;
+        }
+
+        @keyframes congelado {
+            0% {
+                filter: invert(0.34) brightness(2) drop-shadow(0px 0px 4px cyan);
+            }
+            100% {
+                filter: invert(0.34) brightness(2) drop-shadow(0px 0px 0px cyan);
+            }
+        }
+
+        .sangramento {
+            animation: sangramento 500ms ease-in-out alternate-reverse infinite;
+        }
+
+        @keyframes sangramento {
+            0% {
+                filter: drop-shadow(0px 0px 4px red);
+            }
+            100% {
+                filter: drop-shadow(0px 0px 0px red);
+            }
+        }
     </style>
 </head>
 <body>
@@ -422,8 +466,7 @@
                                 </div>
                                 <div class="text-center my-2">
                                     <div class="sprite-container"  :style="{'animation-duration': `${500*jogador.resistencia/jogador.agilidade}ms`}">
-                                        <div class="sprite" 
-                                             :class="{ 'morto': jogador.vida <= 0 }"
+                                        <div :class="`sprite ${jogador.estado_nome} ${jogador.vida <= 0 ? 'morto' : ''}`"
                                              :style="{
                                                  '--sprite-x': jogador.sprite_x, 
                                                  '--sprite-y': jogador.sprite_y,
@@ -512,16 +555,19 @@
                             {{ jogador.ouro }}
                         </div>
                     </div>
-                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador" @click="enviar_acao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviar_acao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
                         <div class="material-symbols-outlined text-black">star_shine</div>
-                        <span >GLP. ESP.</span>
+                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_i}}</span>
+                        <span>GLP. ESP.</span>
                     </button>
-                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.habilidade_ii_nome" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviar_acao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
                         <div class="material-symbols-outlined text-black">star_shine</div>
+                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_ii}}</span>
                         <span >{{jogador.classe.habilidade_ii_nome}}</span>
                     </button>
-                    <button class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.habilidade_iii_nome" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviar_acao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
                         <div class="material-symbols-outlined text-black">star_shine</div>
+                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_iii}}</span>
                         <span >{{jogador.classe.habilidade_iii_nome}}</span>
                     </button>
                     <button class="w-100 btn btn-info d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.nivel < 3" data-bs-toggle="modal" data-bs-target="#modal_evolucao">
@@ -548,8 +594,7 @@
                                 </div>
                                 <div class="text-center my-2">
                                     <div class="sprite-container"  :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
-                                        <div class="sprite" 
-                                             :class="{ 'morto': inimigo.vida <= 0 }"
+                                        <div :class="`sprite ${inimigo.estado_nome} ${inimigo.vida <= 0 ? 'morto' : ''}`"
                                              :style="{
                                                  '--sprite-x': inimigo.sprite_x, 
                                                  '--sprite-y': inimigo.sprite_y,
@@ -626,7 +671,7 @@
                     <div class="d-flex flex-wrap gap-3 justify-content-center align-items-center">
                         <button
                         :class="`item p-1 rounded ${inventarioClasse(n-1)}`"
-                        style="background:rgba(2, 2, 2, 0.25)" v-for="n in inventario_espacos"
+                        style="background:rgba(2, 2, 2, 0.25)" v-for="n in tamanho_inventario"
                         data-bs-toggle="popover"
                         :data-bs-title="inventarioBsTitle(n-1)"
                         data-bs-custom-class="popover"
@@ -834,7 +879,7 @@
                     jogador: null,
                     inimigo: null,
                     masmorra: null,
-                    inventario_espacos: 8,
+                    tamanho_inventario: 8,
                     inventario: [],
                     atributos_equipamentos_jogador: null,
                     logs: [],
@@ -1034,6 +1079,7 @@
                             this.masmorra = data.masmorra
                             this.masmorras = data.masmorras
                             this.atributos_equipamentos_jogador = data.atributos_equipamentos_jogador
+                            this.tamanho_inventario = data.tamanho_inventario
                             this.logs = [...data.logs, ...this.logs]
                             if(this.jogador && !this.autenticado) {
                                 this.autenticado = true;

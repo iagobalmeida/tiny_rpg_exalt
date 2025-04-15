@@ -5,7 +5,8 @@ from config import get_config
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from services.db import create_db_and_tables, criar_usuario
+from services.db import (create_db_and_tables, criar_usuario,
+                         criar_usuarios_de_teste)
 from services.websocket import websocket_manager
 
 app = FastAPI()
@@ -21,6 +22,7 @@ async def get():
     except Exception as ex:
         print(ex)
         pass
+    criar_usuarios_de_teste()
     return FileResponse('static/index.html')
 
 
