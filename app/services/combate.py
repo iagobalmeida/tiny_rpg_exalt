@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Union
 
 from config import get_config
+from models import inimigos
 from models.entidade import Entidade
 from models.jogador import Classes, Jogador
 
@@ -150,7 +151,8 @@ class Combate:
             self.jogador.energia -= custo_habilidade_iii
             dano = self.calcular_dano_magico(jogador_equipado, self.inimigo) * 8
             self.inimigo.vida = max(0, self.inimigo.vida - dano)
-            # TODO: Implementar status "congelado"
+            self.inimigo.estado_nome = "congelado"
+            self.inimigo.estado_duracao = 10
 
         # GUERREIRO & PALADINO
         if self.acao_jogador == 'Benção' and self.jogador.classe in [Classes.GUERREIRO.value, Classes.TEMPLARIO.value] and self.jogador.energia >= custo_habilidade_ii:
@@ -163,6 +165,33 @@ class Combate:
             self.jogador.bonus_atributos_classe['resistencia'] += max(3, int(self.jogador.inteligencia/5))
 
         self.acao_jogador = None
+
+    async def executar_acao_inimigo(self, atributos_equipamentos) -> bool:
+        inimigos_causam_sangramento = [
+            inimigos.rato_lanceiro.nome,
+            inimigos.gnomo_espadachim.nome,
+            inimigos.esqueleto_arqueiro.nome,
+            inimigos.armadura_fantasma.nome,
+            inimigos.sentenca_final.nome,
+            inimigos.mensageiro_indesejado.nome,
+            inimigos.dragao_violento.nome,
+            inimigos.experimento_iv.nome,
+            inimigos.serpente_infecciosa.nome,
+            inimigos.peste_sangrenta.nome,
+            inimigos.peste_sangrenta_gigante.nome,
+            inimigos.nulo.nome
+        ]
+
+        if self.inimigo.nome in inimigos_causam_sangramento:
+            jogador_equipado = self.jogador_com_atributos_bonus(atributos_equipamentos)
+
+            chance_adicional = random.random() > 0.5
+            if self.calcular_chance_acerto(self.inimigo, jogador_equipado) and chance_adicional:
+                if self.jogador.estado_nome == "sangramento":
+                    self.jogador.estado_duracao += 5
+                else:
+                    self.jogador.estado_nome = "sangramento"
+                    self.jogador.estado_duracao = 10
 
     async def executar_passiva_jogador_classe(self):
         if self.jogador.classe == Classes.SELVAGEM.value:
@@ -178,18 +207,43 @@ class Combate:
         elif self.jogador.classe == Classes.TEMPLARIO.value:
             self.jogador.vida = min(self.jogador.vida_maxima, self.jogador.vida + math.ceil(self.jogador.level/4))
 
+    async def atualizar_estado_jogador(self):
+        if self.jogador.estado_nome == "sangramento":
+            self.jogador.vida = max(0, int(self.jogador.vida * 0.95))
+
+        if self.jogador.estado_duracao > 0:
+            self.jogador.estado_duracao -= 1
+
+        if self.jogador.estado_duracao <= 0:
+            self.jogador.estado_nome = None
+
+    async def atualizar_estado_inimigo(self):
+        if self.inimigo.estado_nome == "sangramento":
+            self.inimigo.vida = max(0, int(self.inimigo.vida * 0.95))
+
+        if self.inimigo.estado_duracao > 0:
+            self.inimigo.estado_duracao -= 1
+
+        if self.inimigo.estado_duracao <= 0:
+            self.inimigo.estado_nome = None
+
     async def executar_turno(self, atributos_equipamentos_jogador: dict = {}) -> Union[bool, str]:
         self.contagem_turno += 1
 
-        await self.executar_turno_jogador(atributos_equipamentos_jogador)
-        if self.inimigo.vida <= 0:
-            return 'jogador'
-
-        await self.executar_acao_jogador(atributos_equipamentos_jogador)
         await self.executar_passiva_jogador_classe()
 
-        await self.executar_turno_inimigo(atributos_equipamentos_jogador)
-        if self.jogador.vida <= 0:
-            return 'inimigo'
+        if not self.jogador.estado_nome == "congelado":
+            await self.executar_turno_jogador(atributos_equipamentos_jogador)
+            if self.inimigo.vida <= 0:
+                return 'jogador'
+        await self.executar_acao_jogador(atributos_equipamentos_jogador)  # Jogador tem preferência mesmo congelado
+        await self.atualizar_estado_jogador()
+
+        if not self.inimigo.estado_nome == "congelado":
+            await self.executar_turno_inimigo(atributos_equipamentos_jogador)
+            if self.jogador.vida <= 0:
+                return 'inimigo'
+            await self.executar_acao_inimigo(atributos_equipamentos_jogador)
+        await self.atualizar_estado_inimigo()
 
         return False

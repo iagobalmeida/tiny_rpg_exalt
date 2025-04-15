@@ -109,7 +109,7 @@ class Jogador(Entidade):
     pontos_disponiveis: int = Field(default=0)
     missoes: Dict[str, Tuple[int, int, str, bool]] = Field(default_factory=lambda: {
         'floresta': (0, 25, 'Rato Guerreiro', True),
-        'mata_fechada': (0, 30, 'Gnomo Ancião', False),
+        'mata_fechada': (0, 30, 'Gnomo Ancião', True),
         'castelo_abandonado': (0, 35, 'Entidade Obscura', False),
         'cemiterio': (0, 40, 'Esqueleto', False),
         'catacumbas': (0, 40, 'Protetor das Catacumbas', False),

@@ -31,7 +31,7 @@ class Entidade(Objeto):
     sprite_largura: int = Field(default=224*3)
     sprite_altura: int = Field(default=224*3)
     estado_nome: Optional[str] = Field(default=None)
-    estado_duracao: Optional[int] = Field(default=None)
+    estado_duracao: Optional[int] = Field(default=0)
 
     def model_post_init(self, __context):
         if self.vida_maxima == 0:
