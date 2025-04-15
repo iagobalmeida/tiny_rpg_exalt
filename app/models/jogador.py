@@ -131,25 +131,27 @@ class Jogador(Entidade):
     })
 
     @classmethod
-    def primeiro_nivel(cls, id: int, nome: str, descricao: str, email: str, senha: str, classe: Classes):
+    def a_partir_de_usuario(cls, usuario):
         """Cria um novo jogador no primeiro nível."""
-        config = get_config()
+        # config = get_config()
+        classe = Classes[usuario.classe]
 
         return cls(
-            id=id,
-            nome=nome,
-            descricao=descricao,
-            email=email,
-            senha=senha,
+            id=usuario.id,
+            nome=usuario.nome,
+            descricao=usuario.descricao,
+            email=usuario.email,
             classe=classe.value,
-            level=1,
-            vida=250,
-            energia=250,
-            experiencia=0,
-            forca=10,
-            agilidade=10,
-            resistencia=10,
-            inteligencia=10,
+            level=usuario.level,
+            experiencia=usuario.experiencia,
+            vida=usuario.vida,
+            energia=usuario.energia,
+            forca=usuario.forca,
+            agilidade=usuario.agilidade,
+            resistencia=usuario.resistencia,
+            inteligencia=usuario.inteligencia,
+            pontos_disponiveis=usuario.pontos_disponiveis,
+            tamanho_inventario=usuario.tamanho_inventario,
             sprite_x=classe.value.sprite_x,
             sprite_y=classe.value.sprite_y
         )

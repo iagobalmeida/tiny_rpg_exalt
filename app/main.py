@@ -2,11 +2,10 @@ import asyncio
 
 import uvicorn
 from config import get_config
-from fastapi import Depends, FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from services.db import (Session, create_db_and_tables, criar_usuario,
-                         get_session)
+from services.db import create_db_and_tables, criar_usuario
 from services.websocket import websocket_manager
 
 app = FastAPI()
@@ -16,10 +15,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/")
-async def get(session: Session = Depends(get_session)):
+async def get():
     try:
-        criar_usuario('Teste', 'teste@email.com', 'teste', session=session)
-    except:
+        criar_usuario('Teste', 'teste@email.com', 'teste')
+    except Exception as ex:
+        print(ex)
         pass
     return FileResponse('static/index.html')
 

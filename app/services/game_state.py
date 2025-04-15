@@ -1,3 +1,4 @@
+import asyncio
 import json
 import math
 from datetime import datetime
@@ -5,15 +6,13 @@ from logging import getLogger
 from typing import Any, Dict, List
 
 from config import get_config
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from models.item import UNION_ITEM
 from models.itens import ITEMS
-from models.jogador import Classes, Jogador
+from models.jogador import Jogador
 from models.masmorra import Masmorra
+from services import db
 from services.combate import Combate
-from services.db import (UsuarioInventario, get_inventario_by_usuario_id,
-                         get_usuario_by_email, update_inventario_by_usuario_id,
-                         update_usuario)
 
 log = getLogger('uvicorn')
 
@@ -57,53 +56,55 @@ class GameState:
         self.logs.clear()
         return logs
 
-    async def logout(self):
-        payload = self.jogador.model_dump()
-        payload['missoes'] = json.dumps(payload['missoes'])
-        update_usuario(self.jogador.id, payload)
-
-        inventario_db = [
-            UsuarioInventario(
-                usuario_id=self.jogador.id,
-                item_nome=i.nome,
-                quantidade=i.quantidade,
-                em_uso=i.em_uso
-            )
-            for i in self.inventario
-        ]
-        update_inventario_by_usuario_id(self.jogador.id, inventario_db)
+    async def signup(self, nome: str, email: str, senha: str, confirmar_senha: str):
+        if senha != confirmar_senha:
+            raise ValueError('As senhas não batem!')
+        db.create_usuario(nome, email, senha)
+        return await self.login(email=email, senha=senha)
 
     async def login(self, email: str, senha: str):
         """Inicializa um novo jogador."""
 
-        usuario = get_usuario_by_email(email=email)
-        if usuario.senha != senha:
+        usuario_registro = db.get_usuario_by_email(email=email)
+        if not usuario_registro or usuario_registro.senha != senha:
             raise HTTPException(401, 'Não autorizado')
-        classe = Classes[usuario.classe]
 
-        inventarios_banco = get_inventario_by_usuario_id(usuario.id)
+        inventario_registros = db.get_inventario_by_usuario_id(usuario_registro.id)
 
         self.inventario = []
-        for i in inventarios_banco:
-            item_objeto = ITEMS.get(i.item_nome, None)
+        for i in inventario_registros:
+            item_objeto = ITEMS.get(i.item_nome.lower(), None)
             if not item_objeto:
                 continue
             item_objeto = item_objeto.model_copy()
             item_objeto.quantidade = i.quantidade
-            if i.get('em_uso', False):
+            if getattr(i, 'em_uso', False):
                 item_objeto.em_uso = True
             self.inventario.append(item_objeto)
 
-        # TODO: Atualizar criação de instância com valores do banco
-        self.jogador = Jogador.primeiro_nivel(
-            id=usuario.id,
-            nome=usuario.nome,
-            descricao=usuario.descricao,
-            email=usuario.email,
-            classe=classe
-        )
+        self.jogador = Jogador.a_partir_de_usuario(usuario_registro)
         self.masmorra = Masmorra.casa()
         self.iniciar_combate(renascer=True)
+        await asyncio.sleep(0.75)
+
+    async def logout(self):
+        payload = self.jogador.model_dump()
+        payload['missoes'] = json.dumps(payload['missoes'])
+        payload['classe'] = self.jogador.classe.nome
+        payload['energia'] = self.jogador.energia_maxima
+        payload['vida'] = self.jogador.vida_maxima
+        db.update_usuario(self.jogador.id, payload)
+
+        inventario_registros = [
+            db.UsuarioInventario(
+                usuario_id=self.jogador.id,
+                item_nome=i.nome,
+                quantidade=i.quantidade,
+                em_uso=getattr(i, 'em_uso', False)
+            )
+            for i in self.inventario
+        ]
+        db.update_inventario_by_usuario_id(self.jogador.id, inventario_registros)
 
     def iniciar_combate(self, renascer: bool = False):
         """Inicia um novo combate na masmorra."""

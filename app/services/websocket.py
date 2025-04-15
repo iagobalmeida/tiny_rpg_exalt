@@ -15,22 +15,36 @@ log = getLogger('uvicorn')
 class WebSocketManager:
     def __init__(self):
         self.connected_players: Dict[int, WebSocket] = {}
+        self.ip_to_player_id: Dict[str, int] = {}
         self.game_states: Dict[int, GameState] = {}
         self.game_states_last_payloads: Dict[int, dict] = {}
         self.config = get_config()
 
     async def connect(self, websocket: WebSocket) -> int:
         """Aceita uma nova conexão WebSocket e retorna seu ID."""
+        client_ip = websocket.client.host
+
+        # Bloquear múltiplas conexões do mesmo IP
+        if client_ip in self.ip_to_player_id:
+            await websocket.close(code=4001)
+            raise Exception(f"IP {client_ip} já conectado")
+
         await websocket.accept()
         player_id = id(websocket)
+
         self.connected_players[player_id] = websocket
+        self.ip_to_player_id[client_ip] = player_id
         self.game_states[player_id] = GameState(self.config["combat"]["timeout_turno"])
+
         return player_id
 
     async def disconnect(self, player_id: int):
         """Remove uma conexão WebSocket e seu estado de jogo."""
         if player_id in self.connected_players:
+            client_ip = self.connected_players[player_id].client.host
+            self.ip_to_player_id.pop(client_ip, None)
             del self.connected_players[player_id]
+
         if player_id in self.game_states:
             await self.game_states[player_id].logout()
             del self.game_states[player_id]
@@ -58,6 +72,14 @@ class WebSocketManager:
                 await game_state.login(
                     email=message["data"]["email"],
                     senha=message["data"]["senha"]
+                )
+
+            elif message["type"] == "signup":
+                await game_state.signup(
+                    nome=message["data"]["nome"],
+                    email=message["data"]["email"],
+                    senha=message["data"]["senha"],
+                    confirmar_senha=message["data"]["confirmar_senha"],
                 )
 
             elif message["type"] == "pausar":

@@ -331,9 +331,17 @@
     <div id="app" class="container">
         <h1 class="text-center mb-4">Tiny RPG</h1>
 
-        <div v-if="!autenticado">
+        <div class="alert alert-danger" v-if="erro_multiplos_clientes">
+            Parece que já tem uma instância de Tiny RPG jogando!
+        </div>
+
+        <div v-if="!erro_multiplos_clientes && !autenticado">
             <div class="card">
                 <form class="card-body" @submit.prevent="login">
+                    <div class="form-group mb-3" v-if="cadastrando">
+                        <label for="nome">Nome</label>
+                        <input v-model="nome" type="text" class="form-control" name="nome">
+                    </div>
                     <div class="form-group mb-3">
                         <label for="email">E-mail</label>
                         <input v-model="email" type="email" class="form-control" name="email">
@@ -342,12 +350,17 @@
                         <label for="senha">Senha</label>
                         <input v-model="senha" type="password" class="form-control" name="senha">
                     </div>
-                    <button class="btn btn-light">Entrar</button>
+                    <div class="form-group mb-3" v-if="cadastrando">
+                        <label for="confirmar_senha">Confirmar Senha</label>
+                        <input v-model="confirmar_senha" type="password" class="form-control" name="confirmar_senha">
+                    </div>
+                    <button class="btn btn-light">{{cadastrando ? 'Criar' : 'Entrar'}}</button>
+                    <button type="button" class="btn btn-outline-light ms-2" @click="toggleCadastrando()">{{cadastrando ? 'Voltar' : 'Criar conta'}}</button>
                 </form>
             </div>
         </div>
 
-        <div v-if="autenticado">
+        <div v-if="!erro_multiplos_clientes && autenticado">
             <div class="card mb-3" :class="{'opacity-50': !pode_enviar_acao}" v-if="masmorra">
                 <div class="card-body">
                     <div class="row">
@@ -815,6 +828,7 @@
         createApp({
             data() {
                 return {
+                    erro_multiplos_clientes: false,
                     autenticado: false,
                     pode_enviar_acao: true,
                     jogador: null,
@@ -826,8 +840,11 @@
                     logs: [],
                     messages: [],
                     conexoes: {},
+                    nome: '',
                     email: '',
                     senha: '',
+                    confirmar_senha: '',
+                    cadastrando: false,
                     conexao_atual: null
                 }
             },
@@ -854,6 +871,10 @@
                 }
             },
             methods: {
+                toggleCadastrando() {
+                    console.log('foo')
+                    this.cadastrando = !this.cadastrando;
+                },
                 inventarioClasse(indice) {
                     if(indice >= this.inventario.length) return 'vazio';
                     if(this.inventario[indice]['tipo'] == 'EQUIPAMENTO') {
@@ -1044,6 +1065,7 @@
 
                     ws.onerror = (error) => {
                         console.error(`Erro na conexão ${conexaoId}:`, error)
+                        this.erro_multiplos_clientes = true;
                     }
                 },
                 getConexaoAtual() {
@@ -1109,16 +1131,32 @@
                     }, Math.random()*250)
                 },
                 login() {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'login',
-                            data: {
-                                email: this.email,
-                                senha: this.senha
-                            }
-                        }))
-                        this.pode_enviar_acao = false
+                    if(this.cadastrando) {
+                        const ws = this.getConexaoAtual()
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({
+                                type: 'signup',
+                                data: {
+                                    nome: this.nome,
+                                    email: this.email,
+                                    senha: this.senha,
+                                    confirmar_senha: this.confirmar_senha,
+                                }
+                            }))
+                            this.pode_enviar_acao = false
+                        }
+                    } else {
+                        const ws = this.getConexaoAtual()
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({
+                                type: 'login',
+                                data: {
+                                    email: this.email,
+                                    senha: this.senha
+                                }
+                            }))
+                            this.pode_enviar_acao = false
+                        }
                     }
                 },
                 usarItem(item_id) {
