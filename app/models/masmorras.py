@@ -21,8 +21,10 @@ esgoto = Masmorra(
         inimigos.rato_guerreiro,
     ],
     lista_itens=[
-        (0.99, itens.queijo),
-        (0.5, itens.pocao_pequena)
+        (0.09, itens.queijo),
+        (0.09, itens.vinho),
+        (0.04, itens.faca_de_cozinha),
+        (0.04, itens.bengala)
     ]
 )
 
@@ -37,6 +39,12 @@ floresta = Masmorra(
         inimigos.gnomo_espadachim,
         inimigos.gnomo_bruto,
         inimigos.gnomo_anciao
+    ],
+    lista_itens=[
+        (0.09, itens.maca),
+        (0.09, itens.rum),
+        (0.04, itens.espada_de_treino),
+        (0.04, itens.cajado_improvisado)
     ]
 )
 
@@ -49,6 +57,13 @@ mata_fechada = Masmorra(
         inimigos.entedidade_florestal,
         inimigos.entidade_animal,
         inimigos.entidade_obscura,
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_pequena),
+        (0.09, itens.absinto),
+        (0.04, itens.espada_longa),
+        (0.04, itens.cajado_de_aprendiz),
+        (0.02, itens.tronco_de_salgueiro)
     ]
 )
 
@@ -63,6 +78,13 @@ castelo_abandonado = Masmorra(
         inimigos.armadura_fantasma,
         inimigos.zumbi,
         inimigos.morto_vivo,
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_media),
+        (0.09, itens.elixir_impuro),
+        (0.04, itens.espada_pesada),
+        (0.04, itens.cajado_de_aprendiz)
+        # TODO: Criar item especial
     ]
 )
 
@@ -76,6 +98,13 @@ cemiterio = Masmorra(
         inimigos.mensageiro_indesejado,
         inimigos.guia_dos_mortos,
         inimigos.protetora_das_catacumbas,
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_media),
+        (0.09, itens.elixir_impuro),
+        (0.04, itens.espada_pesada),
+        (0.04, itens.cajado_de_aprendiz),
+        (0.02, itens.lamina_fantasma)
     ]
 )
 
@@ -88,6 +117,14 @@ catacumbas = Masmorra(
         inimigos.sentenca_final,
         inimigos.bispo_corrompido,
         inimigos.sacerdote_renegado,
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_media),
+        (0.09, itens.elixir_semipuro),
+        (0.04, itens.espada_pesada),
+        (0.04, itens.cajado_de_aprendiz),
+        (0.02, itens.lamina_fantasma)
+        # TODO: Criar item especial
     ]
 )
 
@@ -101,6 +138,13 @@ calabouco = Masmorra(
         inimigos.dragao_violento,
         inimigos.dragao_adulto,
         inimigos.dragao_anciao,
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_grande),
+        (0.09, itens.elixir_semipuro),
+        (0.04, itens.espada_pesada),
+        (0.04, itens.cajado_de_aprendiz),
+        (0.02, itens.matadora_de_dragoes)
     ]
 )
 
@@ -112,6 +156,13 @@ laboratorio_secreto = Masmorra(
         inimigos.experimento_i,
         inimigos.experimento_ii,
         inimigos.experimento_iv,
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_grande),
+        (0.09, itens.elixir_puro),
+        (0.04, itens.espada_pesada),
+        (0.04, itens.cajado_de_aprendiz),
+        (0.02, itens.linha_da_verdade)
     ]
 )
 
@@ -126,6 +177,13 @@ submundo = Masmorra(
         inimigos.amon,
         inimigos.astaroth,
         inimigos.barbathos,
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_suprema),
+        (0.09, itens.elixir_concentrado),
+        (0.04, itens.espada_pesada),
+        (0.04, itens.cajado_de_aprendiz),
+        (0.02, itens.brasa_eterna)
     ]
 )
 
@@ -135,6 +193,12 @@ nulo = Masmorra(
     imagem_background='bg_nulo.png',
     lista_inimigos=[
         inimigos.nulo
+    ],
+    lista_itens=[
+        (0.09, itens.pocao_suprema),
+        (0.09, itens.elixir_concentrado),
+        (0.02, itens.ruptura),
+        (0.02, itens.setenca_final)
     ]
 )
 

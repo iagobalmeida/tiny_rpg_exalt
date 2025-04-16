@@ -463,6 +463,38 @@
                 opacity: 100%;
             }
         }
+
+        :has(> .sprite.encantado:first-child) {
+            .sprite {
+                -webkit-filter: drop-shadow(1px 1px 0 black)
+                        drop-shadow(-1px 1px 0 black)
+                        drop-shadow(1px -1px 0 black)
+                        drop-shadow(-1px -1px 0 black)
+                        brightness(2);
+
+                filter: drop-shadow(1px 1px 0 black)
+                        drop-shadow(-1px 1px 0 black)
+                        drop-shadow(1px -1px 0 black)
+                        drop-shadow(-1px -1px 0 black)
+                        brightness(2);
+            }
+
+            &::before{
+                display: block;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                content: '';
+                width: 32px;
+                height: 32px;
+                border-radius: 100%;
+                filter: blur(8px);
+                background: radial-gradient(#11ddff, transparent);
+                mix-blend-mode: lighten;
+                opacity: 50%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -824,27 +856,50 @@
                                     <p class="mb-0">{{masmorra.descricao}}</p>
                                 </div>
                                 <div class="card-body collapse p-0" :id="`collapse_regiao_${masmorra.id_unico}`">
-                                    <div class="d-flex gap-3 flex-wrap align-items-center justify-content-center p-3 pb-5">
-                                        <div v-for="inimigo in masmorra.lista_inimigos" class="border w-100 w-md-auto entity-container rounded p-3 text-white" data-bs-toggle="collapse" data-bs-target=".row.collapse"  :style="{
-                                            '--masmorra-bg': `url('/static/${masmorra.imagem_background}')`,
-                                            'background': `linear-gradient(var(--bg-dark), transparent 30%), linear-gradient(transparent, var(--bg-dark) 70%), var(--masmorra-bg)`,
-                                            'background-size': 'cover',
-                                            'background-position': 'center'
-                                        }">
-                                            <h3 class="card-title d-flex">{{ inimigo.nome }}</h3>
-                                            <div class="text-center my-2">
-                                                <div class="sprite-container" :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
-                                                    <div class="sprite" 
-                                                            :class="{ 'morto': inimigo.vida <= 0 }"
-                                                            :style="{
-                                                                '--sprite-x': inimigo.sprite_x, 
-                                                                '--sprite-y': inimigo.sprite_y,
-                                                                'background-image': `url('/static/${inimigo.sprite_nome}')`,
-                                                                'background-size': `${inimigo.sprite_largura}px ${inimigo.sprite_altura}px`,
-                                                            }"></div>
-                                                </div>
+                                    <div class="d-flex gap-3 flex-wrap align-items-center justify-content-center p-3" v-if="masmorra.lista_itens.length">
+                                        <button
+                                        class="item p-1 rounded"
+                                        style="background:rgba(2, 2, 2, 0.25)" v-for="item in masmorra.lista_itens"
+                                        data-bs-toggle="popover"
+                                        :data-bs-title="item.nome"
+                                        data-bs-custom-class="popover"
+                                        data-bs-html="true"
+                                        :data-bs-content="processar_descricao_item(item.descricao)"
+                                        >
+                                            <div class="sprite" :style="{
+                                                '--size': 'calc(2 * 32px)',
+                                                '--sprite-x': item.sprite_x,
+                                                '--sprite-y': item.sprite_y,
+                                                'background-image': `url('/static/items.png')`,
+                                                'background-size': 'calc(2 * 352px) calc(2 * 832px)'
+                                            }">
                                             </div>
-                                            <p class="text-center mb-0">{{ inimigo.descricao }}</p>
+                                        </button>
+                                    </div>
+
+                                    <div class="p-3">
+                                        <div class="row flex-wrap align-items-center justify-content-center w-100 mx-auto" style="gap: 16px 8px">
+                                            <div v-for="inimigo in masmorra.lista_inimigos" class="col-12 col-md-5 border entity-container rounded p-3 text-white" data-bs-toggle="collapse" data-bs-target=".row.collapse"  :style="{
+                                                '--masmorra-bg': `url('/static/${masmorra.imagem_background}')`,
+                                                'background': `linear-gradient(var(--bg-dark), transparent 30%), linear-gradient(transparent, var(--bg-dark) 70%), var(--masmorra-bg)`,
+                                                'background-size': 'cover',
+                                                'background-position': 'center'
+                                            }">
+                                                <h3 class="card-title d-flex">{{ inimigo.nome }}</h3>
+                                                <div class="text-center my-2">
+                                                    <div class="sprite-container" :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
+                                                        <div class="sprite" 
+                                                                :class="{ 'morto': inimigo.vida <= 0 }"
+                                                                :style="{
+                                                                    '--sprite-x': inimigo.sprite_x, 
+                                                                    '--sprite-y': inimigo.sprite_y,
+                                                                    'background-image': `url('/static/${inimigo.sprite_nome}')`,
+                                                                    'background-size': `${inimigo.sprite_largura}px ${inimigo.sprite_altura}px`,
+                                                                }"></div>
+                                                    </div>
+                                                </div>
+                                                <p class="text-center mb-0">{{ inimigo.descricao }}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1010,6 +1065,17 @@
                 }
             },
             methods: {
+                processar_descricao_item(descricao) {
+                    return descricao.map((linha) => {
+                        _linha = linha.replace('ATTR_FORCA', '<span class="material-symbols-outlined">fitness_center</span>')
+                        _linha = _linha.replace('ATTR_AGILIDADE', '<span class="material-symbols-outlined">directions_run</span>')
+                        _linha = _linha.replace('ATTR_RESISTENCIA', '<span class="material-symbols-outlined">shield</span>')
+                        _linha = _linha.replace('ATTR_INTELIGENCIA', '<span class="material-symbols-outlined">psychology</span>')
+                        _linha = _linha.replace('ATTR_VIDA', '<span class="font-bold" style="color:#198754">Pontos de Vida</span>')
+                        _linha = _linha.replace('ATTR_ENERGIA', '<span class="font-bold" style="color:#1976d2">Pontos de Vida</span>')
+                        return `<span class="d-flex align-items-center gap-1 w-full mb-1">${_linha}</span>`;
+                    }, '').join('');
+                },
                 toggleCadastrando() {
                     console.log('foo')
                     this.cadastrando = !this.cadastrando;
@@ -1034,14 +1100,7 @@
                 },
                 inventarioBsContent(indice) {
                     if(indice >= this.inventario.length) return 'Nada aqui...';
-                    let descricao = this.inventario[indice]['descricao'].map((linha) => {
-                        _linha = linha.replace('ATTR_FORCA', '<span class="material-symbols-outlined">fitness_center</span>')
-                        _linha = _linha.replace('ATTR_AGILIDADE', '<span class="material-symbols-outlined">directions_run</span>')
-                        _linha = _linha.replace('ATTR_RESISTENCIA', '<span class="material-symbols-outlined">shield</span>')
-                        _linha = _linha.replace('ATTR_INTELIGENCIA', '<span class="material-symbols-outlined">psychology</span>')
-                        _linha = _linha.replace('ATTR_VIDA', '<span class="font-bold" style="color:#198754">Pontos de Vida</span>')
-                        return `<span class="d-flex align-items-center gap-1 w-full mb-1">${_linha}</span>`;
-                    }, '').join('');
+                    let descricao = this.processar_descricao_item(this.inventario[indice]['descricao']);
                     let botoes = `
                         <a class="btn btn-sm btn-light w-100 mt-1" onclick="middlewareBotaoInventario(this)" data-id='${indice}' data-acao='usar'>
                             ${this.inventarioAcao(indice)}
@@ -1227,6 +1286,8 @@
                         const elementParticula = document.createElement('div')
 
                         elementParticula.classList.add('particula-dano');
+                        elementParticula.style.left = 25 + Math.random() * 25 + '%'
+                        elementParticula.style.top = 25 + Math.random() * 25 + '%'
                         elementParticula.style.setProperty('--particula-sprite', `url('static/${sprite_arquivo}')`)
                         container.appendChild(elementParticula)
                         setTimeout(() => {

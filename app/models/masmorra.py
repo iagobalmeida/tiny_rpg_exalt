@@ -39,6 +39,8 @@ class Masmorra(Objeto):
     def get_websocket_data(self):
         base_dict = self.model_dump()
         base_dict['total_passos'] = self.total_passos
+        base_dict['lista_inimigos'] = [inimigo.model_dump() for inimigo in self.lista_inimigos]
+        base_dict['lista_itens'] = [item.model_dump() for chance, item in self.lista_itens]
         return base_dict
 
     def inimigo_aleatorio(self) -> Inimigo:

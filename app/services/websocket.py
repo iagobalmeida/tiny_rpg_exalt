@@ -128,7 +128,7 @@ class WebSocketManager:
             "masmorras": [
                 {
                     "chave": chave,
-                    "nome": masmorra.nome
+                    **masmorra.get_websocket_data(),
                 }
                 for chave, masmorra in MASMORRAS.items()
             ],

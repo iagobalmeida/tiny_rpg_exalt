@@ -5,6 +5,7 @@ from pydantic import Field
 
 EQUIPAMENTO_TIPOS = Literal['ARMA', 'ARMADURA', 'ACESSORIO']
 
+
 class Item(Objeto):
     descricao: List[str]
     quantidade: int = Field(default=1)
@@ -13,19 +14,22 @@ class Item(Objeto):
 
     def usar(self, jogador):
         pass
-    
+
 
 class Consumivel(Item):
-    tipo:str='CONSUMIVEL'
+    tipo: str = 'CONSUMIVEL'
+
 
 class ConsumivelCura(Consumivel):
-    fator:int = Field(5)
+    atributo: str = Field('vida')
+    fator: int = Field(5)
 
     def usar(self, jogador):
-        jogador.vida += self.fator
+        setattr(jogador, self.atributo, getattr(jogador, self.atributo) + self.fator)
+
 
 class Equipamento(Item):
-    tipo:str='EQUIPAMENTO'
+    tipo: str = 'EQUIPAMENTO'
     descricao: List[str]
     equipamento_tipo: EQUIPAMENTO_TIPOS
     em_uso: bool = Field(default=False)
@@ -33,5 +37,6 @@ class Equipamento(Item):
     agilidade: int = Field(default=0)
     resistencia: int = Field(default=0)
     inteligencia: int = Field(default=0)
+
 
 UNION_ITEM = Union[Consumivel, ConsumivelCura, Equipamento]

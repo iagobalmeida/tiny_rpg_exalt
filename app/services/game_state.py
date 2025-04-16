@@ -88,6 +88,12 @@ class GameState:
         self.jogador = Jogador.a_partir_de_usuario(usuario_registro)
         self.masmorra = Masmorra.casa()
         self.iniciar_combate(renascer=True)
+
+        for item_nome in ITEMS:
+            __item = ITEMS[item_nome].model_copy()
+            if __item.tipo == 'CONSUMIVEL':
+                __item.quantidade = 25
+            self.adicionar_item(__item)
         await asyncio.sleep(0.75)
 
     async def logout(self):
