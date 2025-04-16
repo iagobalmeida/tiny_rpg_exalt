@@ -13,8 +13,9 @@ class Item(Objeto):
     sprite_x: int = Field(default=0)
     sprite_y: int = Field(default=0)
 
-    def usar(self, jogador):
-        pass
+    def usar(self, jogador) -> bool:
+        '''Retorna se foi consumido'''
+        return True
 
 
 class Consumivel(Item):
@@ -25,8 +26,18 @@ class ConsumivelCura(Consumivel):
     atributo: str = Field('vida')
     fator: int = Field(5)
 
-    def usar(self, jogador):
-        setattr(jogador, self.atributo, getattr(jogador, self.atributo) + self.fator)
+    def usar(self, jogador) -> bool:
+        if self.atributo == 'energia':
+            if jogador.energia >= jogador.energia_maxima:
+                return False
+            jogador.energia = min(jogador.energia_maxima, jogador.energia + self.fator)
+        elif self.atributo == 'vida':
+            if jogador.vida >= jogador.vida_maxima:
+                return False
+            jogador.vida = min(jogador.vida_maxima, jogador.vida + self.fator)
+        else:
+            setattr(jogador, self.atributo, getattr(jogador, self.atributo) + self.fator)
+        return True
 
 
 class Equipamento(Item):

@@ -132,6 +132,7 @@
             background-size: calc(192px*var(--particula-escala)) calc(64px*var(--particula-escala));
             background-position: calc(var(--particula-size-negativo) * var(--particula-sprite-x)) calc(var(--particula-size-negativo) * var(--particula-sprite-y));
             position: absolute;
+            mix-blend-mode: screen;
             display: block;
             top: 50%;
             left: 50%;
@@ -340,9 +341,37 @@
             transition: all 125ms ease-in-out;
         }
 
-        .dropdown-menu li {
-            cursor: pointer;
+        .dropdown-menu {
+            padding: 1rem;
+            background: linear-gradient(#111 50%, var(--card-bg));
+            color: white;
+            border: 1px solid white;
+            white-space: nowrap;
+            --bs-dropdown-divider-bg: white;
+            li {
+                cursor: pointer;
+            }
+            div.item-info {
+                margin-bottom: 1rem;
+            }
+            .dropdown-item {
+                background: white;
+                transition: all ease-in-out 125ms;
+                color: black;
+                border-radius: 8px;
+                cursor: pointer;
+                &:hover {
+                    background-color: #ddd;
+                }
+            }
+            .dropdown-item:first-child {
+                margin-top: .5rem;
+            }
+            .dropdown-item {
+                margin-bottom: .5rem;
+            }
         }
+
 
         .popover {
             --bs-popover-border-color: white;
@@ -800,32 +829,45 @@
                         <div class="material-symbols-outlined">business_center</div>
                         Inventário
                     </h3>
-                    <div class="item-container gap-3 justify-content-center align-items-center ">
-                        <button
-                        :class="`item p-1 rounded ${inventarioClasse(n-1)}`"
-                        style="background:rgba(2, 2, 2, 0.25); aspect-ratio: 1/1;"
-                        v-for="n in tamanho_inventario"
-                        data-bs-toggle="popover"
-                        :data-bs-title="inventarioBsTitle(n-1)"
-                        data-bs-custom-class="popover"
-                        data-bs-html="true"
-                        :data-bs-content="inventarioBsContent(n-1)"
-                        >
-                            <div class="sprite" :style="{
-                                '--size': 'calc(2 * 32px)',
-                                '--sprite-x': inventarioSpriteX(n-1),
-                                '--sprite-y':inventarioSpriteY(n-1),
-                                'background-image': `url('/static/items.png')`,
-                                'background-size': 'calc(2 * 352px) calc(2 * 832px)'
-                            }">
+                    <div class="item-container gap-3 justify-content-center align-items-center">
+                        <div class="dropdown-center" v-for="n in tamanho_inventario">
+                            <button
+                            :class="`item p-1 rounded ${inventarioClasse(n-1)}`"
+                            style="background:rgba(2, 2, 2, 0.25); aspect-ratio: 1/1;"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            data-bs-custom-class="popover"
+                            >
+                                <div class="sprite" :style="{
+                                    '--size': 'calc(2 * 32px)',
+                                    '--sprite-x': inventarioSpriteX(n-1),
+                                    '--sprite-y':inventarioSpriteY(n-1),
+                                    'background-image': `url('/static/items.png')`,
+                                    'background-size': 'calc(2 * 352px) calc(2 * 832px)'
+                                }">
+                                </div>
+                                <span class="bg-white text-black rounded border-white quantidade">
+                                    {{inventarioSpanQuantidade(n-1)}}
+                                </span>
+                                <span class="bg-white text-black rounded border-white informacao-adicional">
+                                    {{inventarioSpanInformacaoAdicional(n-1)}}
+                                </span>
+                            </button>
+                            <div class="dropdown-menu fade" v-if="n-1 < inventario.length">
+                                <li><h5>{{inventario[n-1]['nome']}}</h5></li>
+                                <p class="mb-0" v-html="processar_descricao_item(inventario[n-1]['descricao'])"></p>
+                                <li><hr class="dropdown-divider mb-3"></li>
+                                <a class="dropdown-item" @click="handleAcaoInventario(n-1, 'usar')">
+                                    Usar
+                                </a>
+                                <a class="dropdown-item" @click="handleAcaoInventario(n-1, 'descartar')">
+                                    Descartar
+                                </a>
+                                <a class="dropdown-item" @click="handleAcaoInventario(n-1, 'descartar_todos')" v-if="inventarioSpanQuantidade(n) > 0">
+                                    Descartar Todos
+                                </a>
                             </div>
-                            <span class="bg-white text-black rounded border-white quantidade">
-                                {{inventarioSpanQuantidade(n-1)}}
-                            </span>
-                            <span class="bg-white text-black rounded border-white informacao-adicional">
-                                {{inventarioSpanInformacaoAdicional(n-1)}}
-                            </span>
-                        </button>
+                        </div>
                         <button class="btn btn-light w-100" style="grid-column-start: 1; grid-column-end: 9;">
                             +8 espaços
                             <div class="d-flex align-items-center justify-content-center gap-1">
@@ -1006,19 +1048,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-
-        const middlewareBotaoInventario = (el) => {
-            const id = el.getAttribute('data-id')
-            const acao = el.getAttribute('data-acao')
-            const event = new CustomEvent('middleware-botao-inventario:click', {
-                detail: {
-                    id: id,
-                    acao: acao
-                }
-            });
-            document.dispatchEvent(event);
-        }
-
         const { createApp } = Vue
         const colorDamage = '#d32f2f'
         const colorHeal = '#49F7B4'
@@ -1094,38 +1123,6 @@
                     }
                     return ''
                 },
-                inventarioAcao(indice) {
-                    if(indice >= this.inventario.length) return 'Vazio';
-                    if(this.inventario[indice]['tipo'] == 'CONSUMIVEL') return 'Usar'
-                    if(this.inventario[indice]['tipo'] == 'EQUIPAMENTO') {
-                        return this.inventario[indice]['em_uso'] ? 'Remover' : 'Equipar';
-                    }
-                },
-                inventarioBsTitle(indice){
-                    if(indice >= this.inventario.length) return 'Vazio';
-                    return this.inventario[indice]['nome'];
-                },
-                inventarioBsContent(indice) {
-                    if(indice >= this.inventario.length) return 'Nada aqui...';
-                    let descricao = this.processar_descricao_item(this.inventario[indice]['descricao']);
-                    let botoes = `
-                        <a class="btn btn-sm btn-light w-100 mt-1" onclick="middlewareBotaoInventario(this)" data-id='${indice}' data-acao='usar'>
-                            ${this.inventarioAcao(indice)}
-                        </a>
-                        <a class="btn btn-sm  btn-light w-100 mt-1" onclick="middlewareBotaoInventario(this)" data-id='${indice}' data-acao='descartar'>
-                            Descartar
-                        </a>
-                    `;
-                    if(this.inventario[indice]['quantidade'] > 1) botoes += `
-                        <a class="btn btn-sm  btn-light w-100 mt-1" onclick="middlewareBotaoInventario(this)" data-id='${indice}' data-acao='descartar_todos'>
-                            Descartar Todos
-                        </a>
-                    `;
-                    return `
-                        ${descricao}
-                        ${botoes}
-                    `
-                },
                 inventarioSpriteX(indice) {
                     if(indice >= this.inventario.length) return 3;
                     return this.inventario[indice]['sprite_x'];
@@ -1157,7 +1154,6 @@
                     
                     ws.onmessage = (event) => {
                         const data = JSON.parse(event.data)
-                        console.log(data.inimigo)
                         if(data.type == 'update') {
                             // Verifica se houve dano no jogador
                             if(this.jogador) {
@@ -1168,6 +1164,7 @@
                                         this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': data.inimigo.sprite_particula})
                                     } else if (data.jogador.vida > this.jogador.vida) {
                                         const quantidade = data.jogador.vida - this.jogador.vida
+                                        this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': 'particula_cura.png', 'aleatorio': false, 'tamanho': 2})
                                         this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorHeal)
                                     } else {
                                         if(this.masmorra.nome != 'Casa') {
@@ -1179,7 +1176,6 @@
                                 if (data.jogador.energia < this.jogador.energia) {
                                     const quantidade = this.jogador.energia - data.jogador.energia
                                     this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorEnergy)
-                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorEnergy, 'origem_aleatoria': true})
                                 } else if (data.jogador.energia > this.jogador.energia) {
                                     const quantidade = data.jogador.energia - this.jogador.energia
                                     this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorEnergy)
@@ -1241,16 +1237,6 @@
                                 setTimeout(() => {
                                     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
                                     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-                                    document.addEventListener('middleware-botao-inventario:click', (ev) => {
-                                        const detalhes = ev.detail;
-                                        if(detalhes.acao == 'usar') {
-                                            this.usarItem(detalhes.id);
-                                        } else if(detalhes.acao == 'descartar') {
-                                            this.descartarItem(detalhes.id);
-                                        } else if(detalhes.acao == 'descartar_todos') {
-                                            this.descartarItemTodos(detalhes.id);
-                                        }
-                                    });
                                 }, 500)
                             }
                         }
@@ -1272,6 +1258,15 @@
                 getConexaoAtual() {
                     return this.conexoes[this.conexao_atual]
                 },
+                handleAcaoInventario(indice, acao) {
+                    if(acao == 'usar') {
+                        this.usarItem(indice);
+                    } else if(acao == 'descartar') {
+                        this.descartarItem(indice);
+                    } else if(acao == 'descartar_todos') {
+                        this.descartarItemTodos(indice);
+                    }
+                },
                 criarTextoFlutuante(texto, alvo, cor, tamanho=32) {
                     setTimeout(() => {
                         const container = document.querySelector(`.${alvo}-card .sprite-container`)
@@ -1287,14 +1282,18 @@
                         }, 1000)
                     }, Math.random()*250)
                 },
-                criarParticulas({alvo, sprite_arquivo}) {
+                criarParticulas({alvo, sprite_arquivo, aleatorio=true, tamanho=1}) {
+                    console.log('criando particula')
                     setTimeout(() => {
                         const container = document.querySelector(`.${alvo}-card .sprite-container`)
                         const elementParticula = document.createElement('div')
 
                         elementParticula.classList.add('particula-dano');
-                        elementParticula.style.left = 25 + Math.random() * 25 + '%'
-                        elementParticula.style.top = 25 + Math.random() * 25 + '%'
+                        elementParticula.style.left = aleatorio ? 25 + Math.random() * 25 + '%' : '50%';
+                        elementParticula.style.top = aleatorio ? 25 + Math.random() * 25 + '%' : '50%';
+                        if(tamanho != 1) {
+                            elementParticula.style.transform = `translate(-50%, -50%) scale(${tamanho})`;
+                        }
                         elementParticula.style.setProperty('--particula-sprite', `url('static/${sprite_arquivo}')`)
                         container.appendChild(elementParticula)
                         setTimeout(() => {

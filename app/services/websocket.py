@@ -91,17 +91,17 @@ class WebSocketManager:
 
             elif message["type"] == "usar_item":
                 item_id = message["data"].get("item_indice", None)
-                if item_id:
+                if item_id != None:
                     game_state.usar_item(int(item_id))
 
             elif message["type"] == "descartar_item":
                 item_id = message["data"].get("item_indice", None)
-                if item_id:
+                if item_id != None:
                     game_state.descartar_item(int(item_id))
 
             elif message["type"] == "descartar_item_todos":
                 item_id = message["data"].get("item_indice", None)
-                if item_id:
+                if item_id != None:
                     game_state.descartar_item(int(item_id), todos=True)
 
             elif message["type"] == "subir_nivel_classe":

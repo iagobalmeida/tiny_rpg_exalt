@@ -279,5 +279,6 @@ class GameState:
                         i.em_uso = False
                 item.em_uso = True
         elif item.tipo == 'CONSUMIVEL':
-            self.inventario[item_indice].usar(self.jogador)
-            self.remover_item(self.inventario[item_indice].model_copy())
+            usado = self.inventario[item_indice].usar(self.jogador)
+            if usado:
+                self.remover_item(self.inventario[item_indice].model_copy())
