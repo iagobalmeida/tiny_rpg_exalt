@@ -1,16 +1,17 @@
 import math
 import random
-from typing import List, Literal, Tuple
+from typing import List, Literal, Tuple, Union
 
 from models.entidade import Entidade, Objeto
+from models.inimigos import Inimigo
 from models.item import UNION_ITEM
 from pydantic import Field
 
 
 class Masmorra(Objeto):
     tipo: Literal['MASMORRA'] = 'MASMORRA'
-    lista_inimigos: List[Entidade] = Field(default_factory=list)
-    lista_itens: List[Tuple[float, UNION_ITEM]] = Field(default_factory=list) # chance, item
+    lista_inimigos: List[Union[Entidade, Inimigo]] = Field(default_factory=list)
+    lista_itens: List[Tuple[float, UNION_ITEM]] = Field(default_factory=list)  # chance, item
     passos: int = Field(default=0)
     pausado: bool = Field(default=False)
     imagem_background: str = Field(default='default_bg.png')
@@ -40,7 +41,7 @@ class Masmorra(Objeto):
         base_dict['total_passos'] = self.total_passos
         return base_dict
 
-    def inimigo_aleatorio(self) -> Entidade:
+    def inimigo_aleatorio(self) -> Inimigo:
         tamanho_intervalo = math.ceil(len(self.lista_inimigos)/1.5)
         indice_maximo = self.passos // tamanho_intervalo
         indice_minimo = max(0, indice_maximo - 1)
@@ -75,4 +76,3 @@ class Masmorra(Objeto):
 
         if random.random() >= chance:
             return item.model_copy()
-        

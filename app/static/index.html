@@ -117,6 +117,100 @@
             opacity: 0;
         }
 
+        .particula-dano{
+            --particula-sprite:url('static/particula_ataque_basico.png');
+            --particula-sprite-x: 0;
+            --particula-sprite-y: 0;
+            --particula-escala: 2;
+            --particula-size: calc(32px * var(--particula-escala));
+            --particula-size-negativo: calc(var(--particula-size) * -1);
+            width: var(--particula-size);
+            height: var(--particula-size);
+            image-rendering: pixelated;
+            background: var(--particula-sprite);
+            background-size: calc(192px*var(--particula-escala)) calc(64px*var(--particula-escala));
+            background-position: calc(var(--particula-size-negativo) * var(--particula-sprite-x)) calc(var(--particula-size-negativo) * var(--particula-sprite-y));
+            position: absolute;
+            display: block;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            image-rendering: pixelated;
+            filter: brightness(2);
+            animation: particula6Frames 750ms linear forwards;
+            z-index: 10;
+            -webkit-filter: drop-shadow(1px 1px 0 black)
+                            drop-shadow(-1px 1px 0 black)
+                            drop-shadow(1px -1px 0 black)
+                            drop-shadow(-1px -1px 0 black);
+
+            filter: drop-shadow(1px 1px 0 black)
+                    drop-shadow(-1px 1px 0 black)
+                    drop-shadow(1px -1px 0 black)
+                    drop-shadow(-1px -1px 0 black);
+        }
+
+        @keyframes particula6Frames {
+            0% {
+                --particula-sprite-x: 0;
+                --particula-sprite-y: 0;
+            }
+            8% {
+                --particula-sprite-x: 1;
+                --particula-sprite-y: 0;
+            }
+            16% {
+                --particula-sprite-x: 2;
+                --particula-sprite-y: 0;
+            }
+            24% {
+                --particula-sprite-x: 3;
+                --particula-sprite-y: 0;
+            }
+            32% {
+                --particula-sprite-x: 4;
+                --particula-sprite-y: 0;
+            }
+            40% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 0;
+            }
+            48% {
+                --particula-sprite-x: 0;
+                --particula-sprite-y: 1;
+            }
+            56% {
+                --particula-sprite-x: 1;
+                --particula-sprite-y: 1;
+            }
+            64% {
+                --particula-sprite-x: 2;
+                --particula-sprite-y: 1;
+            }
+            72% {
+                --particula-sprite-x: 3;
+                --particula-sprite-y: 1;
+            }
+            80% {
+                --particula-sprite-x: 4;
+                --particula-sprite-y: 1;
+                opacity: 1;
+            }
+            88% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 1;
+            }
+            96% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 1;
+            }
+            100% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 1;
+                opacity: 0;
+            }
+        }
+
 
         .jogador-card .sprite {
             transform: rotateY(180deg);
@@ -193,20 +287,6 @@
             cursor: help;
         }
 
-        .particula {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background-color: #d32f2f;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particula var(--duracao) ease-out forwards;
-            animation-direction: var(--direcao);
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 4px #d32f2f;
-        }
 
         @keyframes particula {
             0% {
@@ -1011,6 +1091,7 @@
                     
                     ws.onmessage = (event) => {
                         const data = JSON.parse(event.data)
+                        console.log(data.inimigo)
                         if(data.type == 'update') {
                             // Verifica se houve dano no jogador
                             if(this.jogador) {
@@ -1018,11 +1099,10 @@
                                     if (data.jogador.vida < this.jogador.vida) {
                                         const quantidade = this.jogador.vida - data.jogador.vida
                                         this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorDamage)
-                                        this.criarParticulas({'alvo': 'jogador', 'cor': colorDamage, 'origem_aleatoria': true})
+                                        this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': data.inimigo.sprite_particula})
                                     } else if (data.jogador.vida > this.jogador.vida) {
                                         const quantidade = data.jogador.vida - this.jogador.vida
                                         this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorHeal)
-                                        this.criarParticulas({'alvo': 'jogador', 'cor': colorHeal, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
                                     } else {
                                         if(this.masmorra.nome != 'Casa') {
                                             this.criarTextoFlutuante(`Errou!`, 'jogador', colorMiss, 18)
@@ -1037,18 +1117,15 @@
                                 } else if (data.jogador.energia > this.jogador.energia) {
                                     const quantidade = data.jogador.energia - this.jogador.energia
                                     this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorEnergy)
-                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorEnergy, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
                                 }
 
                                 if (data.jogador.experiencia > this.jogador.experiencia) {
                                     const quantidade = data.jogador.experiencia - this.jogador.experiencia
                                     this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorExperience)
-                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorExperience, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
                                 }
 
                                 if (data.jogador.level > this.jogador.level) {
                                     this.criarTextoFlutuante(`Level UP!`, 'jogador', colorExperience, 18)
-                                    this.criarParticulas({'alvo': 'jogador', 'cor': colorExperience, 'duracao': 1500, 'tamanho': 3, 'quantidade': 30})
                                 }
 
                             }
@@ -1056,11 +1133,10 @@
                                 if (data.inimigo.vida < this.inimigo.vida) {
                                     const quantidade = this.inimigo.vida - data.inimigo.vida
                                     this.criarTextoFlutuante(`${quantidade}`, 'inimigo', colorDamage)
-                                    this.criarParticulas({'alvo': 'inimigo', 'cor': colorDamage, 'origem_aleatoria': true})
+                                    this.criarParticulas({'alvo': 'inimigo', 'sprite_arquivo': 'particula_ataque_basico.png'})
                                 } else if (data.inimigo.vida > this.inimigo.vida) {
                                     const quantidade = data.inimigo.vida - this.inimigo.vida
                                     this.criarTextoFlutuante(`+${quantidade}`, 'inimigo', colorHeal)
-                                    this.criarParticulas({'alvo': 'inimigo', 'cor': colorHeal, 'duracao': 1000, 'tamanho': 2, 'quantidade': quantidade, 'reverso': true})
                                 } else {
                                     if(this.masmorra.nome != 'Casa') {
                                         this.criarTextoFlutuante(`Errou!`, 'inimigo', colorMiss, 18)
@@ -1072,7 +1148,6 @@
                             this.pode_enviar_acao = true;
                             if(this.jogador && data.jogador.classe.nivel > this.jogador.classe.nivel) {
                                 this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18)
-                                this.criarParticulas({'alvo': 'jogador', 'cor': colorExperience, 'duracao': 4500, 'tamanho': 3, 'quantidade': 60})
                             }
                             if(data.inventario){
                                 const ids_entrada = data.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
@@ -1146,48 +1221,18 @@
                         }, 1000)
                     }, Math.random()*250)
                 },
-                criarParticulas({alvo, cor, duracao=1000, tamanho=1, quantidade=10, reverso=false, origem_aleatoria=false}) {
-                    return
+                criarParticulas({alvo, sprite_arquivo}) {
                     setTimeout(() => {
                         const container = document.querySelector(`.${alvo}-card .sprite-container`)
+                        const elementParticula = document.createElement('div')
 
-                        let top = '50%'
-                        let left = '50%'
-                        if(origem_aleatoria) {
-                            top = Math.random() * 100 + '%'
-                            left = Math.random() * 100 + '%'
-                        }
+                        elementParticula.classList.add('particula-dano');
+                        elementParticula.style.setProperty('--particula-sprite', `url('static/${sprite_arquivo}')`)
+                        container.appendChild(elementParticula)
+                        setTimeout(() => {
+                            elementParticula.remove()
+                        }, 700)
 
-                        for (let i = 0; i < quantidade; i++) {
-                            const particula = document.createElement('div')
-                            particula.className = 'particula'
-                            particula.style.backgroundColor = cor
-                            particula.style.boxShadow = `0 0 4px ${cor}`
-                            particula.style.top = top
-                            particula.style.left = left
-                            
-                            // Gera ângulo aleatório
-                            const angle = Math.random() * Math.PI * 2
-                            const distance = 20 + Math.random() * 30
-                            
-                            // Calcula posição final
-                            const tx = Math.cos(angle) * distance * tamanho
-                            const ty = Math.sin(angle) * distance * tamanho
-                            
-                            particula.style.setProperty('--tx', `${tx}px`)
-                            particula.style.setProperty('--ty', `${ty}px`)
-                            particula.style.setProperty('--duracao', `${duracao}ms`)
-                            if(reverso) {
-                                particula.style.setProperty('--direcao', 'reverse')
-                            }
-                            
-                            container.appendChild(particula)
-                            
-                            // Remove a partícula após a animação
-                            setTimeout(() => {
-                                particula.remove()
-                            }, duracao)
-                        }
                     }, Math.random()*250)
                 },
                 login() {

@@ -90,7 +90,7 @@ class Classes(Enum):
     )
 
     TEMPLARIO = Classe(
-        nome='TEMPLÁRIO',
+        nome='TEMPLARIO',
         nivel=3,
         sprite_x=4,
         sprite_y=1,

@@ -5,13 +5,15 @@ from typing import Union
 
 from config import get_config
 from models import inimigos
-from models.entidade import Entidade
+from models.inimigos import Inimigo
 from models.jogador import Classes, Jogador
+
+UNION_INIMIGO_JOGADOR = Union[Inimigo, Jogador]
 
 
 class Combate:
 
-    def __init__(self, jogador: Jogador, inimigo: Entidade):
+    def __init__(self, jogador: Jogador, inimigo: Inimigo):
         self.config = get_config()
         self.jogador = jogador
         self.inimigo = inimigo
@@ -19,7 +21,7 @@ class Combate:
         self.acao_inimigo = None
         self.contagem_turno = 0
 
-    def calcular_dano_magico(self, de: Entidade, para: Entidade) -> int:
+    def calcular_dano_magico(self, de: UNION_INIMIGO_JOGADOR, para: UNION_INIMIGO_JOGADOR) -> int:
         """Calcula o dano causado por uma entidade em outra."""
         # Base do dano é a força do atacante
         dano_base = de.inteligencia
@@ -41,7 +43,7 @@ class Combate:
         dano = round(dano_base * fator_forca * fator_resistencia * fator_aleatorio)
         return max(self.config["game"]["dano_minimo"], dano)
 
-    def calcular_dano(self, de: Entidade, para: Entidade) -> int:
+    def calcular_dano(self, de: UNION_INIMIGO_JOGADOR, para: UNION_INIMIGO_JOGADOR) -> int:
         """Calcula o dano causado por uma entidade em outra."""
         # Base do dano é a força do atacante
         dano_base = de.forca
@@ -65,10 +67,13 @@ class Combate:
         # Garante que o dano mínimo seja 1
         return max(self.config["game"]["dano_minimo"], dano)
 
-    def calcular_chance_acerto(self, de: Entidade, para: Entidade) -> bool:
+    def calcular_chance_acerto(self, de: UNION_INIMIGO_JOGADOR, para: UNION_INIMIGO_JOGADOR) -> bool:
         """Calcula a chance de acerto de um ataque."""
         # Base de chance de acerto
         chance_base = self.config["game"]["chance_acerto_base"]
+
+        if de.agilidade/10 > para.agilidade:
+            return True
 
         # Calcula a diferença de agilidade
         diferenca_agilidade = de.agilidade - para.agilidade
@@ -234,16 +239,16 @@ class Combate:
 
         if not self.jogador.estado_nome == "congelado":
             await self.executar_turno_jogador(atributos_equipamentos_jogador)
-            if self.inimigo.vida <= 0:
-                return 'jogador'
         await self.executar_acao_jogador(atributos_equipamentos_jogador)  # Jogador tem preferência mesmo congelado
         await self.atualizar_estado_jogador()
 
         if not self.inimigo.estado_nome == "congelado":
             await self.executar_turno_inimigo(atributos_equipamentos_jogador)
-            if self.jogador.vida <= 0:
-                return 'inimigo'
             await self.executar_acao_inimigo(atributos_equipamentos_jogador)
         await self.atualizar_estado_inimigo()
 
+        if self.inimigo.vida <= 0:
+            return 'jogador'
+        elif self.jogador.vida <= 0:
+            return 'inimigo'
         return False
