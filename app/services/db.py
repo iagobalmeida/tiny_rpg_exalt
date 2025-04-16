@@ -13,6 +13,7 @@ class Usuario(SQLModel, table=True):
     descricao: str = Field(default='Caçar, evoluir, caçar!')
     email: str = Field(index=True, unique=True)
     senha: str
+    ouro: int = Field(default=0)
     classe: str = Field(default='APRENDIZ')
     level: int = Field(default=1)
     experiencia: int = Field(default=0)
@@ -78,7 +79,7 @@ def __criar_usuario_de_teste(classe: str, level: int = 16):
             resistencia=int(level*3/4),
             agilidade=int(level*3/4),
             inteligencia=int(level*3/4),
-            tamanho_inventario=16
+            tamanho_inventario=level
         )
     except Exception as ex:
         print(ex)

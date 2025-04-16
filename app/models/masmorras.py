@@ -1,4 +1,4 @@
-from models import inimigos, itens
+from data import itens, inimigos
 from models.masmorra import Masmorra
 from models.npcs import mae
 

@@ -3,7 +3,7 @@ import random
 from typing import List, Literal, Tuple, Union
 
 from models.entidade import Entidade, Objeto
-from models.inimigos import Inimigo
+from models.inimigo import Inimigo
 from models.item import UNION_ITEM
 from pydantic import Field
 
@@ -23,13 +23,13 @@ class Masmorra(Objeto):
     @classmethod
     def casa(cls):
         """Retorna uma instância da masmorra Casa."""
-        from models.masmorras import casa
+        from data.masmorras import casa
         return casa.clone()
 
     @classmethod
     def por_nome(cls, nome: str):
         """Retorna uma instância da masmorra pelo nome."""
-        from models.masmorras import MASMORRAS
+        from data.masmorras import MASMORRAS
         return MASMORRAS[nome].clone()
 
     def clone(self):

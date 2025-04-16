@@ -1,105 +1,14 @@
-import json
 import math
-from dataclasses import dataclass
-from enum import Enum
 from logging import getLogger
 from typing import Dict, Literal, Optional, Tuple
 
 from config import get_config
+from data.classes import Classes
+from models.classe import Classe
 from models.entidade import Entidade
 from pydantic import Field
 
 log = getLogger('uvicorn')
-
-CLASSE_TIPOS = Literal['APRENDIZ', 'SELVAGEM', 'BARBARO', 'MAGO', 'FEITICEIRO', 'GUERREIRO', 'TEMPLARIO']
-
-
-@dataclass
-class Classe():
-    nome: str
-    sprite_x: int
-    sprite_y: int
-    nivel: int = 1
-    proxima_classe: Optional[str] = None
-    habilidade_ii_nome: Optional[str] = None
-    habilidade_ii_descricao: Optional[str] = None
-    habilidade_iii_nome: Optional[str] = None
-    habilidade_iii_descricao: Optional[str] = None
-
-
-class Classes(Enum):
-    # Todas as habilidades são afetadas por INT e ATTR principal
-
-    APRENDIZ = Classe(
-        nome='APRENDIZ',
-        sprite_x=1,
-        sprite_y=5
-    )
-
-    SELVAGEM = Classe(
-        nome='SELVAGEM',
-        nivel=2,
-        sprite_x=0,
-        sprite_y=3,
-        proxima_classe='BARBARO',
-        habilidade_ii_nome='FÚR.',
-        habilidade_ii_descricao='Fúria'
-    )
-
-    BARBARO = Classe(
-        nome='BARBARO',
-        nivel=3,
-        sprite_x=1,
-        sprite_y=3,
-        habilidade_ii_nome='FÚR.',
-        habilidade_ii_descricao='Fúria',
-        habilidade_iii_nome='EXEC.',
-        habilidade_iii_descricao='Execução',
-    )
-
-    MAGO = Classe(
-        nome='MAGO',
-        nivel=2,
-        sprite_x=5,
-        sprite_y=2,
-        proxima_classe='FEITICEIRO',
-        habilidade_ii_nome='BOL. FOG.',
-        habilidade_ii_descricao='Bola de Fogo'
-    )
-
-    FEITICEIRO = Classe(
-        nome='FEITICEIRO',
-        nivel=3,
-        sprite_x=6,
-        sprite_y=2,
-        proxima_classe=None,
-        habilidade_ii_nome='BOL. FOG.',
-        habilidade_ii_descricao='Bola de Fogo',
-        habilidade_iii_nome='CONG.',
-        habilidade_iii_descricao='Congelar',
-    )
-
-    GUERREIRO = Classe(
-        nome='GUERREIRO',
-        nivel=2,
-        sprite_x=0,
-        sprite_y=1,
-        proxima_classe='TEMPLARIO',
-        habilidade_ii_nome='BENÇ.',
-        habilidade_ii_descricao='Benção'
-    )
-
-    TEMPLARIO = Classe(
-        nome='TEMPLARIO',
-        nivel=3,
-        sprite_x=4,
-        sprite_y=1,
-        proxima_classe=None,
-        habilidade_ii_nome='BENÇ.',
-        habilidade_ii_descricao='Benção',
-        habilidade_iii_nome='REDN.',
-        habilidade_iii_descricao='Redenção',
-    )
 
 
 class Jogador(Entidade):
@@ -143,6 +52,7 @@ class Jogador(Entidade):
             nome=usuario.nome,
             descricao=usuario.descricao,
             email=usuario.email,
+            ouro=usuario.ouro,
             classe=classe.value,
             level=usuario.level,
             experiencia=usuario.experiencia,
@@ -193,7 +103,7 @@ class Jogador(Entidade):
             setattr(self, atributo, getattr(self, atributo) + 1)
             self.pontos_disponiveis -= 1
 
-    def subir_nivel_classe(self, nome_classe: Optional[CLASSE_TIPOS] = None):
+    def subir_nivel_classe(self, nome_classe: Optional[Literal['APRENDIZ', 'SELVAGEM', 'BARBARO', 'MAGO', 'FEITICEIRO', 'GUERREIRO', 'TEMPLARIO']] = None):
         """Sobe o nível da classe do jogador."""
         config = get_config()
 

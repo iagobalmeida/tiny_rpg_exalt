@@ -47,4 +47,6 @@ class Entidade(Objeto):
         values['vida'] = self.vida_maxima
         values['energia'] = self.energia_maxima
         values['id_unico'] = str(uuid4())
+        values['estado_nome'] = None
+        values['estado_duracao'] = 0
         return classname(**values)

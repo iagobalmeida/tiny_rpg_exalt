@@ -23,6 +23,7 @@
                 width: auto !important;
             }
         }
+        
 
         [data-bs-toggle] {
             cursor: pointer;
@@ -45,9 +46,9 @@
         }
 
         .container {
-            max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
+            max-width: 900px;
         }
 
         .card, .modal-content {
@@ -495,6 +496,11 @@
                 opacity: 50%;
             }
         }
+
+        .item-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -591,7 +597,7 @@
                                     </h3>
                                 </div>
                                 <div class="text-center my-2">
-                                    <div class="sprite-container"  :style="{'animation-duration': `${500*jogador.resistencia/jogador.agilidade}ms`}">
+                                    <div class="sprite-container"  :style="{'animation-duration': `${Math.max(250, 500*jogador.resistencia/jogador.agilidade)}ms`}">
                                         <div :class="`sprite ${jogador.estado_nome} ${jogador.vida <= 0 ? 'morto' : ''}`"
                                              :style="{
                                                  '--sprite-x': jogador.sprite_x, 
@@ -794,10 +800,11 @@
                         <div class="material-symbols-outlined">business_center</div>
                         Inventário
                     </h3>
-                    <div class="d-flex flex-wrap gap-3 justify-content-center align-items-center">
+                    <div class="item-container gap-3 justify-content-center align-items-center ">
                         <button
                         :class="`item p-1 rounded ${inventarioClasse(n-1)}`"
-                        style="background:rgba(2, 2, 2, 0.25)" v-for="n in tamanho_inventario"
+                        style="background:rgba(2, 2, 2, 0.25); aspect-ratio: 1/1;"
+                        v-for="n in tamanho_inventario"
                         data-bs-toggle="popover"
                         :data-bs-title="inventarioBsTitle(n-1)"
                         data-bs-custom-class="popover"
@@ -819,7 +826,7 @@
                                 {{inventarioSpanInformacaoAdicional(n-1)}}
                             </span>
                         </button>
-                        <button class="btn btn-light w-100">
+                        <button class="btn btn-light w-100" style="grid-column-start: 1; grid-column-end: 9;">
                             +8 espaços
                             <div class="d-flex align-items-center justify-content-center gap-1">
                                 <div class="material-symbols-outlined text-black">paid</div> 50000
@@ -1072,7 +1079,7 @@
                         _linha = _linha.replace('ATTR_RESISTENCIA', '<span class="material-symbols-outlined">shield</span>')
                         _linha = _linha.replace('ATTR_INTELIGENCIA', '<span class="material-symbols-outlined">psychology</span>')
                         _linha = _linha.replace('ATTR_VIDA', '<span class="font-bold" style="color:#198754">Pontos de Vida</span>')
-                        _linha = _linha.replace('ATTR_ENERGIA', '<span class="font-bold" style="color:#1976d2">Pontos de Vida</span>')
+                        _linha = _linha.replace('ATTR_ENERGIA', '<span class="font-bold" style="color:#1976d2">Pontos de Energia</span>')
                         return `<span class="d-flex align-items-center gap-1 w-full mb-1">${_linha}</span>`;
                     }, '').join('');
                 },

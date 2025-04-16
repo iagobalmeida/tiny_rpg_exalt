@@ -7,6 +7,7 @@ EQUIPAMENTO_TIPOS = Literal['ARMA', 'ARMADURA', 'ACESSORIO']
 
 
 class Item(Objeto):
+    identificador: str
     descricao: List[str]
     quantidade: int = Field(default=1)
     sprite_x: int = Field(default=0)

@@ -1,11 +1,10 @@
 import math
 import random
-from datetime import datetime
 from typing import Union
 
 from config import get_config
-from models import inimigos
-from models.inimigos import Inimigo
+from data import inimigos
+from models.inimigo import Inimigo
 from models.jogador import Classes, Jogador
 
 UNION_INIMIGO_JOGADOR = Union[Inimigo, Jogador]
@@ -193,10 +192,10 @@ class Combate:
             chance_adicional = random.random() > 0.5
             if self.calcular_chance_acerto(self.inimigo, jogador_equipado) and chance_adicional:
                 if self.jogador.estado_nome == "sangramento":
-                    self.jogador.estado_duracao += 5
+                    self.jogador.estado_duracao += 2
                 else:
                     self.jogador.estado_nome = "sangramento"
-                    self.jogador.estado_duracao = 10
+                    self.jogador.estado_duracao = 5
 
     async def executar_passiva_jogador_classe(self):
         if self.jogador.classe == Classes.SELVAGEM.value:
@@ -214,7 +213,7 @@ class Combate:
 
     async def atualizar_estado_jogador(self):
         if self.jogador.estado_nome == "sangramento":
-            self.jogador.vida = max(0, int(self.jogador.vida * 0.95))
+            self.jogador.vida = max(0, int(self.jogador.vida * 0.99))
 
         if self.jogador.estado_duracao > 0:
             self.jogador.estado_duracao -= 1
@@ -224,7 +223,7 @@ class Combate:
 
     async def atualizar_estado_inimigo(self):
         if self.inimigo.estado_nome == "sangramento":
-            self.inimigo.vida = max(0, int(self.inimigo.vida * 0.95))
+            self.inimigo.vida = max(0, int(self.inimigo.vida * 0.99))
 
         if self.inimigo.estado_duracao > 0:
             self.inimigo.estado_duracao -= 1
