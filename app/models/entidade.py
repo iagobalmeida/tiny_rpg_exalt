@@ -7,7 +7,6 @@ OBJETOS_TIPOS = Literal['OBJETO', 'CONSUMIVEL', 'EQUIPAMENTO', 'NPC', 'INIMIGO',
 
 
 class Objeto(BaseModel):
-    id_unico: str = Field(default_factory=lambda: str(uuid4()))
     nome: str
     descricao: str
     tipo: OBJETOS_TIPOS = Field(default='OBJETO')
@@ -46,7 +45,6 @@ class Entidade(Objeto):
         values = self.model_dump()
         values['vida'] = self.vida_maxima
         values['energia'] = self.energia_maxima
-        values['id_unico'] = str(uuid4())
         values['estado_nome'] = None
         values['estado_duracao'] = 0
         return classname(**values)

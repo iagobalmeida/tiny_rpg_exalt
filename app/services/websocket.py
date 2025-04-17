@@ -51,6 +51,7 @@ class WebSocketManager:
         """Envia uma mensagem para um jogador específico."""
         if player_id in self.connected_players:
             await self.connected_players[player_id].send_json(message)
+            self.game_states_last_payloads[player_id] = message
 
     async def broadcast(self, message: Dict[str, Any], exclude: int = None):
         """Envia uma mensagem para todos os jogadores conectados, exceto o especificado."""
@@ -118,6 +119,31 @@ class WebSocketManager:
                 "message": str(e)
             })
 
+    def diff_dicts(self, new, old):
+        diff = {}
+
+        if not old:
+            return new
+
+        for key in new:
+            if key == 'type':
+                diff[key] = new[key]
+            new_val = new[key]
+            old_val = old.get(key, None)
+
+            if isinstance(new_val, dict) and isinstance(old_val, dict):
+                nested_diff = self.diff_dicts(new_val, old_val)
+                if nested_diff:
+                    diff[key] = nested_diff
+            elif isinstance(new_val, list) and isinstance(old_val, list):
+                if new_val != old_val:
+                    diff[key] = new_val  # envia lista inteira se houver diferença
+            else:
+                if new_val != old_val:
+                    diff[key] = new_val
+
+        return diff
+
     async def send_update(self, player_id: int):
         game_state = self.game_states[player_id]
         update_payload = {
@@ -129,20 +155,11 @@ class WebSocketManager:
                     **masmorra.get_websocket_data(),
                 }
                 for chave, masmorra in MASMORRAS.items()
-            ],
-            "logs": game_state.get_logs()
+            ]
         }
-
-        # TODO: Só manda update das coisas que foram alteradas
-
-        # if self.game_states_last_payloads.get(player_id):
-        #     for key, value in self.game_states_last_payloads.items():
-        #         if update_payload.get(key, None) == value:
-        #             del update_payload[key]
-
+        # TODO: Esse bendito tem que funcionar
+        # update_payload = self.diff_dicts(update_payload, self.game_states_last_payloads.get(player_id, None))
         await self.send_message(player_id, update_payload)
-
-        self.game_states_last_payloads[player_id] = update_payload
 
     async def process_game_loop(self):
         """Processa o loop principal do jogo para todos os jogadores."""

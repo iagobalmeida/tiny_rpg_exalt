@@ -191,8 +191,8 @@ class GameState:
             return
 
         if self.masmorra.nome == 'Casa':
-            cura = math.ceil(self.jogador.vida * 0.2)
-            cura_energia = math.ceil(self.jogador.energia * 0.2)
+            cura = math.ceil(max(self.jogador.vida_maxima/15, self.jogador.vida * 0.2))
+            cura_energia = math.ceil(max(self.jogador.vida_maxima/15, self.jogador.energia * 0.2))
             self.jogador.vida = min(max(1, self.jogador.vida + cura), self.jogador.vida_maxima)
             self.jogador.energia = min(max(1, self.jogador.energia + cura_energia), self.jogador.energia_maxima)
             self.jogador.estado_nome = None

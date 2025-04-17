@@ -244,18 +244,6 @@
             border-color: #1565c0;
         }
 
-        .messages-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .messages-list li {
-            background-color: rgba(255, 255, 255, 0.05);
-            margin-bottom: 8px;
-            padding: 8px 16px;
-            border-radius: 8px;
-        }
-
         .progress {
             height: 32px;
             margin-bottom: 8px;
@@ -274,9 +262,9 @@
         }
 
         .energia-bar {
-            background-color: #1976d2;
-            border-bottom: 1px solid darkblue;
-            border-top: 1px solid cyan;
+            background-color: #b319d2;
+            border-bottom: 1px solid rgb(134, 0, 139);
+            border-top: 1px solid rgb(174, 0, 255);
         }
 
         .status-bars {
@@ -286,7 +274,6 @@
         [data-bs-toggle="tooltip"] {
             cursor: help;
         }
-
 
         @keyframes particula {
             0% {
@@ -298,12 +285,15 @@
                 opacity: 0;
             }
         }
+
         .texto-flutuante {
             position: absolute;
             top: 0;
             left: 0;
             font-weight: bold;
             animation: texto-flutuante 2s ease-out forwards;
+            transform: translate(-50%, -50%) scale(1);
+            z-index: 99;
             
             -webkit-filter: drop-shadow(1px 1px 0 black)
                             drop-shadow(-1px 1px 0 black)
@@ -318,11 +308,11 @@
 
         @keyframes texto-flutuante {
             0% {
-                transform: translate(0, 0) scale(1);
+                transform: translate(-50%, -50%) scale(1.1) rotate(-6deg);
                 opacity: 1;
             }
             100% {
-                transform: translate(0, -250%) scale(0.5);
+                transform: translate(-50%, -350%) scale(0.5) rotate(12deg);
                 opacity: 0;
             }
         }
@@ -369,7 +359,6 @@
                 margin-bottom: .5rem;
             }
         }
-
 
         .popover {
             --bs-popover-border-color: white;
@@ -538,8 +527,8 @@
     <div id="app" class="container">
         <audio id="audio_musica" volume="0" src="static/audio_musica.wav" loop></audio>
         <audio id="audio_dano_monstro" volume="0" src="static/audio_dano_monstro.wav"></audio>
-        <audio id="audioDanoJogador" volume="0" src="static/audioDanoJogador.wav"></audio>
-        <audio id="audioExpUp" volume="0" src="static/audioExpUp.wav"></audio>
+        <audio id="audio_dano_jogador" volume="0" src="static/audio_dano_jogador.wav"></audio>
+        <audio id="audio_exp_up" volume="0" src="static/audio_exp_up.wav"></audio>
         <audio id="audio_level_up" volume="0" src="static/audio_level_up.wav"></audio>
         <audio id="audio_usar_item" volume="0" src="static/audio_usar_item.wav"></audio>
 
@@ -679,13 +668,13 @@
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Força" @click="jogador.pontos_disponiveis && aumentarAtributo('forca')">
                                             <span class="material-symbols-outlined">fitness_center</span>
-                                            {{ jogador.forca }} {{ atributosEquipamentosJogador['forca'] ? `(+${atributosEquipamentosJogador['forca']})` : ''}}
+                                            {{ jogador.forca }} {{ atributosEquipamentosJogador && atributosEquipamentosJogador['forca'] ? `(+${atributosEquipamentosJogador['forca']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Agilidade" @click="jogador.pontos_disponiveis && aumentarAtributo('agilidade')">
                                             <span class="material-symbols-outlined">directions_run</span>
-                                            {{ jogador.agilidade }} {{ atributosEquipamentosJogador['agilidade'] ? `(+${atributosEquipamentosJogador['agilidade']})` : ''}}
+                                            {{ jogador.agilidade }} {{ atributosEquipamentosJogador && atributosEquipamentosJogador['agilidade'] ? `(+${atributosEquipamentosJogador['agilidade']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -697,13 +686,13 @@
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Resistência" @click="jogador.pontos_disponiveis && aumentarAtributo('resistencia')">
                                             <span class="material-symbols-outlined">shield</span>
-                                            {{ jogador.resistencia }} {{ atributosEquipamentosJogador['resistencia'] ? `(+${atributosEquipamentosJogador['resistencia']})` : ''}}
+                                            {{ jogador.resistencia }} {{ atributosEquipamentosJogador && atributosEquipamentosJogador['resistencia'] ? `(+${atributosEquipamentosJogador['resistencia']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Inteligência" @click="jogador.pontos_disponiveis && aumentarAtributo('inteligencia')">
                                             <span class="material-symbols-outlined">psychology</span>
-                                            {{ jogador.inteligencia }} {{ atributosEquipamentosJogador['inteligencia'] ? `(+${atributosEquipamentosJogador['inteligencia']})` : ''}}
+                                            {{ jogador.inteligencia }} {{ atributosEquipamentosJogador && atributosEquipamentosJogador['inteligencia'] ? `(+${atributosEquipamentosJogador['inteligencia']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -841,9 +830,9 @@
                         Inventário
                     </h3>
                     <div class="item-container gap-3 justify-content-center align-items-center">
-                        <div class="dropdown-center" v-for="n in tamanhoInventario">
+                        <div class="dropdown-center" v-for="(item, indice) in inventario">
                             <button
-                            :class="`item p-1 rounded ${inventarioClasse(n-1)}`"
+                            :class="`item p-1 rounded ${item.em_uso ? 'em-uso' : ''}`"
                             style="background:rgba(2, 2, 2, 0.25); aspect-ratio: 1/1;"
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
@@ -852,33 +841,53 @@
                             >
                                 <div class="sprite" :style="{
                                     '--size': 'calc(2 * 32px)',
-                                    '--sprite-x': inventarioSpriteX(n-1),
-                                    '--sprite-y':inventarioSpriteY(n-1),
+                                    '--sprite-x': item.sprite_x,
+                                    '--sprite-y': item.sprite_y,
                                     'background-image': `url('/static/items.png')`,
                                     'background-size': 'calc(2 * 352px) calc(2 * 832px)'
                                 }">
                                 </div>
                                 <span class="bg-white text-black rounded border-white quantidade">
-                                    {{inventarioSpanQuantidade(n-1)}}
+                                    {{item.quantidade}}
                                 </span>
-                                <span class="bg-white text-black rounded border-white informacao-adicional">
-                                    {{inventarioSpanInformacaoAdicional(n-1)}}
+                                <span class="bg-white text-black rounded border-white informacao-adicional" v-if="item.tipo == 'EQUIPAMENTO' && item.em_uso">
+                                    Em Uso
                                 </span>
                             </button>
-                            <div class="dropdown-menu fade" v-if="n-1 < inventario.length">
-                                <li><h5>{{inventario[n-1]['nome']}}</h5></li>
-                                <p class="mb-0" v-html="processarDescricaoItem(inventario[n-1]['descricao'])"></p>
+                            <div class="dropdown-menu">
+                                <li><h5>{{item.nome}}</h5></li>
+                                <p class="mb-0" v-html="processarDescricaoItem(item.descricao)"></p>
                                 <li><hr class="dropdown-divider mb-3"></li>
-                                <a class="dropdown-item" @click="handleAcaoInventario(n-1, 'usar')">
+                                <a class="dropdown-item" @click="itemAcao(indice, 'usar')" v-if="item.tipo == 'EQUIPAMENTO'">
+                                    {{ item.em_uso ? 'Remover' : 'Equipar' }}
+                                </a>
+                                <a class="dropdown-item" @click="itemAcao(indice, 'usar')" v-else>
                                     Usar
                                 </a>
-                                <a class="dropdown-item" @click="handleAcaoInventario(n-1, 'descartar')">
+                                <a class="dropdown-item" @click="itemAcao(indice, 'descartar')">
                                     Descartar
                                 </a>
-                                <a class="dropdown-item" @click="handleAcaoInventario(n-1, 'descartar_todos')" v-if="inventarioSpanQuantidade(n) > 0">
+                                <a class="dropdown-item" @click="itemAcao(indice, 'descartar_todos')" v-if="item.quantidade > 1">
                                     Descartar Todos
                                 </a>
                             </div>
+                        </div>
+                        <div class="dropdown-center" v-for="n in (tamanhoInventario - inventario.length)">
+                            <button
+                            class="item p-1 rounded vazio"
+                            style="background:rgba(2, 2, 2, 0.25); aspect-ratio: 1/1;"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            data-bs-custom-class="popover"
+                            >
+                                <div class="sprite" :style="{
+                                    '--size': 'calc(2 * 32px)',
+                                    '--sprite-x': 3,
+                                    '--sprite-y': 24,
+                                    'background-image': `url('/static/items.png')`,
+                                    'background-size': 'calc(2 * 352px) calc(2 * 832px)'
+                                }">
+                            </button>
                         </div>
                         <button class="btn btn-light w-100" style="grid-column-start: 1; grid-column-end: 9;">
                             +8 espaços
@@ -896,9 +905,6 @@
                     <button class="btn btn-light">Placar de Líderes</button>
                     <button @click="toggleSons" class="btn btn-light">{{audioLigado ? 'Desligar' : 'Ligar'}} sons</button>
                     <button class="btn btn-danger ms-md-auto" onclick="location.reload()">Sair</button>
-                    <ul class="messages-list list-unstyled" v-if="false">
-                        <li v-for="log in logs">{{ log }}</li>
-                    </ul>
                 </div>
             </div>
 
@@ -913,11 +919,11 @@
                         </div>
                         <div class="modal-body">
                             <div class="card mb-3" v-for="masmorra in masmorras">
-                                <div class="card-header text-white" data-bs-toggle="collapse" :data-bs-target="`#collapse_regiao_${masmorra.id_unico}`" style="cursor: pointer;">
+                                <div class="card-header text-white" data-bs-toggle="collapse" :data-bs-target="`#collapse_regiao_${masmorra.nome}`" style="cursor: pointer;">
                                     <h5>{{masmorra.nome}}</h5>
                                     <p class="mb-0">{{masmorra.descricao}}</p>
                                 </div>
-                                <div class="card-body collapse p-0" :id="`collapse_regiao_${masmorra.id_unico}`">
+                                <div class="card-body collapse p-0" :id="`collapse_regiao_${masmorra.nome}`">
                                     <div class="d-flex gap-3 flex-wrap align-items-center justify-content-center p-3" v-if="masmorra.lista_itens.length">
                                         <button
                                         class="item p-1 rounded"
@@ -1064,9 +1070,33 @@
         const { createApp } = Vue
         const colorDamage = '#d32f2f'
         const colorHeal = '#49F7B4'
-        const colorEnergy = '#1976d2'
+        const colorEnergy = '#b319d2'
         const colorExperience = '#0DCAF0'
         const colorMiss = '#ffff'
+
+        function deepMerge(target, patch) {
+            if (target === null || typeof target !== 'object') {
+                return structuredClone(patch);
+            }
+
+            for (const key in patch) {
+                const patchVal = patch[key];
+                const targetVal = target[key];
+
+                if (Array.isArray(patchVal)) {
+                    target[key] = [...patchVal];
+                } else if (
+                    patchVal !== null &&
+                    typeof patchVal === 'object'
+                ) {
+                    target[key] = deepMerge(targetVal, patchVal);
+                } else {
+                    target[key] = patchVal;
+                }
+            }
+
+            return target;
+        }
 
         createApp({
             data() {
@@ -1080,7 +1110,6 @@
                     tamanhoInventario: 8,
                     inventario: [],
                     atributosEquipamentosJogador: null,
-                    logs: [],
                     messages: [],
                     conexoes: {},
                     nome: '',
@@ -1094,7 +1123,7 @@
             },
             mounted() {
                 document.body.style.opacity = 1;
-                this.connectWebSocket()
+                this.wsConnect();
             },
             computed: {
                 jogadorProximaMissao(){
@@ -1105,18 +1134,17 @@
                         if(!missao[3]) return missao;
                     }
                     return null;
-                },
-                jogadorSpriteClasses() {
-                    petrificado = false
-                    envenenado = false
-
-                },
-                inimigoSpriteClasse() {
-
+                }
+            },
+            watch: {
+                audioLigado() {
+                    document.querySelectorAll('audio').forEach(el => {
+                        el.volume = this.audioLigado ? 1 : 0
+                    });
                 }
             },
             methods: {
-                connectWebSocket() {
+                wsConnect() {
                     const ws = new WebSocket('ws://localhost:8000/ws')
                     const conexaoId = Date.now().toString()
                     
@@ -1127,91 +1155,7 @@
                     }
                     
                     ws.onmessage = (event) => {
-                        const data = JSON.parse(event.data)
-                        if(data.type == 'update') {
-                            // Verifica se houve dano no jogador
-                            if(this.jogador) {
-                                if (data.jogador.vida < this.jogador.vida) {
-                                    const quantidade = this.jogador.vida - data.jogador.vida
-                                    this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorDamage)
-                                    this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': data.inimigo.sprite_particula})
-                                    this.tocarAudio('#audioDanoJogador')
-                                } else if (data.jogador.vida > this.jogador.vida && this.jogador.vida > 0) {
-                                    const quantidade = data.jogador.vida - this.jogador.vida
-                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorHeal)
-                                    this.tocarAudio('#audioExpUp')
-                                }
-
-                                if (data.jogador.energia < this.jogador.energia) {
-                                    const quantidade = this.jogador.energia - data.jogador.energia
-                                    this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorEnergy)
-                                } else if (data.jogador.energia > this.jogador.energia) {
-                                    const quantidade = data.jogador.energia - this.jogador.energia
-                                    this.tocarAudio('#audioExpUp');
-                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorEnergy)
-                                }
-
-                                if (data.jogador.experiencia > this.jogador.experiencia) {
-                                    const quantidade = data.jogador.experiencia - this.jogador.experiencia
-                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorExperience)
-                                    this.tocarAudio('#audioExpUp');
-                                    this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': 'particula_experiencia.png', 'tamanho': 1, 'opacidade': .5})
-                                }
-
-                                if (data.jogador.level > this.jogador.level) {
-                                    this.criarTextoFlutuante(`Level UP!`, 'jogador', colorExperience, 18)
-                                    this.tocarAudio('#audio_level_up');
-                                    this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': 'particula_level.png', 'aleatorio': false, 'tamanho': 2, 'opacidade': .5})
-                                }
-
-                            }
-                            if(this.inimigo && this.inimigo.id_unico == data.inimigo.id_unico) {
-                                if (data.inimigo.vida < this.inimigo.vida) {
-                                    const quantidade = this.inimigo.vida - data.inimigo.vida
-                                    this.criarTextoFlutuante(`${quantidade}`, 'inimigo', colorDamage)
-                                    this.criarParticulas({'alvo': 'inimigo', 'sprite_arquivo': 'particula_ataque_basico.png'})
-                                    this.tocarAudio('#audio_dano_monstro');
-                                } else if (data.inimigo.vida > this.inimigo.vida) {
-                                    const quantidade = data.inimigo.vida - this.inimigo.vida
-                                    this.criarTextoFlutuante(`+${quantidade}`, 'inimigo', colorHeal)
-                                }
-                            }
-                        }
-                        if (data.type === 'update' || data.type === 'paused' || data.type == 'action_response') {
-                            this.podeEnviarAcao = true;
-                            if(this.jogador && data.jogador.classe.nivel > this.jogador.classe.nivel) {
-                                this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18)
-                            }
-                            if(data.inventario){
-                                const ids_entrada = data.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
-                                const ids_locais = this.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
-                                if(ids_entrada != ids_locais) {
-                                    this.inventario = data.inventario
-                                    setTimeout(() => {
-                                        document.querySelectorAll('[role="tooltip"]').forEach(el => {
-                                            el.remove();
-                                        })
-                                        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-                                        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, { trigger: 'focus', sanitize: false }))
-                                    }, 200)
-                                }
-                            }
-                            this.jogador = data.jogador
-                            this.inimigo = data.inimigo
-                            this.masmorra = data.masmorra
-                            this.masmorras = data.masmorras
-                            this.atributosEquipamentosJogador = data.atributos_equipamentos_jogador
-                            this.tamanhoInventario = data.tamanho_inventario
-                            this.logs = [...data.logs, ...this.logs]
-                            if(this.jogador && !this.autenticado) {
-                                this.autenticado = true;
-                                document.querySelector('#audio_musica').play();
-                                setTimeout(() => {
-                                    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-                                    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-                                }, 500)
-                            }
-                        }
+                        this.wsReceive(event)
                     }
                     
                     ws.onclose = () => {
@@ -1227,6 +1171,132 @@
                         this.erroMultiplosClientes = true;
                     }
                 },
+                wsSend(type, data) {
+                    const ws = this.conexoes[this.conexaoAtual]
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: type,
+                            data: data
+                        }))
+                        this.podeEnviarAcao = false
+                    }
+                },
+                wsReceive(event) {
+                    const data = JSON.parse(event.data)
+                    if(data.type == 'update') {
+                        this.wsAnimate(data)
+                    }
+                    if (data.type === 'update' || data.type === 'paused' || data.type == 'action_response') {
+                        this.wsUpdateState(data);
+                    }
+                },
+                wsAnimate(data) {
+                    if(this.jogador && data.jogador) {
+                        this.wsAnimateJogador(data);
+                    }
+                    if(this.inimigo && data.inimigo && this.inimigo.id_unico == data.inimigo.id_unico) {
+                        this.wsAnimateInimigo(data);
+                    }
+                },
+                wsAnimateJogador(data) {
+                    const diferencaVida = data.jogador.vida - this.jogador.vida;
+                    if(diferencaVida > 0) {
+                        this.criarTextoFlutuante(diferencaVida, 'jogador', colorHeal);
+                    } else if(diferencaVida < 0) {
+                        this.criarParticulas({
+                            'alvo': 'jogador',
+                            'sprite_arquivo': data.inimigo.sprite_particula
+                        }).then((top, left) => {
+                            this.tocarAudio('#audio_dano_jogador');
+                            this.criarTextoFlutuante(diferencaVida, 'jogador', colorDamage, 32, top, left);
+                        });
+                    }
+
+                    const diferencaEnergia = data.jogador.energia - this.jogador.energia;
+                    if(diferencaEnergia > 0) {
+                        this.criarTextoFlutuante(diferencaEnergia, 'jogador', colorEnergy);
+                        // this.tocarAudio('#audio_exp_up');
+                    } else if(diferencaEnergia < 0) {
+                        this.criarTextoFlutuante(diferencaEnergia, 'jogador', colorEnergy);
+                    }
+
+                    const diferencaExperiencia = data.jogador.experiencia - this.jogador.experiencia;
+                    if(diferencaExperiencia > 0) {
+                        this.criarParticulas({
+                            'alvo': 'jogador',
+                            'sprite_arquivo': 'particula_experiencia.png',
+                            'opacidade': .5
+                        }).then((top, left) => {
+                            this.tocarAudio('#audio_exp_up');
+                            this.criarTextoFlutuante(diferencaExperiencia, 'jogador', colorExperience, 32, top, left);
+                        });
+                    }
+
+                    if(data.jogador.classe.nivel > this.jogador.classe.nivel) {
+                        this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18);
+                    }
+
+                    if(data.jogador.level > this.jogador.level) {
+                        this.criarParticulas({
+                            'alvo': 'jogador',
+                            'sprite_arquivo': 'particula_level.png',
+                            'aleatorio': false,
+                            'tamanho': 2,
+                            'opacidade': .5
+                        }).then((top, left)=> {
+                            this.tocarAudio('#audio_level_up');
+                            this.criarTextoFlutuante(`Level UP!`, 'jogador', colorExperience, 18, top, left);
+                        });
+                    }
+                },
+                wsAnimateInimigo(data) {
+                    const diferencaVida = data.inimigo.vida - this.inimigo.vida;
+                    if(diferencaVida > 0) {
+                        this.criarTextoFlutuante(diferencaVida, 'inimigo', colorHeal);
+                    } else if(diferencaVida < 0) {
+                        this.criarParticulas({
+                            'alvo': 'inimigo',
+                            'sprite_arquivo': 'particula_ataque_basico.png'
+                        }).then((top, left) => {
+                            this.tocarAudio('#audio_dano_monstro');
+                            this.criarTextoFlutuante(diferencaVida, 'inimigo', colorDamage, 32, top, left);
+                        });
+                    }
+                },
+                wsUpdateState(data) {
+                    this.podeEnviarAcao = true;
+                    if(data.jogador) {
+                        if(!this.autenticado) {
+                            this.autenticado = true;
+                            document.querySelector('#audio_musica').play();
+                            setTimeout(() => {
+                                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+                                const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+                            }, 500)
+                        }
+                    }
+                    if(data.jogador){
+                        this.jogador = deepMerge(this.jogador, data.jogador);
+                    }
+                    if(data.inventario){
+                        this.inventario = deepMerge(this.inventario, data.inventario);
+                    }
+                    if(data.inimigo) {
+                        this.inimigo = deepMerge(this.inimigo, data.inimigo);
+                    }
+                    if(data.masmorra) {
+                        this.masmorra = deepMerge(this.masmorra, data.masmorra);
+                    }
+                    if(data.masmorras) {
+                        this.masmorras = deepMerge(this.masmorras, data.masmorras);
+                    }
+                    if(data.atributosEquipamentosJogador) {
+                        this.atributosEquipamentosJogador = data.atributosEquipamentosJogador;
+                    }
+                    if(data.tamanhoInventario) {
+                        this.tamanhoInventario = data.tamanhoInventario;
+                    }
+                },
                 processarDescricaoItem(descricao) {
                     return descricao.map((linha) => {
                         _linha = linha.replace('ATTR_FORCA', '<span class="material-symbols-outlined">fitness_center</span>')
@@ -1239,34 +1309,7 @@
                     }, '').join('');
                 },
                 toggleCadastrando() {
-                    console.log('foo')
                     this.cadastrando = !this.cadastrando;
-                },
-                inventarioClasse(indice) {
-                    if(indice >= this.inventario.length) return 'vazio';
-                    if(this.inventario[indice]['tipo'] == 'EQUIPAMENTO') {
-                        return this.inventario[indice]['em_uso'] ? 'em-uso' : '';
-                    }
-                    return ''
-                },
-                inventarioSpriteX(indice) {
-                    if(indice >= this.inventario.length) return 3;
-                    return this.inventario[indice]['sprite_x'];
-                },
-                inventarioSpriteY(indice) {
-                    if(indice >= this.inventario.length) return 24;
-                    return this.inventario[indice]['sprite_y'];
-                },
-                inventarioSpanQuantidade(indice) {
-                    if(indice >= this.inventario.length) return 0;
-                    return this.inventario[indice]['quantidade'];
-                },
-                inventarioSpanInformacaoAdicional(indice) {
-                    if(indice >= this.inventario.length) return '';
-                    if(this.inventario[indice]['tipo'] != 'EQUIPAMENTO') return '';
-                    if(this.inventario[indice]['tipo'] == 'EQUIPAMENTO') {
-                        return this.inventario[indice]['em_uso'] ? 'Em uso' : '';
-                    }
                 },
                 tocarAudio(id) {
                     setTimeout(() => {
@@ -1276,184 +1319,88 @@
                         audio.play();
                     }, Math.random()*250)
                 },
-                getConexaoAtual() {
-                    return this.conexoes[this.conexaoAtual]
-                },
-                handleAcaoInventario(indice, acao) {
+                itemAcao(indice, acao) {
                     if(acao == 'usar') {
-                        this.usarItem(indice);
+                        this.wsSend('usar_item', { item_indice: indice });
                     } else if(acao == 'descartar') {
-                        this.descartarItem(indice);
+                        this.wsSend('descartar_item', { item_indice: indice });
                     } else if(acao == 'descartar_todos') {
-                        this.descartarItemTodos(indice);
+                        this.wsSend('descartar_item_todos', { item_indice: indice });
                     }
                 },
-                criarTextoFlutuante(texto, alvo, cor, tamanho=32) {
-                    setTimeout(() => {
-                        const container = document.querySelector(`.${alvo}-card .sprite-container`)
-                        const textoFlutuante = document.createElement('div')
-                        textoFlutuante.className = 'texto-flutuante'
-                        textoFlutuante.style.color = cor
-                        textoFlutuante.style.fontSize = tamanho + 'px'
-                        textoFlutuante.textContent = texto
-                        textoFlutuante.style.left = Math.random() * 75 + '%'
-                        container.appendChild(textoFlutuante)
+                criarTextoFlutuante(texto, alvo, cor, tamanho=32, top=null, left=null) {
+                    return new Promise((resolve) => {
+                        const container = document.querySelector(`.${alvo}-card .sprite-container`);
+                        const textoFlutuante = document.createElement('div');
+
+                        textoFlutuante.className = 'texto-flutuante';
+                        textoFlutuante.style.color = cor;
+                        textoFlutuante.style.fontSize = tamanho + 'px';
+                        textoFlutuante.textContent = texto;
+                        if(top == null) top = 50;
+                        else top -= 16;
+                        if(left == null) left = Math.random() * 75;
+                        
+                        textoFlutuante.style.top = `${top}%`;
+                        textoFlutuante.style.left = `${left}%`;
+                        container.appendChild(textoFlutuante);
+
                         setTimeout(() => {
-                            textoFlutuante.remove()
-                        }, 1000)
-                    }, Math.random()*250)
+                            textoFlutuante.remove();
+                            resolve();
+                        }, 1000);
+                    });
                 },
                 criarParticulas({alvo, sprite_arquivo, aleatorio=true, tamanho=1, duracao=750, opacidade=1}) {
-                    setTimeout(() => {
-                        const container = document.querySelector(`.${alvo}-card .sprite-container`)
-                        const elementParticula = document.createElement('div')
-
+                    return new Promise((resolve) => {
+                        const container = document.querySelector(`.${alvo}-card .sprite-container`);
+                        const elementParticula = document.createElement('div');
+                        const top = aleatorio ? 12.5 + Math.random() * 50 : 50
+                        const left = aleatorio ? 12.5 + Math.random() * 50 : 50
+                        elementParticula.style.top = `${top}%`;
+                        elementParticula.style.left = `${left}%`;
                         elementParticula.classList.add('particula-dano');
-                        elementParticula.style.left = aleatorio ? 12.5 + Math.random() * 50 + '%' : '50%';
-                        elementParticula.style.top = aleatorio ? 12.5 + Math.random() * 50 + '%' : '50%';
                         elementParticula.style.animationDuration = `${duracao}ms`;
                         elementParticula.style.opacity = opacidade;
                         if(tamanho != 1) {
                             elementParticula.style.transform = `translate(-50%, -50%) scale(${tamanho})`;
                         }
                         elementParticula.style.setProperty('--particula-sprite', `url('static/${sprite_arquivo}')`)
-                        container.appendChild(elementParticula)
-                        setTimeout(() => {
-                            elementParticula.remove()
-                        }, duracao-50)
+                        container.appendChild(elementParticula);
 
-                    }, Math.random()*500)
+                        setTimeout(() => {
+                            elementParticula.remove();
+                        }, duracao-50);
+
+                        setTimeout(() => {
+                            resolve(top, left);
+                        }, duracao/15);
+                    })
                 },
                 login() {
                     if(this.cadastrando) {
-                        const ws = this.getConexaoAtual()
-                        if (ws && ws.readyState === WebSocket.OPEN) {
-                            ws.send(JSON.stringify({
-                                type: 'signup',
-                                data: {
-                                    nome: this.nome,
-                                    email: this.email,
-                                    senha: this.senha,
-                                    confirmarSenha: this.confirmarSenha,
-                                }
-                            }))
-                            this.podeEnviarAcao = false
-                        }
+                        this.wsSend('signup', { nome: this.nome, email: this.email, senha: this.senha, confirmarSenha: this. confirmarSenha});
                     } else {
-                        const ws = this.getConexaoAtual()
-                        if (ws && ws.readyState === WebSocket.OPEN) {
-                            ws.send(JSON.stringify({
-                                type: 'login',
-                                data: {
-                                    email: this.email,
-                                    senha: this.senha
-                                }
-                            }))
-                            this.podeEnviarAcao = false
-                        }
-                    }
-                },
-                usarItem(item_id) {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'usar_item',
-                            data: {
-                                item_indice: item_id
-                            }
-                        }))
-                        this.podeEnviarAcao = false
+                        this.wsSend('login', { email: this.email, senha: this.senha });
                     }
                 },
                 toggleSons() {
                     this.audioLigado = !this.audioLigado;
-                    document.querySelectorAll('audio').forEach(el => {
-                        el.volume = this.audioLigado ? 1 : 0
-                    })
                 },
-                descartarItem(item_id) {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'descartar_item',
-                            data: {
-                                item_indice: item_id
-                            }
-                        }))
-                        this.podeEnviarAcao = false
-                    }
-                },
-                descartarItemTodos(item_id) {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'descartar_item_todos',
-                            data: {
-                                item_indice: item_id
-                            }
-                        }))
-                        this.podeEnviarAcao = false
-                    }
-                },
-                mudarMasmorra(novaMasmorra) {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'mudar_masmorra',
-                            data: {
-                                masmorra: novaMasmorra
-                            }
-                        }))
-                        this.podeEnviarAcao = false
-                    }
+                mudarMasmorra(masmorraChave) {
+                    this.wsSend('mudar_masmorra', { masmorra: masmorraChave });
                 },
                 pausarMasmorra() {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'pausar',
-                            data: {
-                                pausado: !this.masmorra.pausado
-                            }
-                        })) 
-                        this.podeEnviarAcao = false
-                    }
+                    this.wsSend('pausar', { pausado: this.masmorra.pausado });
                 },
                 aumentarAtributo(atributo) {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'aumentar_atributo',
-                            data: {
-                                atributo: atributo
-                            }
-                        }))
-                        this.podeEnviarAcao = false
-                    }
+                    this.wsSend('aumentar_atributo', { atributo: atributo });
                 },
                 enviarAcao(acao) {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'acao_jogador',
-                            data: { 
-                                acao: acao
-                            }
-                        }))
-                        this.podeEnviarAcao = false
-                    }
+                    this.wsSend('acao_jogador', { acao: acao });
                 },
                 subirNivelClasse(classe) {
-                    const ws = this.getConexaoAtual()
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'subir_nivel_classe',
-                            data: {
-                                classe: classe
-                            }
-                        }))
-                        this.podeEnviarAcao = false
-                    }
+                    this.wsSend('subir_nivel_classe', { classe: classe });
                 }
             }
         }).mount('#app')
