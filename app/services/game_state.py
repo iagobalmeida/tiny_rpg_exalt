@@ -1,7 +1,7 @@
 import asyncio
 import json
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 from logging import getLogger
 from typing import Any, Dict, List, Optional
 
@@ -28,16 +28,17 @@ class GameState:
         self.masmorra: Masmorra = None
         self.combate: Combate = None
         self.combate_acabou: bool = False
+        self.vencedor: str = None
         self.pausado: bool = False
         self.logs: List[str] = []
-        self.ultima_execucao: datetime = None
+        self.proxima_execucao: datetime = None
         self.timeout_turno = timeout_turno
 
     @property
     def deve_executar(self):
-        if not self.ultima_execucao:
+        if not self.proxima_execucao:
             return True
-        return (datetime.now() - self.ultima_execucao).total_seconds() > self.timeout_turno
+        return (datetime.now() >= self.proxima_execucao)
 
     def get_websocket_data(self) -> Dict[str, Any]:
         """Retorna os dados necessários para o frontend."""
@@ -134,6 +135,7 @@ class GameState:
         inimigo = self.masmorra.inimigo_aleatorio()
         self.combate = Combate(self.jogador, inimigo)
         self.combate_acabou = False
+        self.vencedor = None
 
     async def mudar_masmorra(self, nome_masmorra: str):
         """Muda a masmorra atual do jogador."""
@@ -184,42 +186,38 @@ class GameState:
             retorno['inteligencia'] += i.inteligencia
         return retorno
 
-    async def processar_turno(self):
-        """Processa um turno do jogo."""
-        try:
-            if not self.masmorra or not self.combate:
-                return
+    async def __processar_turno(self):
+        if not self.masmorra or not self.combate:
+            return
 
-            if self.masmorra.nome == 'Casa':
-                cura = math.ceil(self.jogador.vida * 0.2)
-                cura_energia = math.ceil(self.jogador.energia * 0.2)
-                self.jogador.vida = min(max(1, self.jogador.vida + cura), self.jogador.vida_maxima)
-                self.jogador.energia = min(max(1, self.jogador.energia + cura_energia), self.jogador.energia_maxima)
-                self.jogador.estado_nome = None
-                self.jogador.estado_duracao = 0
-                return
+        if self.masmorra.nome == 'Casa':
+            cura = math.ceil(self.jogador.vida * 0.2)
+            cura_energia = math.ceil(self.jogador.energia * 0.2)
+            self.jogador.vida = min(max(1, self.jogador.vida + cura), self.jogador.vida_maxima)
+            self.jogador.energia = min(max(1, self.jogador.energia + cura_energia), self.jogador.energia_maxima)
+            self.jogador.estado_nome = None
+            self.jogador.estado_duracao = 0
+            return
 
-            if self.combate_acabou:
-                self.iniciar_combate()
-                return
+        if self.combate_acabou:
+            self.iniciar_combate(renascer=self.jogador.vida <= 0)
+            return
 
-            vencedor = await self.combate.executar_turno(self.atributos_equipamentos_jogador)
-            if not vencedor:
-                return
-
-            if vencedor == 'inimigo':
-                self.jogador = self.jogador.renascido
+        if not self.vencedor:
+            self.vencedor = await self.combate.executar_turno(self.atributos_equipamentos_jogador)
+            return
+        else:
+            if self.vencedor == 'inimigo':
                 experiencia_perdida = int(self.combate.inimigo.experiencia * 1.5)
                 self.jogador.experiencia = max(0, self.jogador.experiencia - experiencia_perdida)
                 self.jogador.ouro = max(0, int(self.jogador.ouro - self.combate.inimigo.ouro/2))
                 self.masmorra.passos = 0
 
-            elif vencedor == 'jogador':
+            elif self.vencedor == 'jogador':
                 self.jogador.progredir_missao(self.combate.inimigo.nome)
 
                 item_aletorio = self.masmorra.item_aleatorio()
                 if item_aletorio:
-                    # TODO: Soma quantidade se já estiver no inventário
                     self.adicionar_item(item_aletorio)
 
                 experiencia_ganha = self.combate.inimigo.experiencia
@@ -228,14 +226,18 @@ class GameState:
                 self.masmorra.passos += 1
                 if self.jogador.deve_subir_nivel:
                     self.jogador.subir_nivel()
-
             self.combate_acabou = True
             return
+
+    async def processar_turno(self):
+        """Processa um turno do jogo."""
+        try:
+            await self.__processar_turno()
         except Exception as ex:
             log.exception(ex)
-            pass
         finally:
-            self.ultima_execucao = datetime.now()
+            espera = 500 if not self.combate_acabou else 1000
+            self.proxima_execucao = datetime.now() + timedelta(milliseconds=espera)
 
     def adicionar_item(self, item: UNION_ITEM):
         for inventario_item in self.inventario:

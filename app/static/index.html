@@ -132,13 +132,13 @@
             background-size: calc(192px*var(--particula-escala)) calc(64px*var(--particula-escala));
             background-position: calc(var(--particula-size-negativo) * var(--particula-sprite-x)) calc(var(--particula-size-negativo) * var(--particula-sprite-y));
             position: absolute;
-            mix-blend-mode: screen;
             display: block;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             image-rendering: pixelated;
             filter: brightness(2);
+            /* mix-blend-mode: screen; */
             animation: particula6Frames 750ms linear forwards;
             z-index: 10;
             -webkit-filter: drop-shadow(1px 1px 0 black)
@@ -196,7 +196,6 @@
             80% {
                 --particula-sprite-x: 4;
                 --particula-sprite-y: 1;
-                opacity: 1;
             }
             88% {
                 --particula-sprite-x: 5;
@@ -209,7 +208,6 @@
             100% {
                 --particula-sprite-x: 5;
                 --particula-sprite-y: 1;
-                opacity: 0;
             }
         }
 
@@ -530,17 +528,30 @@
             display: flex;
             flex-wrap: wrap;
         }
+
+        audio {
+            display: none;
+        }
     </style>
 </head>
-<body>
+<body style="opacity: 0;">
     <div id="app" class="container">
+        <audio id="audio_musica" volume="0" src="static/audio_musica.wav" loop></audio>
+        <audio id="audio_dano_monstro" volume="0" src="static/audio_dano_monstro.wav"></audio>
+        <audio id="audioDanoJogador" volume="0" src="static/audioDanoJogador.wav"></audio>
+        <audio id="audioExpUp" volume="0" src="static/audioExpUp.wav"></audio>
+        <audio id="audio_level_up" volume="0" src="static/audio_level_up.wav"></audio>
+        <audio id="audio_usar_item" volume="0" src="static/audio_usar_item.wav"></audio>
+
         <h1 class="text-center mb-4">Tiny RPG</h1>
 
-        <div class="alert alert-danger" v-if="erro_multiplos_clientes">
+        <h3 class="mt-3 text-center" v-if="!conexaoAtual">Conectando...</h3>
+
+        <div class="alert alert-danger" v-if="erroMultiplosClientes">
             Parece que já tem uma instância de Tiny RPG jogando!
         </div>
 
-        <div v-if="!erro_multiplos_clientes && !autenticado">
+        <div v-if="conexaoAtual && !erroMultiplosClientes && !autenticado">
             <div class="card">
                 <form class="card-body" @submit.prevent="login">
                     <div class="form-group mb-3" v-if="cadastrando">
@@ -556,8 +567,8 @@
                         <input v-model="senha" type="password" class="form-control" name="senha">
                     </div>
                     <div class="form-group mb-3" v-if="cadastrando">
-                        <label for="confirmar_senha">Confirmar Senha</label>
-                        <input v-model="confirmar_senha" type="password" class="form-control" name="confirmar_senha">
+                        <label for="confirmarSenha">Confirmar Senha</label>
+                        <input v-model="confirmarSenha" type="password" class="form-control" name="confirmarSenha">
                     </div>
                     <button class="btn btn-light">{{cadastrando ? 'Criar' : 'Entrar'}}</button>
                     <button type="button" class="btn btn-outline-light ms-2" @click="toggleCadastrando()">{{cadastrando ? 'Voltar' : 'Criar conta'}}</button>
@@ -565,8 +576,8 @@
             </div>
         </div>
 
-        <div v-if="!erro_multiplos_clientes && autenticado">
-            <div class="card mb-3" :class="{'opacity-50': !pode_enviar_acao}" v-if="masmorra">
+        <div v-if="conexaoAtual && !erroMultiplosClientes && autenticado">
+            <div class="card mb-3" :class="{'opacity-50': !podeEnviarAcao}" v-if="masmorra">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
@@ -579,7 +590,7 @@
                             <p class="mb-1">{{ masmorra.descricao }}</p>
                             <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-0">
                                 <div class="material-symbols-outlined">target</div>
-                                <p class="mb-0">Matar {{jogador_proxima_missao[0]}} / {{jogador_proxima_missao[1]}} {{jogador_proxima_missao[2]}}</p>
+                                <p class="mb-0">Matar {{jogadorProximaMissao[0]}} / {{jogadorProximaMissao[1]}} {{jogadorProximaMissao[2]}}</p>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -607,7 +618,7 @@
                 </div>
             </div>
     
-            <div class="row mb-3 gap-3 gap-md-0" :class="{'opacity-50': !pode_enviar_acao}">
+            <div class="row mb-3 gap-3 gap-md-0" :class="{'opacity-50': !podeEnviarAcao}">
                 <div class="col-md-5"> 
                     <div class="card jogador-card " v-if="jogador">
                         <div class="card-body p-0">
@@ -668,13 +679,13 @@
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Força" @click="jogador.pontos_disponiveis && aumentarAtributo('forca')">
                                             <span class="material-symbols-outlined">fitness_center</span>
-                                            {{ jogador.forca }} {{ atributos_equipamentos_jogador['forca'] ? `(+${atributos_equipamentos_jogador['forca']})` : ''}}
+                                            {{ jogador.forca }} {{ atributosEquipamentosJogador['forca'] ? `(+${atributosEquipamentosJogador['forca']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Agilidade" @click="jogador.pontos_disponiveis && aumentarAtributo('agilidade')">
                                             <span class="material-symbols-outlined">directions_run</span>
-                                            {{ jogador.agilidade }} {{ atributos_equipamentos_jogador['agilidade'] ? `(+${atributos_equipamentos_jogador['agilidade']})` : ''}}
+                                            {{ jogador.agilidade }} {{ atributosEquipamentosJogador['agilidade'] ? `(+${atributosEquipamentosJogador['agilidade']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -686,13 +697,13 @@
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Resistência" @click="jogador.pontos_disponiveis && aumentarAtributo('resistencia')">
                                             <span class="material-symbols-outlined">shield</span>
-                                            {{ jogador.resistencia }} {{ atributos_equipamentos_jogador['resistencia'] ? `(+${atributos_equipamentos_jogador['resistencia']})` : ''}}
+                                            {{ jogador.resistencia }} {{ atributosEquipamentosJogador['resistencia'] ? `(+${atributosEquipamentosJogador['resistencia']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Inteligência" @click="jogador.pontos_disponiveis && aumentarAtributo('inteligencia')">
                                             <span class="material-symbols-outlined">psychology</span>
-                                            {{ jogador.inteligencia }} {{ atributos_equipamentos_jogador['inteligencia'] ? `(+${atributos_equipamentos_jogador['inteligencia']})` : ''}}
+                                            {{ jogador.inteligencia }} {{ atributosEquipamentosJogador['inteligencia'] ? `(+${atributosEquipamentosJogador['inteligencia']})` : ''}}
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -716,17 +727,17 @@
                             {{ jogador.ouro }}
                         </div>
                     </div>
-                    <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviar_acao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviarAcao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
                         <div class="material-symbols-outlined text-black">star_shine</div>
                         <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_i}}</span>
                         <span>GLP. ESP.</span>
                     </button>
-                    <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviar_acao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviarAcao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
                         <div class="material-symbols-outlined text-black">star_shine</div>
                         <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_ii}}</span>
                         <span >{{jogador.classe.habilidade_ii_nome}}</span>
                     </button>
-                    <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviar_acao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviarAcao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
                         <div class="material-symbols-outlined text-black">star_shine</div>
                         <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_iii}}</span>
                         <span >{{jogador.classe.habilidade_iii_nome}}</span>
@@ -830,13 +841,14 @@
                         Inventário
                     </h3>
                     <div class="item-container gap-3 justify-content-center align-items-center">
-                        <div class="dropdown-center" v-for="n in tamanho_inventario">
+                        <div class="dropdown-center" v-for="n in tamanhoInventario">
                             <button
                             :class="`item p-1 rounded ${inventarioClasse(n-1)}`"
                             style="background:rgba(2, 2, 2, 0.25); aspect-ratio: 1/1;"
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
                             data-bs-custom-class="popover"
+                            @click="tocarAudio('#audio_usar_item')"
                             >
                                 <div class="sprite" :style="{
                                     '--size': 'calc(2 * 32px)',
@@ -855,7 +867,7 @@
                             </button>
                             <div class="dropdown-menu fade" v-if="n-1 < inventario.length">
                                 <li><h5>{{inventario[n-1]['nome']}}</h5></li>
-                                <p class="mb-0" v-html="processar_descricao_item(inventario[n-1]['descricao'])"></p>
+                                <p class="mb-0" v-html="processarDescricaoItem(inventario[n-1]['descricao'])"></p>
                                 <li><hr class="dropdown-divider mb-3"></li>
                                 <a class="dropdown-item" @click="handleAcaoInventario(n-1, 'usar')">
                                     Usar
@@ -878,10 +890,11 @@
                 </div>
             </div>
     
-            <div class="card mb-3" :class="{'opacity-50': !pode_enviar_acao}">
+            <div class="card mb-3" :class="{'opacity-50': !podeEnviarAcao}">
                 <div class="card-body d-flex flex-column flex-md-row gap-3">
                     <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_bestiario">Bestiário</button>
                     <button class="btn btn-light">Placar de Líderes</button>
+                    <button @click="toggleSons" class="btn btn-light">{{audioLigado ? 'Desligar' : 'Ligar'}} sons</button>
                     <button class="btn btn-danger ms-md-auto" onclick="location.reload()">Sair</button>
                     <ul class="messages-list list-unstyled" v-if="false">
                         <li v-for="log in logs">{{ log }}</li>
@@ -913,7 +926,7 @@
                                         :data-bs-title="item.nome"
                                         data-bs-custom-class="popover"
                                         data-bs-html="true"
-                                        :data-bs-content="processar_descricao_item(item.descricao)"
+                                        :data-bs-content="processarDescricaoItem(item.descricao)"
                                         >
                                             <div class="sprite" :style="{
                                                 '--size': 'calc(2 * 32px)',
@@ -1058,31 +1071,33 @@
         createApp({
             data() {
                 return {
-                    erro_multiplos_clientes: false,
+                    erroMultiplosClientes: false,
                     autenticado: false,
-                    pode_enviar_acao: true,
+                    podeEnviarAcao: true,
                     jogador: null,
                     inimigo: null,
                     masmorra: null,
-                    tamanho_inventario: 8,
+                    tamanhoInventario: 8,
                     inventario: [],
-                    atributos_equipamentos_jogador: null,
+                    atributosEquipamentosJogador: null,
                     logs: [],
                     messages: [],
                     conexoes: {},
                     nome: '',
                     email: '',
                     senha: '',
-                    confirmar_senha: '',
+                    audioLigado: false,
+                    confirmarSenha: '',
                     cadastrando: false,
-                    conexao_atual: null
+                    conexaoAtual: null
                 }
             },
             mounted() {
+                document.body.style.opacity = 1;
                 this.connectWebSocket()
             },
             computed: {
-                jogador_proxima_missao(){
+                jogadorProximaMissao(){
                     if(!this.jogador) return;
                     const chaves = Object.keys(this.jogador.missoes);
                     for(missao_chave in this.jogador.missoes) {
@@ -1091,17 +1106,128 @@
                     }
                     return null;
                 },
-                jogador_sprite_classes() {
+                jogadorSpriteClasses() {
                     petrificado = false
                     envenenado = false
 
                 },
-                inimigo_sprite_classes() {
+                inimigoSpriteClasse() {
 
                 }
             },
             methods: {
-                processar_descricao_item(descricao) {
+                connectWebSocket() {
+                    const ws = new WebSocket('ws://localhost:8000/ws')
+                    const conexaoId = Date.now().toString()
+                    
+                    ws.onopen = () => {
+                        this.conexoes[conexaoId] = ws
+                        this.conexaoAtual = conexaoId
+                        console.log(`Conexão ${conexaoId} estabelecida`)
+                    }
+                    
+                    ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data)
+                        if(data.type == 'update') {
+                            // Verifica se houve dano no jogador
+                            if(this.jogador) {
+                                if (data.jogador.vida < this.jogador.vida) {
+                                    const quantidade = this.jogador.vida - data.jogador.vida
+                                    this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorDamage)
+                                    this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': data.inimigo.sprite_particula})
+                                    this.tocarAudio('#audioDanoJogador')
+                                } else if (data.jogador.vida > this.jogador.vida && this.jogador.vida > 0) {
+                                    const quantidade = data.jogador.vida - this.jogador.vida
+                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorHeal)
+                                    this.tocarAudio('#audioExpUp')
+                                }
+
+                                if (data.jogador.energia < this.jogador.energia) {
+                                    const quantidade = this.jogador.energia - data.jogador.energia
+                                    this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorEnergy)
+                                } else if (data.jogador.energia > this.jogador.energia) {
+                                    const quantidade = data.jogador.energia - this.jogador.energia
+                                    this.tocarAudio('#audioExpUp');
+                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorEnergy)
+                                }
+
+                                if (data.jogador.experiencia > this.jogador.experiencia) {
+                                    const quantidade = data.jogador.experiencia - this.jogador.experiencia
+                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorExperience)
+                                    this.tocarAudio('#audioExpUp');
+                                    this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': 'particula_experiencia.png', 'tamanho': 1, 'opacidade': .5})
+                                }
+
+                                if (data.jogador.level > this.jogador.level) {
+                                    this.criarTextoFlutuante(`Level UP!`, 'jogador', colorExperience, 18)
+                                    this.tocarAudio('#audio_level_up');
+                                    this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': 'particula_level.png', 'aleatorio': false, 'tamanho': 2, 'opacidade': .5})
+                                }
+
+                            }
+                            if(this.inimigo && this.inimigo.id_unico == data.inimigo.id_unico) {
+                                if (data.inimigo.vida < this.inimigo.vida) {
+                                    const quantidade = this.inimigo.vida - data.inimigo.vida
+                                    this.criarTextoFlutuante(`${quantidade}`, 'inimigo', colorDamage)
+                                    this.criarParticulas({'alvo': 'inimigo', 'sprite_arquivo': 'particula_ataque_basico.png'})
+                                    this.tocarAudio('#audio_dano_monstro');
+                                } else if (data.inimigo.vida > this.inimigo.vida) {
+                                    const quantidade = data.inimigo.vida - this.inimigo.vida
+                                    this.criarTextoFlutuante(`+${quantidade}`, 'inimigo', colorHeal)
+                                }
+                            }
+                        }
+                        if (data.type === 'update' || data.type === 'paused' || data.type == 'action_response') {
+                            this.podeEnviarAcao = true;
+                            if(this.jogador && data.jogador.classe.nivel > this.jogador.classe.nivel) {
+                                this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18)
+                            }
+                            if(data.inventario){
+                                const ids_entrada = data.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
+                                const ids_locais = this.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
+                                if(ids_entrada != ids_locais) {
+                                    this.inventario = data.inventario
+                                    setTimeout(() => {
+                                        document.querySelectorAll('[role="tooltip"]').forEach(el => {
+                                            el.remove();
+                                        })
+                                        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+                                        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, { trigger: 'focus', sanitize: false }))
+                                    }, 200)
+                                }
+                            }
+                            this.jogador = data.jogador
+                            this.inimigo = data.inimigo
+                            this.masmorra = data.masmorra
+                            this.masmorras = data.masmorras
+                            this.atributosEquipamentosJogador = data.atributos_equipamentos_jogador
+                            this.tamanhoInventario = data.tamanho_inventario
+                            this.logs = [...data.logs, ...this.logs]
+                            if(this.jogador && !this.autenticado) {
+                                this.autenticado = true;
+                                document.querySelector('#audio_musica').play();
+                                setTimeout(() => {
+                                    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+                                    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+                                }, 500)
+                            }
+                        }
+                    }
+                    
+                    ws.onclose = () => {
+                        console.log(`Conexão ${conexaoId} fechada`)
+                        delete this.conexoes[conexaoId]
+                        if (this.conexaoAtual === conexaoId) {
+                            this.conexaoAtual = Object.keys(this.conexoes)[0] || null
+                        }
+                    }
+
+                    ws.onerror = (error) => {
+                        console.error(`Erro na conexão ${conexaoId}:`, error)
+                        this.erroMultiplosClientes = true;
+                    }
+                },
+                processarDescricaoItem(descricao) {
                     return descricao.map((linha) => {
                         _linha = linha.replace('ATTR_FORCA', '<span class="material-symbols-outlined">fitness_center</span>')
                         _linha = _linha.replace('ATTR_AGILIDADE', '<span class="material-symbols-outlined">directions_run</span>')
@@ -1142,121 +1268,16 @@
                         return this.inventario[indice]['em_uso'] ? 'Em uso' : '';
                     }
                 },
-                connectWebSocket() {
-                    const ws = new WebSocket('ws://localhost:8000/ws')
-                    const conexaoId = Date.now().toString()
-                    
-                    ws.onopen = () => {
-                        this.conexoes[conexaoId] = ws
-                        this.conexao_atual = conexaoId
-                        console.log(`Conexão ${conexaoId} estabelecida`)
-                    }
-                    
-                    ws.onmessage = (event) => {
-                        const data = JSON.parse(event.data)
-                        if(data.type == 'update') {
-                            // Verifica se houve dano no jogador
-                            if(this.jogador) {
-                                if(data.inimigo.vida > 0) {
-                                    if (data.jogador.vida < this.jogador.vida) {
-                                        const quantidade = this.jogador.vida - data.jogador.vida
-                                        this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorDamage)
-                                        this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': data.inimigo.sprite_particula})
-                                    } else if (data.jogador.vida > this.jogador.vida) {
-                                        const quantidade = data.jogador.vida - this.jogador.vida
-                                        this.criarParticulas({'alvo': 'jogador', 'sprite_arquivo': 'particula_cura.png', 'aleatorio': false, 'tamanho': 2})
-                                        this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorHeal)
-                                    } else {
-                                        if(this.masmorra.nome != 'Casa') {
-                                            this.criarTextoFlutuante(`Errou!`, 'jogador', colorMiss, 18)
-                                        }
-                                    }
-                                }
-
-                                if (data.jogador.energia < this.jogador.energia) {
-                                    const quantidade = this.jogador.energia - data.jogador.energia
-                                    this.criarTextoFlutuante(`${quantidade}`, 'jogador', colorEnergy)
-                                } else if (data.jogador.energia > this.jogador.energia) {
-                                    const quantidade = data.jogador.energia - this.jogador.energia
-                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorEnergy)
-                                }
-
-                                if (data.jogador.experiencia > this.jogador.experiencia) {
-                                    const quantidade = data.jogador.experiencia - this.jogador.experiencia
-                                    this.criarTextoFlutuante(`+${quantidade}`, 'jogador', colorExperience)
-                                }
-
-                                if (data.jogador.level > this.jogador.level) {
-                                    this.criarTextoFlutuante(`Level UP!`, 'jogador', colorExperience, 18)
-                                }
-
-                            }
-                            if(this.inimigo && this.inimigo.id_unico == data.inimigo.id_unico) {
-                                if (data.inimigo.vida < this.inimigo.vida) {
-                                    const quantidade = this.inimigo.vida - data.inimigo.vida
-                                    this.criarTextoFlutuante(`${quantidade}`, 'inimigo', colorDamage)
-                                    this.criarParticulas({'alvo': 'inimigo', 'sprite_arquivo': 'particula_ataque_basico.png'})
-                                } else if (data.inimigo.vida > this.inimigo.vida) {
-                                    const quantidade = data.inimigo.vida - this.inimigo.vida
-                                    this.criarTextoFlutuante(`+${quantidade}`, 'inimigo', colorHeal)
-                                } else {
-                                    if(this.masmorra.nome != 'Casa') {
-                                        this.criarTextoFlutuante(`Errou!`, 'inimigo', colorMiss, 18)
-                                    }
-                                }
-                            }
-                        }
-                        if (data.type === 'update' || data.type === 'paused' || data.type == 'action_response') {
-                            this.pode_enviar_acao = true;
-                            if(this.jogador && data.jogador.classe.nivel > this.jogador.classe.nivel) {
-                                this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18)
-                            }
-                            if(data.inventario){
-                                const ids_entrada = data.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
-                                const ids_locais = this.inventario.map((i) => (`${i.nome}-${i.quantidade}-${i.em_uso}`)).join('')
-                                if(ids_entrada != ids_locais) {
-                                    this.inventario = data.inventario
-                                    setTimeout(() => {
-                                        document.querySelectorAll('[role="tooltip"]').forEach(el => {
-                                            el.remove();
-                                        })
-                                        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-                                        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl, { trigger: 'focus', sanitize: false }))
-                                    }, 200)
-                                }
-                            }
-                            this.jogador = data.jogador
-                            this.inimigo = data.inimigo
-                            this.masmorra = data.masmorra
-                            this.masmorras = data.masmorras
-                            this.atributos_equipamentos_jogador = data.atributos_equipamentos_jogador
-                            this.tamanho_inventario = data.tamanho_inventario
-                            this.logs = [...data.logs, ...this.logs]
-                            if(this.jogador && !this.autenticado) {
-                                this.autenticado = true;
-                                setTimeout(() => {
-                                    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-                                    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-                                }, 500)
-                            }
-                        }
-                    }
-                    
-                    ws.onclose = () => {
-                        console.log(`Conexão ${conexaoId} fechada`)
-                        delete this.conexoes[conexaoId]
-                        if (this.conexao_atual === conexaoId) {
-                            this.conexao_atual = Object.keys(this.conexoes)[0] || null
-                        }
-                    }
-
-                    ws.onerror = (error) => {
-                        console.error(`Erro na conexão ${conexaoId}:`, error)
-                        this.erro_multiplos_clientes = true;
-                    }
+                tocarAudio(id) {
+                    setTimeout(() => {
+                        const audio = document.querySelector(id);
+                        audio.pause();
+                        audio.currentTime = 0;
+                        audio.play();
+                    }, Math.random()*250)
                 },
                 getConexaoAtual() {
-                    return this.conexoes[this.conexao_atual]
+                    return this.conexoes[this.conexaoAtual]
                 },
                 handleAcaoInventario(indice, acao) {
                     if(acao == 'usar') {
@@ -1282,15 +1303,16 @@
                         }, 1000)
                     }, Math.random()*250)
                 },
-                criarParticulas({alvo, sprite_arquivo, aleatorio=true, tamanho=1}) {
-                    console.log('criando particula')
+                criarParticulas({alvo, sprite_arquivo, aleatorio=true, tamanho=1, duracao=750, opacidade=1}) {
                     setTimeout(() => {
                         const container = document.querySelector(`.${alvo}-card .sprite-container`)
                         const elementParticula = document.createElement('div')
 
                         elementParticula.classList.add('particula-dano');
-                        elementParticula.style.left = aleatorio ? 25 + Math.random() * 25 + '%' : '50%';
-                        elementParticula.style.top = aleatorio ? 25 + Math.random() * 25 + '%' : '50%';
+                        elementParticula.style.left = aleatorio ? 12.5 + Math.random() * 50 + '%' : '50%';
+                        elementParticula.style.top = aleatorio ? 12.5 + Math.random() * 50 + '%' : '50%';
+                        elementParticula.style.animationDuration = `${duracao}ms`;
+                        elementParticula.style.opacity = opacidade;
                         if(tamanho != 1) {
                             elementParticula.style.transform = `translate(-50%, -50%) scale(${tamanho})`;
                         }
@@ -1298,9 +1320,9 @@
                         container.appendChild(elementParticula)
                         setTimeout(() => {
                             elementParticula.remove()
-                        }, 700)
+                        }, duracao-50)
 
-                    }, Math.random()*250)
+                    }, Math.random()*500)
                 },
                 login() {
                     if(this.cadastrando) {
@@ -1312,10 +1334,10 @@
                                     nome: this.nome,
                                     email: this.email,
                                     senha: this.senha,
-                                    confirmar_senha: this.confirmar_senha,
+                                    confirmarSenha: this.confirmarSenha,
                                 }
                             }))
-                            this.pode_enviar_acao = false
+                            this.podeEnviarAcao = false
                         }
                     } else {
                         const ws = this.getConexaoAtual()
@@ -1327,7 +1349,7 @@
                                     senha: this.senha
                                 }
                             }))
-                            this.pode_enviar_acao = false
+                            this.podeEnviarAcao = false
                         }
                     }
                 },
@@ -1340,8 +1362,14 @@
                                 item_indice: item_id
                             }
                         }))
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
+                },
+                toggleSons() {
+                    this.audioLigado = !this.audioLigado;
+                    document.querySelectorAll('audio').forEach(el => {
+                        el.volume = this.audioLigado ? 1 : 0
+                    })
                 },
                 descartarItem(item_id) {
                     const ws = this.getConexaoAtual()
@@ -1352,7 +1380,7 @@
                                 item_indice: item_id
                             }
                         }))
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
                 },
                 descartarItemTodos(item_id) {
@@ -1364,7 +1392,7 @@
                                 item_indice: item_id
                             }
                         }))
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
                 },
                 mudarMasmorra(novaMasmorra) {
@@ -1376,7 +1404,7 @@
                                 masmorra: novaMasmorra
                             }
                         }))
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
                 },
                 pausarMasmorra() {
@@ -1388,7 +1416,7 @@
                                 pausado: !this.masmorra.pausado
                             }
                         })) 
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
                 },
                 aumentarAtributo(atributo) {
@@ -1400,10 +1428,10 @@
                                 atributo: atributo
                             }
                         }))
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
                 },
-                enviar_acao(acao) {
+                enviarAcao(acao) {
                     const ws = this.getConexaoAtual()
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         ws.send(JSON.stringify({
@@ -1412,7 +1440,7 @@
                                 acao: acao
                             }
                         }))
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
                 },
                 subirNivelClasse(classe) {
@@ -1424,7 +1452,7 @@
                                 classe: classe
                             }
                         }))
-                        this.pode_enviar_acao = false
+                        this.podeEnviarAcao = false
                     }
                 }
             }

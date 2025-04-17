@@ -90,10 +90,10 @@ class Jogador(Entidade):
     def subir_nivel(self):
         self.experiencia -= self.experiencia_proximo_nivel
         self.level += 1
-        self.pontos_disponiveis += math.ceil(1.5 * (self.classe.nivel+1))
+        self.pontos_disponiveis += self.classe.nivel+1
 
-        self.energia_maxima += math.ceil(self.level/100) * (2 * (self.classe.nivel+1))
-        self.vida_maxima += math.ceil(self.level/10) * (2 * (self.classe.nivel+1))
+        self.energia_maxima += math.ceil(self.level/150) * (2 * (self.classe.nivel+1))
+        self.vida_maxima += math.ceil(self.level/50) * (2 * (self.classe.nivel+1))
         self.energia = self.energia_maxima
         self.vida = self.vida_maxima
 
@@ -115,7 +115,7 @@ class Jogador(Entidade):
             self.energia = self.energia_maxima
             self.vida_maxima += math.ceil(self.level/10) * config["game"]["vida_base_por_level"]
             self.vida = self.vida_maxima
-            self.classe = Classes[nome_classe]
+            self.classe = Classes[nome_classe].value
             self.sprite_x = self.classe.sprite_x
             self.sprite_y = self.classe.sprite_y
 
@@ -127,7 +127,7 @@ class Jogador(Entidade):
             self.energia = self.energia_maxima
             self.vida_maxima += math.ceil(self.level/10) * config["game"]["vida_base_por_level"]
             self.vida = self.vida_maxima
-            self.classe = Classes[self.classe.proxima_classe]
+            self.classe = Classes[self.classe.proxima_classe].value
             self.sprite_x = self.classe.sprite_x
             self.sprite_y = self.classe.sprite_y
 
