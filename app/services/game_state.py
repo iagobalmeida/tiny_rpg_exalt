@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from config import get_config
 from data import itens
+from data.missoes import MISSOES
 from fastapi import HTTPException
 from models.item import UNION_ITEM
 from models.jogador import Jogador
@@ -24,7 +25,7 @@ class GameState:
         self.config = get_config()
         self.jogador: Jogador = None
         self.inventario: List[UNION_ITEM] = []
-        self.tamanho_inventario: Optional[int] = 8
+        self.tamanho_inventario: int = 8
         self.masmorra: Masmorra = None
         self.combate: Combate = None
         self.combate_acabou: bool = False
@@ -33,6 +34,7 @@ class GameState:
         self.logs: List[str] = []
         self.proxima_execucao: datetime = None
         self.timeout_turno = timeout_turno
+        self.missoes: dict = MISSOES
 
     @property
     def deve_executar(self):
@@ -48,6 +50,7 @@ class GameState:
             "inimigo": self.combate.inimigo.model_dump() if self.combate else None,
             "masmorra": self.masmorra.get_websocket_data() if self.masmorra else None,
             "tamanho_inventario": self.tamanho_inventario,
+            "missoes": self.missoes,
             "inventario": [
                 i.model_dump()
                 for i in self.inventario
@@ -77,6 +80,8 @@ class GameState:
         inventario_registros = db.get_inventario_by_usuario_id(usuario_registro.id)
 
         self.jogador = Jogador.a_partir_de_usuario(usuario_registro)
+        self.missoes = json.loads(usuario_registro.missoes)
+
         self.masmorra = Masmorra.casa()
         self.iniciar_combate(renascer=True)
 
@@ -110,7 +115,7 @@ class GameState:
     async def logout(self):
         if self.jogador:
             payload = self.jogador.model_dump()
-            payload['missoes'] = json.dumps(payload['missoes'])
+            payload['missoes'] = json.dumps(self.missoes)
             payload['classe'] = self.jogador.classe.nome
             payload['energia'] = self.jogador.energia_maxima
             payload['vida'] = self.jogador.vida_maxima
@@ -186,6 +191,21 @@ class GameState:
             retorno['inteligencia'] += i.inteligencia
         return retorno
 
+    async def __progredir_missao(self, nome_inimigo: str):
+        try:
+            for nome_masmorra in self.missoes:
+                missao_contagem, missao_total, missao_inimigo, _ = self.missoes[nome_masmorra]
+                if missao_inimigo == nome_inimigo:
+                    self.missoes[nome_masmorra] = (
+                        missao_contagem + 1,
+                        missao_total,
+                        missao_inimigo,
+                        missao_contagem + 1 >= missao_total
+                    )
+        except Exception as ex:
+            log.exception(ex)
+            pass
+
     async def __processar_turno(self):
         if not self.masmorra or not self.combate:
             return
@@ -214,7 +234,7 @@ class GameState:
                 self.masmorra.passos = 0
 
             elif self.vencedor == 'jogador':
-                self.jogador.progredir_missao(self.combate.inimigo.nome)
+                self.__progredir_missao(self.combate.inimigo.nome)
 
                 item_aletorio = self.masmorra.item_aleatorio()
                 if item_aletorio:

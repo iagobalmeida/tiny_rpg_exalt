@@ -1,9 +1,11 @@
+import json
 import os
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Generator, List, Optional
 
 from config import get_config
+from data.missoes import MISSOES
 from sqlmodel import Field, Session, SQLModel, create_engine, delete, select
 
 
@@ -25,7 +27,7 @@ class Usuario(SQLModel, table=True):
     inteligencia: int = Field(default=1)
     pontos_disponiveis: int = Field(default=1)
     tamanho_inventario: int = Field(default=8)
-    missoes: str = Field(default='')
+    missoes: str = Field(default=json.dumps(MISSOES))
     data_criacao: datetime = Field(default_factory=lambda: datetime.now())
 
 
@@ -53,9 +55,9 @@ def get_session() -> Generator[Session, Any, Any]:
         yield session
 
 
-def criar_usuario(nome: str, email: str, senha: str, **kwargs):
+def __criar_usuario(nome: str, email: str, senha: str, **kwargs):
     with get_session() as session:
-        print(f'Criando usuário {nome}...')
+        print(f'Criando usuário {email} / {senha}')
         session.add(Usuario(
             nome=nome,
             email=email,
@@ -67,7 +69,7 @@ def criar_usuario(nome: str, email: str, senha: str, **kwargs):
 
 def __criar_usuario_de_teste(classe: str, level: int = 16):
     try:
-        criar_usuario(
+        __criar_usuario(
             nome=f'{classe.title()} Teste',
             email=f'{classe.lower()}@teste.com',
             senha='teste',
@@ -79,7 +81,7 @@ def __criar_usuario_de_teste(classe: str, level: int = 16):
             resistencia=int(level*3/4),
             agilidade=int(level*3/4),
             inteligencia=int(level*3/4),
-            tamanho_inventario=level
+            tamanho_inventario=64
         )
     except Exception as ex:
         print(ex)

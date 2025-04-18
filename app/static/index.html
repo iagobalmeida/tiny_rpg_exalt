@@ -587,15 +587,18 @@
                                 <div class="material-symbols-outlined text-black">{{ this.masmorra.pausado ? 'play_arrow' : 'pause' }}</div>
                                 {{ this.masmorra.pausado ? 'Continuar' : 'Pausar' }}
                             </button>
-                            <div class="dropdown">
+                            <!-- <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_masmorras">
+                                Masmorras
+                            </button> -->
+                            <div class="dropdown" v-if="masmorras">
                                 <button class="btn btn-light dropdown-toggle w-100  d-flex flex-row gap-2 align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <div class="material-symbols-outlined text-black">map</div>
                                     Viajar
                                 </button>
                                 <ul class="dropdown-menu w-100">
                                     <li v-for="masmorra in masmorras">
-                                        <a class="dropdown-item" @click="mudarMasmorra(masmorra.chave)" v-if="!Object.keys(jogador.missoes).includes(masmorra.chave) || jogador.missoes[masmorra.chave][3]">{{ masmorra.nome }}</a>
-                                        <a class="dropdown-item text-muted d-flex align-items-center gap-1" data-bs-toggle="tooltip" :data-bs-title="`Mate ${jogador.missoes[masmorra.chave][1]} ${jogador.missoes[masmorra.chave][2]}`" v-else>
+                                        <a class="dropdown-item" @click="mudarMasmorra(masmorra.chave)" v-if="!Object.keys(missoes).includes(masmorra.chave) || missoes[masmorra.chave][3]">{{ masmorra.nome }}</a>
+                                        <a class="dropdown-item text-muted d-flex align-items-center gap-1" data-bs-toggle="tooltip" :data-bs-title="`Mate ${missoes[masmorra.chave][1]} ${missoes[masmorra.chave][2]}`" v-else>
                                             <div class="material-symbols-outlined text-muted">lock</div>
                                             {{ masmorra.nome }}
                                         </a>
@@ -823,11 +826,11 @@
                 </div>
             </div>
 
-            <div class="card mb-3">
+            <div class="card mb-3" v-if="inventario">
                 <div class="card-body">
                     <h3 class="d-flex align-items-center gap-2 card-title text-white mb-3">
                         <div class="material-symbols-outlined">business_center</div>
-                        Inventário
+                        Inventário ({{inventario.length}}/{{tamanhoInventario}})
                     </h3>
                     <div class="item-container gap-3 justify-content-center align-items-center">
                         <div class="dropdown-center" v-for="(item, indice) in inventario">
@@ -872,7 +875,7 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="dropdown-center" v-for="n in (tamanhoInventario - inventario.length)">
+                        <div class="dropdown-center" v-if="tamanhoInventario - inventario.length > 0" v-for="n in (tamanhoInventario - inventario.length)">
                             <button
                             class="item p-1 rounded vazio"
                             style="background:rgba(2, 2, 2, 0.25); aspect-ratio: 1/1;"
@@ -1060,6 +1063,108 @@
                     </div>
                 </div>
             </div>
+
+            <!-- <div class="modal fade" id="modal_masmorras">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Masmorras</h5>
+                            <button type="button" class="btn p-0 ms-auto" data-bs-dismiss="modal" aria-label="Close">
+                                <div class="material-symbols-outlined text-white">close</div>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_casa.png')">
+                                            <h3>Casa</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
+                                <div class="col-4 text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
+                                <div class="col-4 text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
+                                <div class="col-4 h-full">
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_floresta.png'); background-size:cover; background-position: center;">
+                                            <h4>Floresta</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_floresta.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                            <h4>Mata Fechada</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_floresta.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                            <h4>Bosque das Almas</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
+                                </div>
+                                <div class="col-4 h-full">
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_castelo_abandonado.png'); background-size:cover; background-position: center;">
+                                            <h4>Castelo Antigo</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_castelo_abandonado.png'); background-size:cover; background-position: center;">
+                                            <h4>Ruínas Santas</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_castelo_abandonado.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                            <h4>Cemitério Sagrado</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
+                                </div>
+                                <div class="col-4 h-full">
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_calabouco.png'); background-size:cover; background-position: center;">
+                                            <h4>Caverna Escura</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_calabouco.png'); background-size:cover; background-position: center;">
+                                            <h4>Cidade dos Fungos</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_calabouco.png'); background-size:cover; background-position: center;">
+                                            <h4>Ninho dos Dragões</h4>
+                                        </div>
+                                    </div>
+                                    <div class="text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_submundo.png'); background-size:cover; background-position: center;">
+                                            <h4>Submundo</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-center"><div class="material-symbols-outlined text-white">lock</div></div>
+                                <div class="col-12">
+                                    <div class="card mb-3">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_nulo.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                            <h4>Nulo</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
         </div>
         
     </div>
@@ -1112,6 +1217,7 @@
                     atributosEquipamentosJogador: null,
                     messages: [],
                     conexoes: {},
+                    missoes: [],
                     nome: '',
                     email: '',
                     senha: '',
@@ -1128,9 +1234,9 @@
             computed: {
                 jogadorProximaMissao(){
                     if(!this.jogador) return;
-                    const chaves = Object.keys(this.jogador.missoes);
-                    for(missao_chave in this.jogador.missoes) {
-                        const missao = this.jogador.missoes[missao_chave];
+                    const chaves = Object.keys(this.missoes);
+                    for(missao_chave in this.missoes) {
+                        const missao = this.missoes[missao_chave];
                         if(!missao[3]) return missao;
                     }
                     return null;
@@ -1293,8 +1399,11 @@
                     if(data.atributosEquipamentosJogador) {
                         this.atributosEquipamentosJogador = data.atributosEquipamentosJogador;
                     }
-                    if(data.tamanhoInventario) {
-                        this.tamanhoInventario = data.tamanhoInventario;
+                    if(data.tamanho_inventario) {
+                        this.tamanhoInventario = data.tamanho_inventario;
+                    }
+                    if(data.missoes) {
+                        this.missoes = data.missoes;
                     }
                 },
                 processarDescricaoItem(descricao) {
@@ -1379,7 +1488,7 @@
                 },
                 login() {
                     if(this.cadastrando) {
-                        this.wsSend('signup', { nome: this.nome, email: this.email, senha: this.senha, confirmarSenha: this. confirmarSenha});
+                        this.wsSend('signup', { nome: this.nome, email: this.email, senha: this.senha, confirmar_senha: this. confirmarSenha});
                     } else {
                         this.wsSend('login', { email: this.email, senha: this.senha });
                     }

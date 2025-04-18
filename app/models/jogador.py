@@ -16,17 +16,6 @@ class Jogador(Entidade):
     email: str
     classe: Classe
     pontos_disponiveis: int = Field(default=0)
-    missoes: Dict[str, Tuple[int, int, str, bool]] = Field(default_factory=lambda: {
-        'floresta': (0, 25, 'Rato Guerreiro', True),
-        'mata_fechada': (0, 30, 'Gnomo Ancião', True),
-        'castelo_abandonado': (0, 35, 'Entidade Obscura', False),
-        'cemiterio': (0, 40, 'Esqueleto', False),
-        'catacumbas': (0, 40, 'Protetor das Catacumbas', False),
-        'calabouco': (0, 50, 'Bispo Corrompido', False),
-        'laboratorio_secreto': (0, 100, 'Dragão Jovem', False),
-        'submundo': (0, 200, 'Experimento IV', False),
-        'nulo': (0, 250, 'Amon', False)
-    })
     bonus_atributos_classe: Dict[str, int] = Field(default_factory=lambda: {
         'forca': 0,
         'resistencia': 0,
@@ -80,7 +69,6 @@ class Jogador(Entidade):
         base_dict = self.model_dump()
         base_dict['classe'] = self.classe.__dict__
         base_dict['experiencia_proximo_nivel'] = self.experiencia_proximo_nivel
-        base_dict['missoes'] = self.missoes
         custo_habilidade_i, custo_habilidade_ii, custo_habilidade_iii = self.custo_habilidades
         base_dict['custo_habilidade_i'] = custo_habilidade_i
         base_dict['custo_habilidade_ii'] = custo_habilidade_ii
@@ -130,25 +118,3 @@ class Jogador(Entidade):
             self.classe = Classes[self.classe.proxima_classe].value
             self.sprite_x = self.classe.sprite_x
             self.sprite_y = self.classe.sprite_y
-
-    def progredir_missao(self, nome_inimigo: str):
-        try:
-            for nome_masmorra in self.missoes:
-                if self.missoes[nome_masmorra][2] == nome_inimigo:
-                    self.missoes[nome_masmorra] = (
-                        self.missoes[nome_masmorra][0] + 1,
-                        self.missoes[nome_masmorra][1],
-                        self.missoes[nome_masmorra][2],
-                        self.missoes[nome_masmorra][3],
-                    )
-
-                if self.missoes[nome_masmorra][0] >= self.missoes[nome_masmorra][1]:
-                    self.missoes[nome_masmorra] = (
-                        self.missoes[nome_masmorra][0],
-                        self.missoes[nome_masmorra][1],
-                        self.missoes[nome_masmorra][2],
-                        True
-                    )
-        except Exception as ex:
-            log.exception(ex)
-            pass

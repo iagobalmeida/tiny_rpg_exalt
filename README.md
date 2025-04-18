@@ -18,3 +18,81 @@ O jogo está em desenvolvimento e qualquer colaboração (desde que de acordo co
 docker-compose up --build
 ```
 
+### Ideia de progressão
+
+- Existem 3 tipos de equipamento: `ARMA`, `ARMADURA` e `ACESSORIO`
+- Existem 3 classes (com suas evoluções): `SELVAGEM`, `MAGO` e `GUERREIRO`
+
+- Deve existir um conjunto (uma `ARMA`, uma `ARMADURA` e um `ACESSORIO`) "extraordinário" para cada classe:
+    - `SELVAGEM`: Força e Resistência (`FR`)
+    - `MAGO`: Inteligência e Agilidade (`IA`)
+    - `GUERREIRO`: Resistência e Inteligência (`RI`)
+
+- Cada peça do conjunto deve estar em uma região diferente.
+
+- Jogador pode renascer
+    - Desde que:
+        - Tenha level 60
+        - Tenha coletado 1 alma de cada chefe
+        - Tenha vencido Nulo
+    - Ao renascer:
+        - Jogador volta para o level 1 (com 2 em cada atributo)
+        - Mantem inventário
+        - Duplica sua chance de loot (acumulativo)
+
+```mermaid
+graph TB;
+    subgraph Floresta
+        FR_1([FR 1<br>Floresta])
+        IA_2([IA 1<br>Mata Fechada])
+        RI_3([RI 1<br>Bosque das Almas])
+    end;
+
+    subgraph Ruínas
+        IA_1([IA 1<br>Castelo Abandonado])
+        RI_2([RI 2<br>Ruínas Santas])
+        FR_3([FR 3<br>Cemitério Sacramentado])
+    end;
+
+    subgraph Deserto
+        RI_1([RI 1<br>Canyon])
+        FR_2([FR 2<br>Deserto Infinito])
+        IA_3([IA 3<br>Dunas do Tempo])
+    end;
+
+    SUBMUNDO([*<br>Submundo])
+    NULO([*<br>Nulo])
+    
+    Casa == SELVAGEM ==> Floresta
+    FR_1 ==> FR_2 ==> FR_3
+
+    Casa == MAGO ==> Ruínas
+    IA_1 ==> IA_2 ==> IA_3
+
+    Casa == GUERREIRO ==> Deserto
+    RI_1 ==> RI_2 ==> RI_3
+
+    FR_1 == Compra Chave ==> IA_2 == Compra Chave ==> RI_3
+    IA_1 == Compra Chave ==> RI_2 == Compra Chave ==> FR_3
+    RI_1 == Compra Chave ==> FR_2 == Compra Chave ==> IA_3
+
+
+    RI_3 ==> SUBMUNDO
+    FR_3 ==> SUBMUNDO
+    IA_3 ==> SUBMUNDO
+    SUBMUNDO ==> NULO
+
+    NULO ==>  RENASCER(((Renascer)))
+
+    linkStyle 0 stroke:red
+    linkStyle 1 stroke:red
+    linkStyle 2 stroke:red
+
+    linkStyle 3 stroke:green
+    linkStyle 4 stroke:green
+    linkStyle 5 stroke:green
+
+    linkStyle 6 stroke:blue
+    linkStyle 7 stroke:blue
+    linkStyle 8 stroke:blue
+```

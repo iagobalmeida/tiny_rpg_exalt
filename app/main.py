@@ -5,7 +5,7 @@ from config import get_config
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from services.db import (create_db_and_tables, criar_usuario,
+from services.db import (__criar_usuario, create_db_and_tables,
                          criar_usuarios_de_teste)
 from services.websocket import websocket_manager
 
@@ -18,7 +18,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def get():
     try:
-        criar_usuario('Teste', 'teste@email.com', 'teste')
+        __criar_usuario('Teste', 'teste@email.com', 'teste')
     except Exception as ex:
         print(ex)
         pass
