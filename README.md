@@ -8,6 +8,14 @@ Conquiste o placar de líderes da temporada para garantir recompensas exclusivas
 
 *Este é um projeto que pretende reviver um jogo que criei na faculdade, junto com a comunidade do [jp_amis](https://www.twitch.tv/jp_amis).*
 
+### Recursos Gráficos
+
+Os gráficos desse jogo não foram feitos por mim, segue abaixo os créditos e links de cada `asset` utilizado:
+- [32rogues](https://sethbb.itch.io/32rogues): Sprites do jogador, mãe, inimigos e itens.
+- [750 Effect and FX Pixel All](https://bdragon1727.itch.io/750-effect-and-fx-pixel-all): Sprites das partículas de dano. (*Rever licença*)
+- [[Verboten Arcane Stash] Basic Skills and Buffs](https://pixerelia.itch.io/vas-basic-spells-and-buffs): Ícones das habilidades e estados. (*Rever Licença*)
+
+
 ## Contribuindo
 O jogo está em desenvolvimento e qualquer colaboração (desde que de acordo com o projeto) é bem-vinda! Você pode ver o que está em prioridade no momento conferindo as `Issues` do repositório.
 
