@@ -3,7 +3,7 @@ import json
 import math
 from datetime import datetime, timedelta
 from logging import getLogger
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from config import get_config
 from data import itens
@@ -12,6 +12,7 @@ from fastapi import HTTPException
 from models.item import UNION_ITEM
 from models.jogador import Jogador
 from models.masmorra import Masmorra
+from models.missoes import Missao
 from services import db
 from services.combate import Combate
 
@@ -34,7 +35,7 @@ class GameState:
         self.logs: List[str] = []
         self.proxima_execucao: datetime = None
         self.timeout_turno = timeout_turno
-        self.missoes: dict = MISSOES
+        self.missoes: Dict[str, Missao] = MISSOES
 
     @property
     def deve_executar(self):
@@ -80,7 +81,13 @@ class GameState:
         inventario_registros = db.get_inventario_by_usuario_id(usuario_registro.id)
 
         self.jogador = Jogador.a_partir_de_usuario(usuario_registro)
-        self.missoes = json.loads(usuario_registro.missoes)
+
+        missoes_db = json.loads(usuario_registro.missoes)
+        self.missoes = MISSOES
+        for nome_regiao in json.loads(usuario_registro.missoes):
+            missao_db = missoes_db[nome_regiao]
+            self.missoes[nome_regiao]['contagem'] = missao_db.get('contagem', 0)
+            self.missoes[nome_regiao]['completa'] = missao_db.get('completa', False)
 
         self.masmorra = Masmorra.casa()
         self.iniciar_combate(renascer=True)
@@ -191,17 +198,13 @@ class GameState:
             retorno['inteligencia'] += i.inteligencia
         return retorno
 
-    async def __progredir_missao(self, nome_inimigo: str):
+    def __progredir_missao(self, nome_inimigo: str):
         try:
             for nome_masmorra in self.missoes:
-                missao_contagem, missao_total, missao_inimigo, _ = self.missoes[nome_masmorra]
-                if missao_inimigo == nome_inimigo:
-                    self.missoes[nome_masmorra] = (
-                        missao_contagem + 1,
-                        missao_total,
-                        missao_inimigo,
-                        missao_contagem + 1 >= missao_total
-                    )
+                if self.missoes[nome_masmorra]['nome_inimigo'] == nome_inimigo:
+                    self.missoes[nome_masmorra]['contagem'] += 1
+                if self.missoes[nome_masmorra]['contagem'] >= self.missoes[nome_masmorra]['total']:
+                    self.missoes[nome_masmorra]['completa'] = True
         except Exception as ex:
             log.exception(ex)
             pass
@@ -243,7 +246,7 @@ class GameState:
                 experiencia_ganha = self.combate.inimigo.experiencia
                 self.jogador.experiencia += experiencia_ganha
                 self.jogador.ouro = max(0, self.jogador.ouro + self.combate.inimigo.ouro)
-                self.masmorra.passos += 1
+                self.masmorra.passos = min(self.masmorra.total_passos, self.masmorra.passos+1)
                 if self.jogador.deve_subir_nivel:
                     self.jogador.subir_nivel()
             self.combate_acabou = True

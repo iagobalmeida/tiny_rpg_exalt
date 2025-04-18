@@ -203,9 +203,9 @@ class Combate:
         elif self.jogador.classe == Classes.BARBARO.value:
             self.jogador.bonus_atributos_classe['forca'] = self.contagem_turno * math.ceil(self.contagem_turno/24)
         elif self.jogador.classe == Classes.MAGO.value:
-            self.jogador.energia = min(self.jogador.energia_maxima, self.jogador.energia + math.ceil(self.jogador.level/12))
+            self.jogador.energia = min(self.jogador.energia_maxima, self.jogador.energia + math.ceil(self.jogador.level*self.jogador.inteligencia/144))
         elif self.jogador.classe == Classes.FEITICEIRO.value:
-            self.jogador.energia = min(self.jogador.energia_maxima, self.jogador.energia + math.ceil(self.jogador.level/6))
+            self.jogador.energia = min(self.jogador.energia_maxima, self.jogador.energia + math.ceil(self.jogador.level*self.jogador.inteligencia/36))
         elif self.jogador.classe == Classes.GUERREIRO.value:
             self.jogador.vida = min(self.jogador.vida_maxima, self.jogador.vida + math.ceil(self.jogador.level/24))
         elif self.jogador.classe == Classes.TEMPLARIO.value:

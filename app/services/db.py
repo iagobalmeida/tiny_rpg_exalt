@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any, Generator, List, Optional
 
 from config import get_config
-from data.missoes import MISSOES
+from data.missoes import MISSOES, missoes_dict_to_json
 from sqlmodel import Field, Session, SQLModel, create_engine, delete, select
 
 
@@ -27,7 +27,7 @@ class Usuario(SQLModel, table=True):
     inteligencia: int = Field(default=1)
     pontos_disponiveis: int = Field(default=1)
     tamanho_inventario: int = Field(default=8)
-    missoes: str = Field(default=json.dumps(MISSOES))
+    missoes: str = Field(default=missoes_dict_to_json(MISSOES))
     data_criacao: datetime = Field(default_factory=lambda: datetime.now())
 
 

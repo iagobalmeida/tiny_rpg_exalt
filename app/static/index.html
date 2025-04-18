@@ -17,6 +17,7 @@
             --card-border: #835869;
             --text-light: #e0e0e0;
             --masmorra-bg: url('/static/default_bg.png');
+            --bs-primary-rgb: 134, 0, 139;
         }
         @media (min-width: 768px) {
             .w-md-auto {
@@ -577,9 +578,13 @@
                                 </span>
                             </h3>
                             <p class="mb-1">{{ masmorra.descricao }}</p>
-                            <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-0">
+                            <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-0" v-if="jogadorProximaMissao">
                                 <div class="material-symbols-outlined">target</div>
-                                <p class="mb-0">Matar {{jogadorProximaMissao[0]}} / {{jogadorProximaMissao[1]}} {{jogadorProximaMissao[2]}}</p>
+                                <p class="mb-0">Matar {{jogadorProximaMissao.contagem}} / {{jogadorProximaMissao.total}} {{jogadorProximaMissao.nome_inimigo}}</p>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-start gap-2 mb-3 mb-md-0" style="opacity:50%" v-else>
+                                <div class="material-symbols-outlined">target</div>
+                                <p class="mb-0">Sem missões no momento</p>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -597,8 +602,8 @@
                                 </button>
                                 <ul class="dropdown-menu w-100">
                                     <li v-for="masmorra in masmorras">
-                                        <a class="dropdown-item" @click="mudarMasmorra(masmorra.chave)" v-if="!Object.keys(missoes).includes(masmorra.chave) || missoes[masmorra.chave][3]">{{ masmorra.nome }}</a>
-                                        <a class="dropdown-item text-muted d-flex align-items-center gap-1" data-bs-toggle="tooltip" :data-bs-title="`Mate ${missoes[masmorra.chave][1]} ${missoes[masmorra.chave][2]}`" v-else>
+                                        <a class="dropdown-item" @click="mudarMasmorra(masmorra.chave)" v-if="!Object.keys(missoes).includes(masmorra.chave) || missoes[masmorra.chave].completa">{{ masmorra.nome }}</a>
+                                        <a class="dropdown-item text-muted d-flex align-items-center gap-1" data-bs-toggle="tooltip" :data-bs-title="`Mate ${missoes[masmorra.chave].total} ${missoes[masmorra.chave].nome_inimigo}`" v-else>
                                             <div class="material-symbols-outlined text-muted">lock</div>
                                             {{ masmorra.nome }}
                                         </a>
@@ -642,7 +647,11 @@
                                 <p class="text-center mb-0">{{ jogador.descricao }}</p>
                             </div>
                             <div class="entity-info p-3 rounded">
-                                <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.jogador" >
+                                <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.jogador" style="position: relative;">
+                                    <div style="position: absolute; margin-left: auto; margin-right: auto; display: flex; flex-direction: row; gap:1rem; top:-24px; width:100%; padding:0px 8px;">
+                                        <img v-if="jogador.estado_nome == 'sangramento'" src="/static/estado_sangramento.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Sangramento (${jogador.estado_duracao})`">
+                                        <img v-if="jogador.estado_nome == 'congelado'" src="/static/estado_congelado.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Congelado (${jogador.estado_duracao})`">
+                                    </div>
                                     <div class="progress">
                                         <div class="progress-bar vida-bar" role="progressbar" 
                                              :style="{ width: (jogador.vida / jogador.vida_maxima * 100) + '%' }"
@@ -710,7 +719,7 @@
                             <div class="material-symbols-outlined">
                                 steps
                             </div>
-                            {{ `${masmorra.passos} / ${masmorra.total_passos}` }}
+                            {{`${masmorra.passos}/${masmorra.total_passos}`}}
                         </div>
                     </div>
                     <div class="w-100 card" v-if="jogador">
@@ -720,23 +729,23 @@
                         </div>
                     </div>
                     <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviarAcao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
-                        <div class="material-symbols-outlined text-black">star_shine</div>
-                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_i}}</span>
-                        <span>GLP. ESP.</span>
+                        <img src="/static/habilidade_Golpe Espiritual.png" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
+                        <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_i}}</span>
+                        <span class="d-none d-md-block">GLP. ESP.</span>
                     </button>
                     <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviarAcao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
-                        <div class="material-symbols-outlined text-black">star_shine</div>
-                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_ii}}</span>
-                        <span >{{jogador.classe.habilidade_ii_nome}}</span>
+                        <img :src="`/static/habilidade_${jogador.classe.habilidade_ii_descricao}.png`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
+                        <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_ii}}</span>
+                        <spa class="d-none d-md-block"n >{{jogador.classe.habilidade_ii_nome}}</span>
                     </button>
                     <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviarAcao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
-                        <div class="material-symbols-outlined text-black">star_shine</div>
-                        <span class="px-2 py-1 rounded bg-primary text-black absolute -top-8 -right-8">{{jogador.custo_habilidade_iii}}</span>
-                        <span >{{jogador.classe.habilidade_iii_nome}}</span>
+                        <img :src="`/static/habilidade_${jogador.classe.habilidade_iii_descricao}.png`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
+                        <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_iii}}</span>
+                        <spa class="d-none d-md-block"n >{{jogador.classe.habilidade_iii_nome}}</span>
                     </button>
                     <button class="w-100 btn btn-info d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.nivel < 3" data-bs-toggle="modal" data-bs-target="#modal_evolucao">
                         <div class="material-symbols-outlined text-black">arrow_upload_ready</div>
-                        <span >Evolução</span>
+                        <span class="d-none d-md-block" >Evolução</span>
                     </button>
                 </div>
                 <div class="col-md-5">
@@ -770,7 +779,11 @@
                                 <p class="text-center mb-0">{{ inimigo.descricao }}</p>
                             </div>
                             <div class="entity-info p-3 rounded">
-                                <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.inimigo" >
+                                <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.inimigo" style="position: relative;">
+                                    <div style="position: absolute; margin-left: auto; margin-right: auto; display: flex; flex-direction: row; gap:1rem; top:-24px; width:100%; padding:0px 8px;">
+                                        <img v-if="inimigo.estado_nome == 'sangramento'" src="/static/estado_sangramento.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Sangramento (${inimigo.estado_duracao})`">
+                                        <img v-if="inimigo.estado_nome == 'congelado'" src="/static/estado_congelado.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Congelado (${inimigo.estado_duracao})`">
+                                    </div>
                                     <div class="progress">
                                         <div class="progress-bar vida-bar" role="progressbar" 
                                             :style="{ width: (inimigo.vida / inimigo.vida_maxima * 100) + '%' }"
@@ -1237,7 +1250,7 @@
                     const chaves = Object.keys(this.missoes);
                     for(missao_chave in this.missoes) {
                         const missao = this.missoes[missao_chave];
-                        if(!missao[3]) return missao;
+                        if(!missao['completa']) return missao;
                     }
                     return null;
                 }

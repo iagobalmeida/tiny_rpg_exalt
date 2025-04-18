@@ -176,7 +176,7 @@ submundo = Masmorra(
         inimigos.peste_sangrenta_gigante,
         inimigos.amon,
         inimigos.astaroth,
-        inimigos.barbathos,
+        inimigos.barbathos
     ],
     lista_itens=[
         (0.09, itens.pocao_suprema),
