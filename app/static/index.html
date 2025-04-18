@@ -1264,7 +1264,8 @@
             },
             methods: {
                 wsConnect() {
-                    const ws = new WebSocket('ws://localhost:8000/ws')
+                    // const ws = new WebSocket('ws://localhost:8000/ws')
+                    const ws = new WebSocket('ws://tinyrpgexalt-production.up.railway.app/ws')
                     const conexaoId = Date.now().toString()
                     
                     ws.onopen = () => {
