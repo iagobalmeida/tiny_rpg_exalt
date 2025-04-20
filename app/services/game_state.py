@@ -124,8 +124,10 @@ class GameState:
             payload = self.jogador.model_dump()
             payload['missoes'] = json.dumps(self.missoes)
             payload['classe'] = self.jogador.classe.nome
-            payload['energia'] = self.jogador.energia_maxima
-            payload['vida'] = self.jogador.vida_maxima
+            payload['vida'] = self.jogador.vida
+            payload['vida_maxima'] = self.jogador.vida_maxima
+            payload['energia'] = self.jogador.energia
+            payload['energia_maxima'] = self.jogador.energia_maxima
             db.update_usuario(self.jogador.id, payload)
 
         if self.inventario:

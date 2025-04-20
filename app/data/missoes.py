@@ -46,5 +46,6 @@ MISSOES: Dict[str, Missao] = {
 
 def missoes_dict_to_json(missoes_dict: dict) -> str:
     for nome_regiao in missoes_dict:
-        missoes_dict[nome_regiao] = missoes_dict[nome_regiao].model_dump()
+        if not isinstance(missoes_dict[nome_regiao], dict):
+            missoes_dict[nome_regiao] = missoes_dict[nome_regiao].model_dump()
     return json.dumps(missoes_dict)

@@ -20,7 +20,9 @@ class Usuario(SQLModel, table=True):
     level: int = Field(default=1)
     experiencia: int = Field(default=0)
     vida: int = Field(default=25)
+    vida_maxima: int = Field(default=25)
     energia: int = Field(default=25)
+    energia_maxima: int = Field(default=25)
     forca: int = Field(default=1)
     agilidade: int = Field(default=1)
     resistencia: int = Field(default=1)
@@ -69,6 +71,12 @@ def __criar_usuario(nome: str, email: str, senha: str, **kwargs):
 
 def __criar_usuario_de_teste(classe: str, level: int = 16):
     try:
+        missoes = MISSOES
+        if level > 16:
+            missoes = {**MISSOES}
+            for nome_regiao in missoes:
+                missoes[nome_regiao]['completa'] = True
+
         __criar_usuario(
             nome=f'{classe.title()} Teste',
             email=f'{classe.lower()}@teste.com',
@@ -76,12 +84,15 @@ def __criar_usuario_de_teste(classe: str, level: int = 16):
             classe=classe,
             level=level,
             vida=level*5,
+            vida_maxima=level*5,
             energia=level*5,
+            energia_maxima=level*5,
             forca=int(level*3/4),
             resistencia=int(level*3/4),
             agilidade=int(level*3/4),
             inteligencia=int(level*3/4),
-            tamanho_inventario=64
+            tamanho_inventario=64,
+            missoes=missoes_dict_to_json(missoes)
         )
     except Exception as ex:
         print(ex)

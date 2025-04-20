@@ -81,7 +81,7 @@ class WebSocketManager:
                     confirmar_senha=message["data"]["confirmar_senha"],
                 )
 
-            elif message["type"] == "pausar":
+            elif message["type"] == "pausar":  # Não tem implementação no client atualmente
                 game_state.pausar(message["data"]["pausado"])
 
             elif message["type"] == "aumentar_atributo":

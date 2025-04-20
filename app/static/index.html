@@ -49,7 +49,7 @@
         .container {
             margin: 0 auto;
             padding: 24px;
-            max-width: 900px;
+            max-width: 1024px;
         }
 
         .card, .modal-content {
@@ -69,8 +69,8 @@
 
         .sprite-container {
             transform-origin: bottom;
-            margin-top:16px;
-            margin-bottom: 16px;
+            /* margin-top:16px;
+            margin-bottom: 16px; */
             margin-left: auto;
             margin-right: auto;
             width: calc(32px * 3);
@@ -392,6 +392,10 @@
                     left: -8px;
                     top: -8px;
                 }
+                &.uso-automatico {
+                    bottom: -8px;
+                    left: -8px;
+                }
                 &.quantidade {
                     right: -8px;
                     bottom: -8px;
@@ -522,6 +526,10 @@
         audio {
             display: none;
         }
+
+        .dropdown-toggle::after {
+            margin-left: auto;
+        }
     </style>
 </head>
 <body style="opacity: 0;">
@@ -587,19 +595,14 @@
                                 <p class="mb-0">Sem missões no momento</p>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-light w-100 d-flex flex-row gap-2 mb-3" @click="pausarMasmorra">
-                                <div class="material-symbols-outlined text-black">{{ this.masmorra.pausado ? 'play_arrow' : 'pause' }}</div>
-                                {{ this.masmorra.pausado ? 'Continuar' : 'Pausar' }}
-                            </button>
-                            <!-- <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_masmorras">
-                                Masmorras
-                            </button> -->
-                            <div class="dropdown" v-if="masmorras">
-                                <button class="btn btn-light dropdown-toggle w-100  d-flex flex-row gap-2 align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <div class="material-symbols-outlined text-black">map</div>
-                                    Viajar
-                                </button>
+                        <div class="col-md-4"  v-if="masmorras">
+                            <div class="rounded border border-white p-2 text-white d-flex flex-row gap-2 align-items-center mb-3">
+                                <div class="material-symbols-outlined">
+                                    steps
+                                </div>
+                                {{`${masmorra.passos}/${masmorra.total_passos}`}}
+                            </div>
+                            <div class="dropdown">
                                 <ul class="dropdown-menu w-100">
                                     <li v-for="masmorra in masmorras">
                                         <a class="dropdown-item" @click="mudarMasmorra(masmorra.chave)" v-if="!Object.keys(missoes).includes(masmorra.chave) || missoes[masmorra.chave].completa">{{ masmorra.nome }}</a>
@@ -609,6 +612,10 @@
                                         </a>
                                     </li>
                                 </ul>
+                                <button class="btn btn-light dropdown-toggle w-100  d-flex flex-row gap-2 align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="material-symbols-outlined text-black">map</div>
+                                    Viajar
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -714,36 +721,22 @@
                     </div>
                 </div>
                 <div class="col-md-2 d-flex flex-row flex-md-column gap-3">
-                    <div class="w-100 card" v-if="masmorra">
-                        <div class="card-body d-flex flex-column justify-content-start align-items-center gap-1" data-bs-toggle="tooltip" data-bs-title="Passos">
-                            <div class="material-symbols-outlined">
-                                steps
-                            </div>
-                            {{`${masmorra.passos}/${masmorra.total_passos}`}}
-                        </div>
-                    </div>
-                    <div class="w-100 card" v-if="jogador">
-                        <div class="card-body d-flex flex-column justify-content-start align-items-center gap-1" data-bs-toggle="tooltip" data-bs-title="Ouro">
-                            <div class="material-symbols-outlined">paid</div>
-                            {{ jogador.ouro }}
-                        </div>
-                    </div>
-                    <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviarAcao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn-sm btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviarAcao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
                         <img src="/static/habilidade_Golpe Espiritual.png" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
                         <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_i}}</span>
                         <span class="d-none d-md-block">GLP. ESP.</span>
                     </button>
-                    <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviarAcao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn-sm btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviarAcao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
                         <img :src="`/static/habilidade_${jogador.classe.habilidade_ii_descricao}.png`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
                         <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_ii}}</span>
                         <span class="d-none d-md-block"n >{{jogador.classe.habilidade_ii_nome}}</span>
                     </button>
-                    <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviarAcao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
+                    <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn-sm btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviarAcao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
                         <img :src="`/static/habilidade_${jogador.classe.habilidade_iii_descricao}.png`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
                         <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_iii}}</span>
                         <span class="d-none d-md-block"n >{{jogador.classe.habilidade_iii_nome}}</span>
                     </button>
-                    <button class="w-100 btn btn-info d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.nivel < 3" data-bs-toggle="modal" data-bs-target="#modal_evolucao">
+                    <button class="w-100 btn btn-sm btn-info d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.nivel < 3" data-bs-toggle="modal" data-bs-target="#modal_evolucao">
                         <div class="material-symbols-outlined text-black">arrow_upload_ready</div>
                         <span class="d-none d-md-block" >Evolução</span>
                     </button>
@@ -840,11 +833,17 @@
             </div>
 
             <div class="card mb-3" v-if="inventario">
-                <div class="card-body">
-                    <h3 class="d-flex align-items-center gap-2 card-title text-white mb-3">
+                <div class="p-3 d-flex flex-row align-items-center justify-content-between border-bottom">
+                    <h3 class="d-flex align-items-center gap-2 card-title text-white mb-0">
                         <div class="material-symbols-outlined">business_center</div>
                         Inventário ({{inventario.length}}/{{tamanhoInventario}})
                     </h3>
+                    <div v-if="jogador" class="rounded border border-warning p-2 ps-3 text-warning d-flex flex-row justify-content-start align-items-center gap-3" data-bs-toggle="tooltip" data-bs-title="Ouro">
+                        {{ jogador.ouro }}
+                        <div class="material-symbols-outlined text-warning">paid</div>
+                    </div>
+                </div>
+                <div class="card-body">
                     <div class="item-container gap-3 justify-content-center align-items-center">
                         <div class="dropdown-center" v-for="(item, indice) in inventario">
                             <button
@@ -869,6 +868,9 @@
                                 <span class="bg-white text-black rounded border-white informacao-adicional" v-if="item.tipo == 'EQUIPAMENTO' && item.em_uso">
                                     Em Uso
                                 </span>
+                                <span class="bg-white text-black rounded border-white uso-automatico" v-if="item.nome == usarAutomaticoEnergiaNome || item.nome == usarAutomaticoVidaNome">
+                                    Auto
+                                </span>
                             </button>
                             <div class="dropdown-menu">
                                 <li><h5>{{item.nome}}</h5></li>
@@ -877,9 +879,14 @@
                                 <a class="dropdown-item" @click="itemAcao(indice, 'usar')" v-if="item.tipo == 'EQUIPAMENTO'">
                                     {{ item.em_uso ? 'Remover' : 'Equipar' }}
                                 </a>
-                                <a class="dropdown-item" @click="itemAcao(indice, 'usar')" v-else>
-                                    Usar
-                                </a>
+                                <template v-else>
+                                    <a class="dropdown-item" @click="itemAcao(indice, 'usar_automatico')" v-if="item.atributo == 'energia' || item.atributo == 'vida'">
+                                        {{ item.nome == usarAutomaticoEnergiaNome || item.nome == usarAutomaticoVidaNome ? 'Desligar auto-uso' : 'Usar automático' }}
+                                    </a>
+                                    <a class="dropdown-item" @click="itemAcao(indice, 'usar')">
+                                        Usar
+                                    </a>
+                                </template>
                                 <a class="dropdown-item" @click="itemAcao(indice, 'descartar')">
                                     Descartar
                                 </a>
@@ -905,12 +912,13 @@
                                 }">
                             </button>
                         </div>
-                        <button class="btn btn-light w-100" style="grid-column-start: 1; grid-column-end: 9;">
+                        <!-- Ainda não implementado -->
+                        <!-- <button class="btn btn-light w-100" style="grid-column-start: 1; grid-column-end: 9;">
                             +8 espaços
                             <div class="d-flex align-items-center justify-content-center gap-1">
                                 <div class="material-symbols-outlined text-black">paid</div> 50000
                             </div>
-                        </button>
+                        </button> -->
                     </div>
                 </div>
             </div>
@@ -1227,6 +1235,8 @@
                     masmorra: null,
                     tamanhoInventario: 8,
                     inventario: [],
+                    usarAutomaticoVidaNome: null,
+                    usarAutomaticoEnergiaNome: null,
                     atributosEquipamentosJogador: null,
                     messages: [],
                     conexoes: {},
@@ -1264,8 +1274,8 @@
             },
             methods: {
                 wsConnect() {
-                    // const ws = new WebSocket('ws://localhost:8000/ws')
-                    const ws = new WebSocket('wss://tinyrpgexalt-production.up.railway.app/ws')
+                    const ws = new WebSocket('ws://localhost:8000/ws')
+                    // const ws = new WebSocket('wss://tinyrpgexalt-production.up.railway.app/ws')
                     const conexaoId = Date.now().toString()
                     
                     ws.onopen = () => {
@@ -1303,13 +1313,13 @@
                 },
                 wsReceive(event) {
                     const data = JSON.parse(event.data)
-                    console.log(data);
                     if(data.type == 'update') {
-                        this.wsAnimate(data)
+                        this.wsAnimate(data);
                     }
                     if (data.type === 'update' || data.type === 'paused' || data.type == 'action_response') {
                         this.wsUpdateState(data);
                     }
+                    this.usarAutomatico();
                 },
                 wsAnimate(data) {
                     if(this.jogador && data.jogador) {
@@ -1320,18 +1330,22 @@
                     }
                 },
                 wsAnimateJogador(data) {
-                    const diferencaVida = data.jogador.vida - this.jogador.vida;
-                    if(diferencaVida > 0) {
-                        this.criarTextoFlutuante(diferencaVida, 'jogador', colorHeal);
-                    } else if(diferencaVida < 0) {
-                        this.criarParticulas({
-                            'alvo': 'jogador',
-                            'sprite_arquivo': data.inimigo.sprite_particula
-                        }).then((top, left) => {
-                            this.tocarAudio('#audio_dano_jogador');
-                            this.criarTextoFlutuante(diferencaVida, 'jogador', colorDamage, 32, top, left);
-                        });
-                    }
+                        const diferencaVida = data.jogador.vida - this.jogador.vida;
+                        if(diferencaVida > 0) {
+                            this.criarTextoFlutuante(diferencaVida, 'jogador', colorHeal);
+                        } else if(diferencaVida < 0) {
+                            this.criarParticulas({
+                                'alvo': 'jogador',
+                                'sprite_arquivo': data.inimigo.sprite_particula
+                            }).then((top, left) => {
+                                this.tocarAudio('#audio_dano_jogador');
+                                this.criarTextoFlutuante(diferencaVida, 'jogador', colorDamage, 32, top, left);
+                            });
+                        } else {
+                            if(this.masmorra.nome != 'Casa') {
+                                this.criarTextoFlutuante('0', 'jogador', colorMiss, 24);
+                            }
+                        }
 
                     const diferencaEnergia = data.jogador.energia - this.jogador.energia;
                     if(diferencaEnergia > 0) {
@@ -1382,6 +1396,10 @@
                             this.tocarAudio('#audio_dano_monstro');
                             this.criarTextoFlutuante(diferencaVida, 'inimigo', colorDamage, 32, top, left);
                         });
+                    } else {
+                        if(this.masmorra.nome != 'Casa') {
+                            this.criarTextoFlutuante('0', 'inimigo', colorMiss, 24);
+                        }
                     }
                 },
                 wsUpdateState(data) {
@@ -1400,7 +1418,8 @@
                         this.jogador = deepMerge(this.jogador, data.jogador);
                     }
                     if(data.inventario){
-                        this.inventario = deepMerge(this.inventario, data.inventario);
+                        this.inventario = data.inventario
+                        // this.inventario = deepMerge(this.inventario, data.inventario);
                     }
                     if(data.inimigo) {
                         this.inimigo = deepMerge(this.inimigo, data.inimigo);
@@ -1411,8 +1430,8 @@
                     if(data.masmorras) {
                         this.masmorras = deepMerge(this.masmorras, data.masmorras);
                     }
-                    if(data.atributosEquipamentosJogador) {
-                        this.atributosEquipamentosJogador = data.atributosEquipamentosJogador;
+                    if(data.atributos_equipamentos_jogador) {
+                        this.atributosEquipamentosJogador = data.atributos_equipamentos_jogador;
                     }
                     if(data.tamanho_inventario) {
                         this.tamanhoInventario = data.tamanho_inventario;
@@ -1420,6 +1439,37 @@
                     if(data.missoes) {
                         this.missoes = data.missoes;
                     }
+                },
+                usarAutomatico() {
+                    if(!this.jogador) return;
+                    if(this.usarAutomaticoVidaNome) {
+                        const precisaUsar = this.jogador.vida + this.usarAutomaticoVidaFator <= this.jogador.vida_maxima || this.jogador.vida <= this.jogador.vida_maxima * 0.25;
+                        if(precisaUsar) {
+                            const itemIndice = this.inventario.findIndex(item => item.nome == this.usarAutomaticoVidaNome);
+                            if(itemIndice < 0) {
+                                this.usarAutomaticoVidaNome = null;
+                                this.usarAutomaticoVidaFator = null;
+                            }
+                            else {
+                                this.itemAcao(itemIndice, 'usar');
+                                console.log(itemIndice);
+                            }
+                        }
+                    } 
+                    if(this.usarAutomaticoEnergiaNome && this.jogador.energia + this.usarAutomaticoEnergiaFator <= this.jogador.energia_maxima) {
+                        const precisaUsar = this.jogador.energia + this.usarAutomaticoEnergiaFator <= this.jogador.energia_maxima || this.jogador.energia <= this.jogador.energia_maxima * 0.25;
+                        if(precisaUsar) {
+                            const itemIndice = this.inventario.findIndex(item => item.nome == this.usarAutomaticoEnergiaNome);
+                            if(itemIndice < 0) {
+                                this.usarAutomaticoEnergiaNome = null;
+                                this.usarAutomaticoEnergiaFator = null;
+                            }
+                            else {
+                                this.itemAcao(itemIndice, 'usar');
+                                console.log(itemIndice);
+                            }
+                        }
+                    } 
                 },
                 processarDescricaoItem(descricao) {
                     return descricao.map((linha) => {
@@ -1444,7 +1494,22 @@
                     }, Math.random()*250)
                 },
                 itemAcao(indice, acao) {
-                    if(acao == 'usar') {
+                    if(acao == 'usar_automatico') {
+                        const item = this.inventario[indice]
+                        if(item.atributo == 'vida') {
+                            if(this.usarAutomaticoVidaNome == item.nome) this.usarAutomaticoVidaNome = null;
+                            else {
+                                this.usarAutomaticoVidaNome = item.nome;
+                                this.usarAutomaticoVidaFator = item.fator;
+                            }
+                        } else if(item.atributo == 'energia') {
+                            if(this.usarAutomaticoEnergiaNome == item.nome) this.usarAutomaticoEnergiaNome = null;
+                            else {
+                                this.usarAutomaticoEnergiaNome = item.nome;
+                                this.usarAutomaticoEnergiaFator = item.fator;
+                            }
+                        }
+                    } if(acao == 'usar') {
                         this.wsSend('usar_item', { item_indice: indice });
                     } else if(acao == 'descartar') {
                         this.wsSend('descartar_item', { item_indice: indice });
@@ -1513,9 +1578,6 @@
                 },
                 mudarMasmorra(masmorraChave) {
                     this.wsSend('mudar_masmorra', { masmorra: masmorraChave });
-                },
-                pausarMasmorra() {
-                    this.wsSend('pausar', { pausado: this.masmorra.pausado });
                 },
                 aumentarAtributo(atributo) {
                     this.wsSend('aumentar_atributo', { atributo: atributo });
