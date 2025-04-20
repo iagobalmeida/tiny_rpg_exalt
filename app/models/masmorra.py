@@ -14,7 +14,7 @@ class Masmorra(Objeto):
     lista_itens: List[Tuple[float, UNION_ITEM]] = Field(default_factory=list)  # chance, item
     passos: int = Field(default=0)
     pausado: bool = Field(default=False)
-    imagem_background: str = Field(default='default_bg.png')
+    imagem_background: str = Field(default='default_bg.webp')
 
     @property
     def total_passos(self) -> int:

@@ -16,7 +16,7 @@
             --card-bg: #3f2631;
             --card-border: #835869;
             --text-light: #e0e0e0;
-            --masmorra-bg: url('/static/default_bg.png');
+            --masmorra-bg: url('/static/default_bg.webp');
             --bs-primary-rgb: 134, 0, 139;
         }
         @media (min-width: 768px) {
@@ -64,7 +64,7 @@
         }
 
         .card.jogador-card, .card.inimigo-card {
-            background: url('/static/tiles.png') linear-gradient(#111 50%, var(--card-bg));
+            background: url('/static/tiles.webp') linear-gradient(#111 50%, var(--card-bg));
         }
 
         .sprite-container {
@@ -78,7 +78,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            &:not(:has(.congelado)){
+            &:not(:has(.congelamento)){
                 animation: respirar infinite alternate-reverse ease-in-out 500ms;
             }
         }
@@ -120,7 +120,7 @@
         }
 
         .particula-dano{
-            --particula-sprite:url('static/particula_ataque_basico.png');
+            --particula-sprite:url('static/particulas/ataque_basico.webp');
             --particula-sprite-x: 0;
             --particula-sprite-y: 0;
             --particula-escala: 2;
@@ -447,7 +447,7 @@
             right: -8px;
         }
 
-        .congelado::after {
+        .congelamento::after {
             content: "";
             width: 32px;
             position: absolute;
@@ -642,7 +642,7 @@
                                 </div>
                                 <div class="text-center my-2">
                                     <div class="sprite-container"  :style="{'animation-duration': `${Math.max(250, 500*jogador.resistencia/jogador.agilidade)}ms`}">
-                                        <div :class="`sprite ${jogador.estado_nome} ${jogador.vida <= 0 ? 'morto' : ''}`"
+                                        <div :class="`sprite ${jogadorEstadoClasses} ${jogador.vida <= 0 ? 'morto' : ''}`"
                                              :style="{
                                                  '--sprite-x': jogador.sprite_x, 
                                                  '--sprite-y': jogador.sprite_y,
@@ -656,8 +656,11 @@
                             <div class="entity-info p-3 rounded">
                                 <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.jogador" style="position: relative;">
                                     <div style="position: absolute; margin-left: auto; margin-right: auto; display: flex; flex-direction: row; gap:1rem; top:-24px; width:100%; padding:0px 8px;">
-                                        <img v-if="jogador.estado_nome == 'sangramento'" src="/static/estado_sangramento.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Sangramento (${jogador.estado_duracao})`">
-                                        <img v-if="jogador.estado_nome == 'congelado'" src="/static/estado_congelado.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Congelado (${jogador.estado_duracao})`">
+                                        <img
+                                            v-for="estado in jogador.estados"
+                                            :src="`/static/estados/${estado.nome}.webp`"
+                                            style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`${estado.nome}`"
+                                        >
                                     </div>
                                     <div class="progress">
                                         <div class="progress-bar vida-bar" role="progressbar" 
@@ -722,17 +725,17 @@
                 </div>
                 <div class="col-md-2 d-flex flex-row flex-md-column gap-3">
                     <button :disabled="jogador.energia < jogador.custo_habilidade_i" class="w-100 btn-sm btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador" @click="enviarAcao('golpe_espiritual')" data-bs-toggle="tooltip" data-bs-title="Golpe Espiritual">
-                        <img src="/static/habilidade_Golpe Espiritual.png" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
+                        <img src="/static/habilidades/Golpe Espiritual.webp" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
                         <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_i}}</span>
                         <span class="d-none d-md-block">GLP. ESP.</span>
                     </button>
                     <button :disabled="jogador.energia < jogador.custo_habilidade_ii" class="w-100 btn-sm btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_ii_nome"  @click="enviarAcao(jogador.classe.habilidade_ii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_ii_descricao">
-                        <img :src="`/static/habilidade_${jogador.classe.habilidade_ii_descricao}.png`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
+                        <img :src="`/static/habilidades/${jogador.classe.habilidade_ii_descricao}.webp`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
                         <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_ii}}</span>
                         <span class="d-none d-md-block"n >{{jogador.classe.habilidade_ii_nome}}</span>
                     </button>
                     <button :disabled="jogador.energia < jogador.custo_habilidade_iii" class="w-100 btn-sm btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative" v-if="jogador && jogador.classe.habilidade_iii_nome"  @click="enviarAcao(jogador.classe.habilidade_iii_descricao)" data-bs-toggle="tooltip" :data-bs-title="jogador.classe.habilidade_iii_descricao">
-                        <img :src="`/static/habilidade_${jogador.classe.habilidade_iii_descricao}.png`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
+                        <img :src="`/static/habilidades/${jogador.classe.habilidade_iii_descricao}.webp`" alt="Golpe Espiritual" style="width: 32px; height: 32px; image-rendering: pixelated;">
                         <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">{{jogador.custo_habilidade_iii}}</span>
                         <span class="d-none d-md-block"n >{{jogador.classe.habilidade_iii_nome}}</span>
                     </button>
@@ -760,7 +763,7 @@
                                 </div>
                                 <div class="text-center my-2">
                                     <div class="sprite-container"  :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
-                                        <div :class="`sprite ${inimigo.estado_nome} ${inimigo.vida <= 0 ? 'morto' : ''}`"
+                                        <div :class="`sprite ${inimigoEstadoClasses} ${inimigo.vida <= 0 ? 'morto' : ''}`"
                                              :style="{
                                                  '--sprite-x': inimigo.sprite_x, 
                                                  '--sprite-y': inimigo.sprite_y,
@@ -774,8 +777,11 @@
                             <div class="entity-info p-3 rounded">
                                 <div class="status-bars" data-bs-toggle="collapse" data-bs-target=".row.collapse.inimigo" style="position: relative;">
                                     <div style="position: absolute; margin-left: auto; margin-right: auto; display: flex; flex-direction: row; gap:1rem; top:-24px; width:100%; padding:0px 8px;">
-                                        <img v-if="inimigo.estado_nome == 'sangramento'" src="/static/estado_sangramento.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Sangramento (${inimigo.estado_duracao})`">
-                                        <img v-if="inimigo.estado_nome == 'congelado'" src="/static/estado_congelado.png" style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`Congelado (${inimigo.estado_duracao})`">
+                                        <img
+                                            v-for="estado in inimigo.estados"
+                                            :src="`/static/estados/${estado.nome}.webp`"
+                                            style="width: 32px; height: 32px; image-rendering: pixelated;" data-bs-toggle="tooltip" :data-bs-title="`${estado.nome}`"
+                                        >
                                     </div>
                                     <div class="progress">
                                         <div class="progress-bar vida-bar" role="progressbar" 
@@ -858,7 +864,7 @@
                                     '--size': 'calc(2 * 32px)',
                                     '--sprite-x': item.sprite_x,
                                     '--sprite-y': item.sprite_y,
-                                    'background-image': `url('/static/items.png')`,
+                                    'background-image': `url('/static/items.webp')`,
                                     'background-size': 'calc(2 * 352px) calc(2 * 832px)'
                                 }">
                                 </div>
@@ -907,7 +913,7 @@
                                     '--size': 'calc(2 * 32px)',
                                     '--sprite-x': 3,
                                     '--sprite-y': 24,
-                                    'background-image': `url('/static/items.png')`,
+                                    'background-image': `url('/static/items.webp')`,
                                     'background-size': 'calc(2 * 352px) calc(2 * 832px)'
                                 }">
                             </button>
@@ -962,7 +968,7 @@
                                                 '--size': 'calc(2 * 32px)',
                                                 '--sprite-x': item.sprite_x,
                                                 '--sprite-y': item.sprite_y,
-                                                'background-image': `url('/static/items.png')`,
+                                                'background-image': `url('/static/items.webp')`,
                                                 'background-size': 'calc(2 * 352px) calc(2 * 832px)'
                                             }">
                                             </div>
@@ -1023,7 +1029,7 @@
                                     <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('GUERREIRO')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
                                         <div class="card-body">
                                             <div class="sprite-container" style="animation-duration: 700ms">
-                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 1; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
+                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 1; background-image: url('/static/rogues.webp'); background-size: calc(3* 224px) calc(3* 224px);"></div>
                                             </div>
                                             <h4>GUERREIRO</h4>
                                             <p class="d-flex align-items-center justify-content-center gap-2">
@@ -1036,7 +1042,7 @@
                                     <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('MAGO')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
                                         <div class="card-body">
                                             <div class="sprite-container"  style="animation-duration: 900ms">
-                                                <div class="sprite" style="--sprite-x: 5; --sprite-y: 2; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
+                                                <div class="sprite" style="--sprite-x: 5; --sprite-y: 2; background-image: url('/static/rogues.webp'); background-size: calc(3* 224px) calc(3* 224px);"></div>
                                             </div>
                                             <h4>MAGO</h4>
                                             <p class="d-flex align-items-center justify-content-center gap-2">
@@ -1049,7 +1055,7 @@
                                     <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('SELVAGEM')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
                                         <div class="card-body">
                                             <div class="sprite-container" style="animation-duration: 600ms">
-                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 3; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
+                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 3; background-image: url('/static/rogues.webp'); background-size: calc(3* 224px) calc(3* 224px);"></div>
                                             </div>
                                             <h4>SELVAGEM</h4>
                                             <p class="d-flex align-items-center justify-content-center gap-2">
@@ -1069,7 +1075,7 @@
                                 <button class="btn card mx-auto" @click="subirNivelClasse('')" data-bs-dismiss="modal" :disabled="jogador.level < 30">
                                     <div class="card-body">
                                         <div class="sprite-container" style="filter:brightness(0)">
-                                            <div class="sprite" style="--sprite-x: 2; --sprite-y: 2; background-image: url('/static/monsters.png'); background-size: 384px 416px;"></div>
+                                            <div class="sprite" style="--sprite-x: 2; --sprite-y: 2; background-image: url('/static/monsters.webp'); background-size: 384px 416px;"></div>
                                         </div>
                                         <h4>????</h4>
                                         <p class="d-flex align-items-center gap-2">
@@ -1098,7 +1104,7 @@
                             <div class="row">
                                 <div class="col-12">
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_casa.png')">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/casa.webp')">
                                             <h3>Casa</h3>
                                         </div>
                                     </div>
@@ -1108,19 +1114,19 @@
                                 <div class="col-4 text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
                                 <div class="col-4 h-full">
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_floresta.png'); background-size:cover; background-position: center;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/floresta.webp'); background-size:cover; background-position: center;">
                                             <h4>Floresta</h4>
                                         </div>
                                     </div>
                                     <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_floresta.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/floresta.webp'); background-size:cover; background-position: center;  opacity: .25;">
                                             <h4>Mata Fechada</h4>
                                         </div>
                                     </div>
                                     <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_floresta.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/floresta.webp'); background-size:cover; background-position: center;  opacity: .25;">
                                             <h4>Bosque das Almas</h4>
                                         </div>
                                     </div>
@@ -1128,19 +1134,19 @@
                                 </div>
                                 <div class="col-4 h-full">
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_castelo_abandonado.png'); background-size:cover; background-position: center;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/castelo_abandonado.webp'); background-size:cover; background-position: center;">
                                             <h4>Castelo Antigo</h4>
                                         </div>
                                     </div>
                                     <div class="text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_castelo_abandonado.png'); background-size:cover; background-position: center;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/castelo_abandonado.webp'); background-size:cover; background-position: center;">
                                             <h4>Ruínas Santas</h4>
                                         </div>
                                     </div>
                                     <div class="text-center"><div class="material-symbols-outlined text-white">lock</div></div>
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_castelo_abandonado.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/castelo_abandonado.webp'); background-size:cover; background-position: center;  opacity: .25;">
                                             <h4>Cemitério Sagrado</h4>
                                         </div>
                                     </div>
@@ -1148,19 +1154,19 @@
                                 </div>
                                 <div class="col-4 h-full">
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_calabouco.png'); background-size:cover; background-position: center;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/calabouco.webp'); background-size:cover; background-position: center;">
                                             <h4>Caverna Escura</h4>
                                         </div>
                                     </div>
                                     <div class="text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_calabouco.png'); background-size:cover; background-position: center;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/calabouco.webp'); background-size:cover; background-position: center;">
                                             <h4>Cidade dos Fungos</h4>
                                         </div>
                                     </div>
                                     <div class="text-center"><div class="material-symbols-outlined text-white">arrow_downward</div></div>
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_calabouco.png'); background-size:cover; background-position: center;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/calabouco.webp'); background-size:cover; background-position: center;">
                                             <h4>Ninho dos Dragões</h4>
                                         </div>
                                     </div>
@@ -1168,7 +1174,7 @@
                                 </div>
                                 <div class="col-12">
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_submundo.png'); background-size:cover; background-position: center;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/submundo.webp'); background-size:cover; background-position: center;">
                                             <h4>Submundo</h4>
                                         </div>
                                     </div>
@@ -1176,7 +1182,7 @@
                                 <div class="col-12 text-center"><div class="material-symbols-outlined text-white">lock</div></div>
                                 <div class="col-12">
                                     <div class="card mb-3">
-                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/bg_nulo.png'); background-size:cover; background-position: center;  opacity: .25;">
+                                        <div class="card-body" style="background:linear-gradient(90deg, var(--bg-dark) 25%, transparent), url('/static/backgrounds/nulo.webp'); background-size:cover; background-position: center;  opacity: .25;">
                                             <h4>Nulo</h4>
                                         </div>
                                     </div>
@@ -1255,6 +1261,12 @@
                 this.wsConnect();
             },
             computed: {
+                jogadorEstadoClasses() {
+                    return this.jogador ? this.jogador.estados.map(e => (e.nome.toLowerCase())) : [];
+                },
+                inimigoEstadoClasses() {
+                    return this.inimigo ? this.inimigo.estados.map(e => (e.nome.toLowerCase())) : [];
+                },
                 jogadorProximaMissao(){
                     if(!this.jogador) return;
                     const chaves = Object.keys(this.missoes);
@@ -1359,7 +1371,7 @@
                     if(diferencaExperiencia > 0) {
                         this.criarParticulas({
                             'alvo': 'jogador',
-                            'sprite_arquivo': 'particula_experiencia.png',
+                            'sprite_arquivo': 'particulas/experiencia.webp',
                             'opacidade': .5
                         }).then((top, left) => {
                             this.tocarAudio('#audio_exp_up');
@@ -1374,7 +1386,7 @@
                     if(data.jogador.level > this.jogador.level) {
                         this.criarParticulas({
                             'alvo': 'jogador',
-                            'sprite_arquivo': 'particula_level.png',
+                            'sprite_arquivo': 'particulas/level.webp',
                             'aleatorio': false,
                             'tamanho': 2,
                             'opacidade': .5
@@ -1391,7 +1403,7 @@
                     } else if(diferencaVida < 0) {
                         this.criarParticulas({
                             'alvo': 'inimigo',
-                            'sprite_arquivo': 'particula_ataque_basico.png'
+                            'sprite_arquivo': 'particulas/ataque_basico.webp'
                         }).then((top, left) => {
                             this.tocarAudio('#audio_dano_monstro');
                             this.criarTextoFlutuante(diferencaVida, 'inimigo', colorDamage, 32, top, left);
@@ -1408,11 +1420,11 @@
                         if(!this.autenticado) {
                             this.autenticado = true;
                             document.querySelector('#audio_musica').play();
-                            setTimeout(() => {
-                                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-                                const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-                            }, 500)
                         }
+                        setTimeout(() => {
+                            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+                            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+                        }, 250)
                     }
                     if(data.jogador){
                         this.jogador = deepMerge(this.jogador, data.jogador);
@@ -1452,7 +1464,6 @@
                             }
                             else {
                                 this.itemAcao(itemIndice, 'usar');
-                                console.log(itemIndice);
                             }
                         }
                     } 

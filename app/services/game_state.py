@@ -48,7 +48,7 @@ class GameState:
         ret = {
             "jogador": self.jogador.get_websocket_data() if self.jogador else None,
             "atributos_equipamentos_jogador": self.atributos_equipamentos_jogador if self.jogador else None,
-            "inimigo": self.combate.inimigo.model_dump() if self.combate else None,
+            "inimigo": self.combate.inimigo.get_websocket_data() if self.combate else None,
             "masmorra": self.masmorra.get_websocket_data() if self.masmorra else None,
             "tamanho_inventario": self.tamanho_inventario,
             "missoes": self.missoes,
@@ -220,8 +220,7 @@ class GameState:
             cura_energia = math.ceil(max(self.jogador.vida_maxima/15, self.jogador.energia * 0.2))
             self.jogador.vida = min(max(1, self.jogador.vida + cura), self.jogador.vida_maxima)
             self.jogador.energia = min(max(1, self.jogador.energia + cura_energia), self.jogador.energia_maxima)
-            self.jogador.estado_nome = None
-            self.jogador.estado_duracao = 0
+            self.jogador.estados = []
             return
 
         if self.combate_acabou:

@@ -1,6 +1,6 @@
-from typing import Literal, Optional
-from uuid import uuid4
+from typing import List, Literal
 
+from models.estado import Estado
 from pydantic import BaseModel, Field
 
 OBJETOS_TIPOS = Literal['OBJETO', 'CONSUMIVEL', 'EQUIPAMENTO', 'NPC', 'INIMIGO', 'HUMANO', 'MASMORRA', 'JOGADOR']
@@ -26,11 +26,10 @@ class Entidade(Objeto):
     inteligencia: int
     sprite_x: int = Field(default=0)
     sprite_y: int = Field(default=0)
-    sprite_nome: str = Field(default='rogues.png')
+    sprite_nome: str = Field(default='rogues.webp')
     sprite_largura: int = Field(default=224*3)
     sprite_altura: int = Field(default=224*3)
-    estado_nome: Optional[str] = Field(default=None)
-    estado_duracao: Optional[int] = Field(default=0)
+    estados: List[Estado] = Field(default=[])
 
     def model_post_init(self, __context):
         if self.vida_maxima == 0:
@@ -45,6 +44,36 @@ class Entidade(Objeto):
         values = self.model_dump()
         values['vida'] = self.vida_maxima
         values['energia'] = self.energia_maxima
-        values['estado_nome'] = None
-        values['estado_duracao'] = 0
+        values['estados'] = []
         return classname(**values)
+
+    @property
+    def congelado(self):
+        return any([e.nome == 'Congelamento' for e in self.estados])
+
+    def aplicar_dano(self, quantidade: int):
+        self.vida = max(0, self.vida - quantidade)
+
+    def adicionar_estado(self, estado):
+        for estado_atual in self.estados:
+            if estado_atual.nome == estado.nome:
+                estado_atual.duracao += estado.duracao
+                return
+        self.estados.append(estado)
+
+    def executar_estados(self) -> bool:
+        index_estados_finalizados = []
+
+        for indice, estado in enumerate(self.estados):
+            if estado.executar(self):
+                index_estados_finalizados.append(indice)
+
+        for indice in index_estados_finalizados:
+            self.estados.pop(indice)
+        return True
+
+    def get_websocket_data(self):
+        base_dict = self.model_dump()
+        if self.estados:
+            base_dict['estado'] = [estado.model_dump() for estado in self.estados]
+        return base_dict

@@ -1,4 +1,4 @@
-from data import itens, inimigos
+from data import inimigos, itens
 from models.masmorra import Masmorra
 from models.npcs import mae
 
@@ -6,14 +6,14 @@ from models.npcs import mae
 casa = Masmorra(
     nome='Casa',
     descricao='Lar, doce lar.',
-    imagem_background='bg_casa.png',
+    imagem_background='backgrounds/casa.webp',
     lista_inimigos=[mae]
 )
 
 esgoto = Masmorra(
     nome='Esgoto',
     descricao='Um esgoto meio sujo.',
-    imagem_background='bg_esgoto.png',
+    imagem_background='backgrounds/esgoto.webp',
     lista_inimigos=[
         inimigos.rato,
         inimigos.ratazana,
@@ -31,7 +31,7 @@ esgoto = Masmorra(
 floresta = Masmorra(
     nome='Floresta',
     descricao='Uma floresta aberta.',
-    imagem_background='bg_floresta.png',
+    imagem_background='backgrounds/floresta.webp',
     lista_inimigos=[
         inimigos.gnomo,
         inimigos.gnomo_guerreiro,
@@ -51,7 +51,7 @@ floresta = Masmorra(
 mata_fechada = Masmorra(
     nome='Mata Fechada',
     descricao='Uma mata fechada com muitas árvores.',
-    imagem_background='bg_mata_fechada.png',
+    imagem_background='backgrounds/mata_fechada.webp',
     lista_inimigos=[
         inimigos.golem_de_pedra,
         inimigos.entedidade_florestal,
@@ -70,7 +70,7 @@ mata_fechada = Masmorra(
 castelo_abandonado = Masmorra(
     nome='Castelo Abandonado',
     descricao='Já foi uma grande civilização.',
-    imagem_background='bg_castelo_abandonado.png',
+    imagem_background='backgrounds/castelo_abandonado.webp',
     lista_inimigos=[
         inimigos.esqueleto,
         inimigos.esqueleto_arqueiro,
@@ -91,7 +91,7 @@ castelo_abandonado = Masmorra(
 cemiterio = Masmorra(
     nome='Cemitério',
     descricao='Uma conexão com outro plano.',
-    imagem_background='bg_cemiterio.png',
+    imagem_background='backgrounds/cemiterio.webp',
     lista_inimigos=[
         inimigos.alma_penada,
         inimigos.sentenca_final,
@@ -111,7 +111,7 @@ cemiterio = Masmorra(
 catacumbas = Masmorra(
     nome='Catacumbas',
     descricao='Um lugar com energia negativa.',
-    imagem_background='bg_catacumbas.png',
+    imagem_background='backgrounds/catacumbas.webp',
     lista_inimigos=[
         inimigos.alma_penada,
         inimigos.sentenca_final,
@@ -131,7 +131,7 @@ catacumbas = Masmorra(
 calabouco = Masmorra(
     nome='Calabouco dos Dragões',
     descricao='Parece ter um tesouro escondido.',
-    imagem_background='bg_calabouco.png',
+    imagem_background='backgrounds/calabouco.webp',
     lista_inimigos=[
         inimigos.filhote_de_dragao,
         inimigos.dragao_jovem,
@@ -151,7 +151,7 @@ calabouco = Masmorra(
 laboratorio_secreto = Masmorra(
     nome='Laboratório Secreto',
     descricao='Que tipo de coisa faziam aqui?',
-    imagem_background='bg_laboratorio_secreto.jpg',
+    imagem_background='backgrounds/laboratorio_secreto.jpg',
     lista_inimigos=[
         inimigos.experimento_i,
         inimigos.experimento_ii,
@@ -169,7 +169,7 @@ laboratorio_secreto = Masmorra(
 submundo = Masmorra(
     nome='Submundo',
     descricao='Eu não deveria estar aqui.',
-    imagem_background='bg_submundo.png',
+    imagem_background='backgrounds/submundo.webp',
     lista_inimigos=[
         inimigos.serpente_infecciosa,
         inimigos.peste_sangrenta,
@@ -190,7 +190,7 @@ submundo = Masmorra(
 nulo = Masmorra(
     nome='Nulo',
     descricao='O começo de tudo.',
-    imagem_background='bg_nulo.png',
+    imagem_background='backgrounds/nulo.webp',
     lista_inimigos=[
         inimigos.nulo
     ],

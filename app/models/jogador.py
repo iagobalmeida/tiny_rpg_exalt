@@ -68,7 +68,7 @@ class Jogador(Entidade):
         return self.experiencia >= self.experiencia_proximo_nivel
 
     def get_websocket_data(self):
-        base_dict = self.model_dump()
+        base_dict = super().get_websocket_data()
         base_dict['classe'] = self.classe.__dict__
         base_dict['experiencia_proximo_nivel'] = self.experiencia_proximo_nivel
         custo_habilidade_i, custo_habilidade_ii, custo_habilidade_iii = self.custo_habilidades
