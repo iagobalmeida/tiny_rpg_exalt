@@ -24,6 +24,13 @@
                 width: auto !important;
             }
         }
+
+        table.table {
+            --bs-table-bg: transparent;
+        }
+        .table>:not(caption)>*>* {
+            color: white;
+        }
         
 
         [data-bs-toggle] {
@@ -52,7 +59,18 @@
             max-width: 1024px;
         }
 
-        .card, .modal-content {
+        .toast {
+            background: linear-gradient(#111 50%, var(--card-bg));
+            border: 1px solid white;
+            color: white;
+            box-shadow: 0px 8px 16px #00000099;
+            .toast-header, button.btn {
+                color: white;
+                background: transparent;
+            }
+        }
+
+        .card, .modal-content  {
             background: var(--card-bg);
             background: linear-gradient(#111 50%, var(--card-bg));
             border: 1px solid var(--card-border);
@@ -530,6 +548,7 @@
         .dropdown-toggle::after {
             margin-left: auto;
         }
+
     </style>
 </head>
 <body style="opacity: 0;">
@@ -542,6 +561,8 @@
         <audio id="audio_usar_item" volume="0" src="static/audio_usar_item.wav"></audio>
 
         <h1 class="text-center mb-4">Tiny RPG</h1>
+
+        <div class="toast-container top-5 start-50 translate-middle" id="toast-container"></div>
 
         <h3 class="mt-3 text-center" v-if="!conexaoAtual">Conectando...</h3>
 
@@ -932,7 +953,7 @@
             <div class="card mb-3" :class="{'opacity-50': !podeEnviarAcao}">
                 <div class="card-body d-flex flex-column flex-md-row gap-3">
                     <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_bestiario">Bestiário</button>
-                    <button class="btn btn-light">Placar de Líderes</button>
+                    <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modal_placar_de_lideres">Placar de Líderes</button>
                     <button @click="toggleSons" class="btn btn-light">{{audioLigado ? 'Desligar' : 'Ligar'}} sons</button>
                     <button class="btn btn-danger ms-md-auto" onclick="location.reload()">Sair</button>
                 </div>
@@ -1002,6 +1023,35 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal_placar_de_lideres" tabindex="-1" v-if="placar_de_lideres">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Placar de Líderes</h5>
+                            <button type="button" class="btn p-0 ms-auto" data-bs-dismiss="modal" aria-label="Close">
+                                <div class="material-symbols-outlined text-white">close</div>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-bordered table-hoverable rounded bg-transparent">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nome</th>
+                                    <th>Level</th>
+                                    <th>Classe</th>
+                                </tr>
+                                <tr v-for="pontuacao in placar_de_lideres">
+                                    <td :class="{'text-warning': pontuacao.nome == jogador.nome}">#{{pontuacao.posicao}}</td>
+                                    <td :class="{'text-warning': pontuacao.nome == jogador.nome}">{{pontuacao.nome}}</td>
+                                    <td :class="{'text-warning': pontuacao.nome == jogador.nome}">{{pontuacao.level}}</td>
+                                    <td :class="{'text-warning': pontuacao.nome == jogador.nome}">{{pontuacao.classe}}</td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1253,7 +1303,8 @@
                     audioLigado: false,
                     confirmarSenha: '',
                     cadastrando: false,
-                    conexaoAtual: null
+                    conexaoAtual: null,
+                    placar_de_lideres: []
                 }
             },
             mounted() {
@@ -1330,6 +1381,9 @@
                     }
                     if (data.type === 'update' || data.type === 'paused' || data.type == 'action_response') {
                         this.wsUpdateState(data);
+                    }
+                    if(data.type == 'error') {
+                        this.criarToast('Erro', data.message)
                     }
                     this.usarAutomatico();
                 },
@@ -1420,11 +1474,14 @@
                         if(!this.autenticado) {
                             this.autenticado = true;
                             document.querySelector('#audio_musica').play();
+                            setTimeout(() => {
+                                const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+                                const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+                            }, 250)
                         }
-                        setTimeout(() => {
-                            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-                            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-                        }, 250)
+                    }
+                    if(data.placar_de_lideres) {
+                        this.placar_de_lideres = data.placar_de_lideres;
                     }
                     if(data.jogador){
                         this.jogador = deepMerge(this.jogador, data.jogador);
@@ -1527,6 +1584,31 @@
                     } else if(acao == 'descartar_todos') {
                         this.wsSend('descartar_item_todos', { item_indice: indice });
                     }
+                },
+                criarToast(titulo, conteudo) {
+                    const toast = document.createElement('div');
+                    toast.classList.add('toast', 'fade', 'show');
+
+                    const header = document.createElement('div');
+                    header.classList.add('toast-header');
+                    
+                    const title = document.createElement('strong');
+                    title.innerHTML = titulo;
+
+                    const closeButton = document.createElement('button');
+                    closeButton.classList.add('ms-auto', 'btn');
+                    closeButton.setAttribute('data-bs-dismiss', 'toast');
+                    closeButton.innerHTML = '✖'
+
+                    const body = document.createElement('div');
+                    body.classList.add('toast-body');
+                    body.innerHTML = conteudo;
+
+                    header.appendChild(title);
+                    header.appendChild(closeButton);
+                    toast.appendChild(header);
+                    toast.appendChild(body);
+                    document.querySelector('#toast-container').appendChild(toast);
                 },
                 criarTextoFlutuante(texto, alvo, cor, tamanho=32, top=null, left=null) {
                     return new Promise((resolve) => {

@@ -4,3 +4,4 @@ websockets
 python-multipart
 sqlmodel
 psycopg2-binary
+cachetools

@@ -1,12 +1,26 @@
-import json
 import os
+import threading
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Generator, List, Optional
+from typing import Any, Generator, List, Optional, Tuple
 
+from cachetools import TTLCache
 from config import get_config
 from data.missoes import MISSOES, missoes_dict_to_json
-from sqlmodel import Field, Session, SQLModel, create_engine, delete, select
+from pydantic import BaseModel
+from sqlmodel import (Field, Session, SQLModel, create_engine, delete, select,
+                      text)
+
+CACHE = TTLCache(maxsize=100, ttl=60)
+CACHE_LOCK = threading.Lock()
+
+
+class LeaderboardEntry(BaseModel):
+    id: int
+    nome: str
+    level: int
+    posicao: int
+    classe: str
 
 
 class Usuario(SQLModel, table=True):
@@ -140,3 +154,34 @@ def create_usuario(nome: str, email: str, senha: str):
     with get_session() as session:
         session.add(Usuario(email=email, senha=senha, nome=nome))
         session.commit()
+
+
+def get_placar_de_lideres(usuario_id: int) -> List[LeaderboardEntry]:
+    key: Tuple[int] = (usuario_id,)
+
+    with CACHE_LOCK:
+        if key in CACHE:
+            return CACHE[key]
+
+    resultado = []
+
+    with get_session() as session:
+        query = text("""
+            WITH leaderboard AS (
+                SELECT id, nome, level, classe,
+                    ROW_NUMBER() OVER (ORDER BY level DESC, id ASC) AS posicao
+                FROM usuario
+            )
+            SELECT *
+            FROM leaderboard
+            WHERE posicao <= 25 OR id = :usuario_id;
+        """)
+        result = session.exec(query, params={"usuario_id": usuario_id})
+        rows = result.fetchall()
+        resultado = [LeaderboardEntry(**row._mapping) for row in rows]
+
+    if resultado:
+        with CACHE_LOCK:
+            CACHE[key] = resultado
+
+    return resultado

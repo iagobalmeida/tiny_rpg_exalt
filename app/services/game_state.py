@@ -43,9 +43,16 @@ class GameState:
             return True
         return (datetime.now() >= self.proxima_execucao)
 
+    def get_placar_de_lideres(self):
+        if self.jogador:
+            return db.get_placar_de_lideres(self.jogador.id)
+        return []
+
     def get_websocket_data(self) -> Dict[str, Any]:
         """Retorna os dados necessários para o frontend."""
+        placar_de_lideres = self.get_placar_de_lideres()
         ret = {
+            "placar_de_lideres": [l.model_dump() for l in placar_de_lideres],
             "jogador": self.jogador.get_websocket_data() if self.jogador else None,
             "atributos_equipamentos_jogador": self.atributos_equipamentos_jogador if self.jogador else None,
             "inimigo": self.combate.inimigo.get_websocket_data() if self.combate else None,
