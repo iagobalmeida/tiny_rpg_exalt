@@ -156,8 +156,8 @@ def create_usuario(nome: str, email: str, senha: str):
         session.commit()
 
 
-def get_placar_de_lideres(usuario_id: int) -> List[LeaderboardEntry]:
-    key: Tuple[int] = (usuario_id,)
+def get_placar_de_lideres(usuario_id: int = None) -> List[LeaderboardEntry]:
+    key: Tuple[int] = (usuario_id,) if usuario_id else ('*',)
 
     with CACHE_LOCK:
         if key in CACHE:
@@ -166,7 +166,7 @@ def get_placar_de_lideres(usuario_id: int) -> List[LeaderboardEntry]:
     resultado = []
 
     with get_session() as session:
-        query = text("""
+        query = text(f"""
             WITH leaderboard AS (
                 SELECT id, nome, level, classe,
                     ROW_NUMBER() OVER (ORDER BY level DESC, id ASC) AS posicao
@@ -174,11 +174,12 @@ def get_placar_de_lideres(usuario_id: int) -> List[LeaderboardEntry]:
             )
             SELECT *
             FROM leaderboard
-            WHERE posicao <= 25 OR id = :usuario_id;
+            WHERE posicao <= 25 {'OR id = :usuario_id' if usuario_id else ''};
         """)
-        result = session.exec(query, params={"usuario_id": usuario_id})
+        result = session.exec(query, params={"usuario_id": usuario_id}) if usuario_id else session.exec(query)
         rows = result.fetchall()
         resultado = [LeaderboardEntry(**row._mapping) for row in rows]
+        print(resultado)
 
     if resultado:
         with CACHE_LOCK:

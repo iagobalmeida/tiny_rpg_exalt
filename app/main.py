@@ -2,28 +2,29 @@ import asyncio
 
 import uvicorn
 from config import get_config
-from fastapi import FastAPI, WebSocket
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request, WebSocket
 from fastapi.staticfiles import StaticFiles
-from services.db import (__criar_usuario, create_db_and_tables,
-                         criar_usuarios_de_teste)
+from fastapi.templating import Jinja2Templates
+from services import db
+from services.db import create_db_and_tables, criar_usuarios_de_teste
 from services.websocket import websocket_manager
 
 app = FastAPI()
 
 # Montar diretório estático para arquivos Vue
 app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")
-async def get():
-    try:
-        __criar_usuario('Teste', 'teste@email.com', 'teste')
-    except Exception as ex:
-        print(ex)
-        pass
+async def get(request: Request):
+    return templates.TemplateResponse('index.html', {'request': request, 'placar_de_lideres': db.get_placar_de_lideres()})
+
+
+@app.get("/jogar")
+async def get_jogar(request: Request):
     criar_usuarios_de_teste()
-    return FileResponse('static/index.html')
+    return templates.TemplateResponse('jogar.html', {'request': request, 'body_class': 'opacity-0', 'ws_url': request.url_for('websocket_endpoint')})
 
 
 @app.websocket("/ws")
