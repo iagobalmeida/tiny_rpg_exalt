@@ -210,9 +210,6 @@ class Combate:
         self.contagem_turno += 1
 
         await self.executar_passiva_jogador_classe()
-        if self.inimigo.nome == 'Golem de Pedra':
-            self.inimigo.adicionar_estado(estados.Congelamento())
-
         if not self.jogador.congelado:
             await self.executar_turno_jogador(atributos_equipamentos_jogador)
         await self.executar_acao_jogador(atributos_equipamentos_jogador)  # Jogador tem preferência mesmo congelado
