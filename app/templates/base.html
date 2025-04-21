@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiny RPG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+25&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #111;
+            --card-bg: #3f2631;
+            --card-border: #835869;
+            --text-light: #e0e0e0;
+            --masmorra-bg: url('/static/default_bg.webp');
+            --bs-primary-rgb: 134, 0, 139;
+        }
+        @media (min-width: 768px) {
+            .w-md-auto {
+                width: auto !important;
+            }
+        }
+
+        table.table {
+            --bs-table-bg: transparent;
+        }
+        .table>:not(caption)>*>* {
+            color: white;
+        }
+        
+
+        [data-bs-toggle] {
+            cursor: pointer;
+            transition: all ease-in-out 125ms;
+            &:hover {
+                filter: brightness(1.1)
+            }
+        }
+
+        * {
+            font-family: "Jersey 25", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            transition: opacity 250ms ease-in-out;
+        }
+
+        .container {
+            margin: 0 auto;
+            padding: 24px;
+            max-width: 1024px;
+        }
+
+        .toast {
+            background: linear-gradient(#111 50%, var(--card-bg));
+            border: 1px solid white;
+            color: white;
+            box-shadow: 0px 8px 16px #00000099;
+            .toast-header, button.btn {
+                color: white;
+                background: transparent;
+            }
+        }
+
+        .card, .modal-content  {
+            background: var(--card-bg);
+            background: linear-gradient(#111 50%, var(--card-bg));
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-body {
+            color: var(--text-light);
+        }
+
+        .card.jogador-card, .card.inimigo-card {
+            background: url('/static/tiles.webp') linear-gradient(#111 50%, var(--card-bg));
+        }
+
+        .sprite-container {
+            transform-origin: bottom;
+            /* margin-top:16px;
+            margin-bottom: 16px; */
+            margin-left: auto;
+            margin-right: auto;
+            width: calc(32px * 3);
+            height: calc(32px * 3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &:not(:has(.congelamento)){
+                animation: respirar infinite alternate-reverse ease-in-out 500ms;
+            }
+        }
+
+        @keyframes respirar {
+            0% {
+                transform: scaleY(1);
+            }
+
+            100% {
+                transform: scaleY(0.9);
+            }
+        }
+
+        .sprite {
+            --size: calc(32px * 3);
+            --size-negativo: calc(var(--size) * -1);
+            width: var(--size);
+            height: var(--size);
+            margin: 0 auto;
+            image-rendering: pixelated;
+            transition: opacity 0.5s ease-out;
+            background-position: calc(var(--size-negativo) * var(--sprite-x)) calc(var(--size-negativo) * var(--sprite-y));
+            
+            -webkit-filter: drop-shadow(1px 1px 0 black)
+                            drop-shadow(-1px 1px 0 black)
+                            drop-shadow(1px -1px 0 black)
+                            drop-shadow(-1px -1px 0 black);
+
+            filter: drop-shadow(1px 1px 0 black)
+                    drop-shadow(-1px 1px 0 black)
+                    drop-shadow(1px -1px 0 black)
+                    drop-shadow(-1px -1px 0 black);
+        }
+
+
+        .sprite.morto {
+            opacity: 0;
+        }
+
+        .particula-dano{
+            --particula-sprite:url('static/particulas/ataque_basico.webp');
+            --particula-sprite-x: 0;
+            --particula-sprite-y: 0;
+            --particula-escala: 2;
+            --particula-size: calc(32px * var(--particula-escala));
+            --particula-size-negativo: calc(var(--particula-size) * -1);
+            width: var(--particula-size);
+            height: var(--particula-size);
+            image-rendering: pixelated;
+            background: var(--particula-sprite);
+            background-size: calc(192px*var(--particula-escala)) calc(64px*var(--particula-escala));
+            background-position: calc(var(--particula-size-negativo) * var(--particula-sprite-x)) calc(var(--particula-size-negativo) * var(--particula-sprite-y));
+            position: absolute;
+            display: block;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            image-rendering: pixelated;
+            filter: brightness(2);
+            /* mix-blend-mode: screen; */
+            animation: particula6Frames 750ms linear forwards;
+            z-index: 10;
+            -webkit-filter: drop-shadow(1px 1px 0 black)
+                            drop-shadow(-1px 1px 0 black)
+                            drop-shadow(1px -1px 0 black)
+                            drop-shadow(-1px -1px 0 black);
+
+            filter: drop-shadow(1px 1px 0 black)
+                    drop-shadow(-1px 1px 0 black)
+                    drop-shadow(1px -1px 0 black)
+                    drop-shadow(-1px -1px 0 black);
+        }
+
+        @keyframes particula6Frames {
+            0% {
+                --particula-sprite-x: 0;
+                --particula-sprite-y: 0;
+            }
+            8% {
+                --particula-sprite-x: 1;
+                --particula-sprite-y: 0;
+            }
+            16% {
+                --particula-sprite-x: 2;
+                --particula-sprite-y: 0;
+            }
+            24% {
+                --particula-sprite-x: 3;
+                --particula-sprite-y: 0;
+            }
+            32% {
+                --particula-sprite-x: 4;
+                --particula-sprite-y: 0;
+            }
+            40% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 0;
+            }
+            48% {
+                --particula-sprite-x: 0;
+                --particula-sprite-y: 1;
+            }
+            56% {
+                --particula-sprite-x: 1;
+                --particula-sprite-y: 1;
+            }
+            64% {
+                --particula-sprite-x: 2;
+                --particula-sprite-y: 1;
+            }
+            72% {
+                --particula-sprite-x: 3;
+                --particula-sprite-y: 1;
+            }
+            80% {
+                --particula-sprite-x: 4;
+                --particula-sprite-y: 1;
+            }
+            88% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 1;
+            }
+            96% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 1;
+            }
+            100% {
+                --particula-sprite-x: 5;
+                --particula-sprite-y: 1;
+            }
+        }
+
+
+        .jogador-card .sprite {
+            transform: rotateY(180deg);
+        }
+
+        .atributo {
+            --bs-border-color: #111;
+            background-color: rgba(2, 2, 2, 0.25);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 125ms ease-in-out;
+            border-color: #111;
+        }
+
+        .material-symbols-outlined {
+            font-size: 24px;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #1976d2;
+            border-color: #1976d2;
+        }
+
+        .btn-primary:hover {
+            background-color: #1565c0;
+            border-color: #1565c0;
+        }
+
+        .progress {
+            height: 32px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            background: #0A0A0A;
+        }
+
+        .progress-bar {
+            background-color: #1976d2;
+        }
+
+        .vida-bar {
+            background-color: #198754;
+            border-bottom: 1px solid darkgreen;
+            border-top: 1px solid limegreen;
+        }
+
+        .energia-bar {
+            background-color: #b319d2;
+            border-bottom: 1px solid rgb(134, 0, 139);
+            border-top: 1px solid rgb(174, 0, 255);
+        }
+
+        .status-bars {
+            margin-bottom: 18px;
+        }
+
+        [data-bs-toggle="tooltip"] {
+            cursor: help;
+        }
+
+        @keyframes particula {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .texto-flutuante {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-weight: bold;
+            animation: texto-flutuante 2s ease-out forwards;
+            transform: translate(-50%, -50%) scale(1);
+            z-index: 99;
+            
+            -webkit-filter: drop-shadow(1px 1px 0 black)
+                            drop-shadow(-1px 1px 0 black)
+                            drop-shadow(1px -1px 0 black)
+                            drop-shadow(-1px -1px 0 black);
+
+            filter: drop-shadow(1px 1px 0 black)
+                    drop-shadow(-1px 1px 0 black)
+                    drop-shadow(1px -1px 0 black)
+                    drop-shadow(-1px -1px 0 black);
+        }
+
+        @keyframes texto-flutuante {
+            0% {
+                transform: translate(-50%, -50%) scale(1.1) rotate(-6deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -350%) scale(0.5) rotate(12deg);
+                opacity: 0;
+            }
+        }
+
+        .entity-container {
+            margin-bottom: -8px;
+        }
+
+        .entity-info {
+            background: var(--bg-dark)
+        }
+
+        .card, .row {
+            transition: all 125ms ease-in-out;
+        }
+
+        .dropdown-menu {
+            padding: 1rem;
+            background: linear-gradient(#111 50%, var(--card-bg));
+            color: white;
+            border: 1px solid white;
+            white-space: nowrap;
+            --bs-dropdown-divider-bg: white;
+            li {
+                cursor: pointer;
+            }
+            div.item-info {
+                margin-bottom: 1rem;
+            }
+            .dropdown-item {
+                background: white;
+                transition: all ease-in-out 125ms;
+                color: black;
+                border-radius: 8px;
+                cursor: pointer;
+                &:hover {
+                    background-color: #ddd;
+                }
+            }
+            .dropdown-item:first-child {
+                margin-top: .5rem;
+            }
+            .dropdown-item {
+                margin-bottom: .5rem;
+            }
+        }
+
+        .popover {
+            --bs-popover-border-color: white;
+            --bs-popover-header-bg: #3f2631;
+            --bs-popover-bg: #111;
+            --bs-popover-body-color: var(--bs-white);
+            --bs-popover-header-color: var(--bs-white);
+        }
+
+        .item {
+            position: relative;
+            transition: all 125ms ease-in-out;
+            &:not(.vazio){
+                cursor: pointer;
+                border: 1px solid white;
+                &:hover{
+                    filter: brightness(1.1);
+                    .sprite {
+                        transform: scale(1.1);
+                        transition: all 125ms ease-in-out;
+                    }
+                }
+            }
+            span {
+                position: absolute;
+                padding: 0px 8px 0px 8px;
+                min-width: 16px;
+                text-align: center;
+                &.informacao-adicional {
+                    left: -8px;
+                    top: -8px;
+                }
+                &.uso-automatico {
+                    bottom: -8px;
+                    left: -8px;
+                }
+                &.quantidade {
+                    right: -8px;
+                    bottom: -8px;
+                }
+            }
+            &.vazio {
+                cursor: not-allowed;
+                pointer-events: none;
+                border: none;
+                outline: none;
+                .sprite {
+                    filter: brightness(0);
+                    opacity: 50%;
+                }
+                span {
+                    display: none;
+                }
+            }
+            &.em-uso {
+                .sprite {
+                    animation: item_em_uso 500ms ease-in-out alternate-reverse infinite;
+                    transform-origin: center;
+                }
+            }
+        }
+        
+        @keyframes item_em_uso {
+            0% {
+                transform: rotateZ(-4deg)
+            }       
+            100% {
+                transform: rotateZ(4deg)
+            }
+        }
+
+        .absolute {
+            position: absolute;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        .-top-8 {
+            top: -8px;
+        }
+
+        .-right-8 {
+            right: -8px;
+        }
+
+        .congelamento::after {
+            content: "";
+            width: 32px;
+            position: absolute;
+            height: 32px;
+            background: #11ddff;
+            filter: blur(16px);
+            display: block;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            mix-blend-mode: plus-lighter;
+            animation: fadeInOut 500ms ease-in-out alternate-reverse infinite;
+        }
+
+        .sangramento::after {
+            content: "";
+            width: 32px;
+            position: absolute;
+            height: 32px;
+            background: red;
+            filter: blur(16px);
+            display: block;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            mix-blend-mode: plus-lighter;
+            animation: fadeInOut 500ms ease-in-out alternate-reverse infinite;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0%;
+            }
+            100% {
+                opacity: 100%;
+            }
+        }
+
+        :has(> .sprite.encantado:first-child) {
+            .sprite {
+                -webkit-filter: drop-shadow(1px 1px 0 black)
+                        drop-shadow(-1px 1px 0 black)
+                        drop-shadow(1px -1px 0 black)
+                        drop-shadow(-1px -1px 0 black)
+                        brightness(2);
+
+                filter: drop-shadow(1px 1px 0 black)
+                        drop-shadow(-1px 1px 0 black)
+                        drop-shadow(1px -1px 0 black)
+                        drop-shadow(-1px -1px 0 black)
+                        brightness(2);
+            }
+
+            &::before{
+                display: block;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                content: '';
+                width: 32px;
+                height: 32px;
+                border-radius: 100%;
+                filter: blur(8px);
+                background: radial-gradient(#11ddff, transparent);
+                mix-blend-mode: lighten;
+                opacity: 50%;
+            }
+        }
+
+        .item-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        audio {
+            display: none;
+        }
+
+        .dropdown-toggle::after {
+            margin-left: auto;
+        }
+
+    </style>
+    {% block style %}
+    {% endblock %}
+</head>
+<body class="{{body_class}}">
+    {% block content %}
+    {% endblock %}
+    <script>
+      window.WS_URL = "{{ ws_url }}";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html> 

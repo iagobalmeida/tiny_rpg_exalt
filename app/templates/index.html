@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+    <!-- Landing Page -->
+    <section class="text-center text-white">
+        <div class="container">
+            <h1 class="display-4">Bem-vindo ao <b>Tiny RPG Exalt</b></h1>
+            <p class="lead">O RPG Idle do futuro. Aventure-se, colecione e conquiste o topo!</p>
+            <a href="{{url_for('get_jogar')}}" class="btn btn-light btn-lg">Jogar Agora</a>
+        </div>
+    </section>
+
+    <!-- Seção Placar de Líderes -->
+    <section class="section">
+        <div class="container text-center">
+            <h2 class="section-title mb-5">Placar de Líderes</h2>
+            <p>Os assets utilizados no jogo foram retirados de fontes externas e são creditados abaixo:</p>
+            <table class="table table-bordered table-hoverable rounded bg-transparent">
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                    <th>Level</th>
+                    <th>Classe</th>
+                </tr>
+                {% for pontuacao in placar_de_lideres %}
+                    <tr>
+                        <td>#{{pontuacao.posicao}}</td>
+                        <td>{{pontuacao.nome}}</td>
+                        <td>{{pontuacao.level}}</td>
+                        <td>{{pontuacao.classe}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+
+    <hr>
+
+    <!-- Seção de Funcionalidades -->
+    <section id="features" class="section">
+        <div class="container text-center">
+            <h2 class="section-title mb-5">Funcionalidades do Jogo</h2>
+            <div class="row">
+                <!-- Exemplo de card de funcionalidade -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Aventuras Automáticas</h5>
+                            <p class="card-text">Deixe seus heróis em missões automáticas enquanto você foca em outras tarefas!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Sistema de Atributos</h5>
+                            <p class="card-text">Evolua como quiser, distribuinto pontos ao passar de level.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Colecione Tudo!</h5>
+                            <p class="card-text">Enfrente inimigos raros para conseguir itens ainda mais raros.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Seção de Créditos -->
+    <section class="section">
+        <div class="container text-center">
+            <h2 class="section-title mb-5">Créditos</h2>
+            <p>Os assets utilizados no jogo foram retirados de fontes externas e são creditados abaixo:</p>
+            <ul class="list-unstyled">
+                <li><strong>Arte do personagem:</strong> <a href="https://sethbb.itch.io/32rogues" target="_blank">32rogues</a></li>
+                <li><strong>Arte dos efeitos:</strong> <a href="https://bdragon1727.itch.io/750-effect-and-fx-pixel-all" target="_blank">750 Effect and FX Pixel All</a></li>
+                <li><strong>Arte das habilidades e estados:</strong> <a href="https://pixerelia.itch.io/vas-basic-spells-and-buffs" target="_blank">[Verboten Arcane Stash] Basic Skills and Buffs</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <hr>
+    <!-- Seção de Assinatura Premium -->
+    <section class="section">
+        <div class="container text-center">
+            <h2 class="section-title mb-5">Torne-se um Patrocinador</h2>
+            <p class="lead mb-4">Ajude o jogo a crescer, por apenas <b class="text-warning">R$ 5.00/mês</b>, e receba recompensas exlusivas!</p>
+            <a href="#" class="btn btn-warning btn-lg">Tornar-se um Patrocinador</a>
+        </div>
+    </section>
+    <hr>
+    <div class="section">
+        <div class="container text-center">
+            Criado por <a href="https://iagobalmeida.vercel.app/">Iago B. Almeida</a>
+        </div>
+    </div>
+{% endblock %}
