@@ -1,5 +1,6 @@
 from enum import Enum
 
+from data import habilidades
 from models.classe import Classe
 
 
@@ -8,8 +9,10 @@ class Classes(Enum):
 
     APRENDIZ = Classe(
         nome='APRENDIZ',
+        nivel=1,
         sprite_x=1,
-        sprite_y=5
+        sprite_y=5,
+        habilidades=[habilidades.GolpeEspiritual()]
     )
 
     SELVAGEM = Classe(
@@ -18,8 +21,7 @@ class Classes(Enum):
         sprite_x=0,
         sprite_y=3,
         proxima_classe='BARBARO',
-        habilidade_ii_nome='FÚR.',
-        habilidade_ii_descricao='Fúria'
+        habilidades=[habilidades.GolpeEspiritual(), habilidades.Furia()]
     )
 
     BARBARO = Classe(
@@ -27,10 +29,7 @@ class Classes(Enum):
         nivel=3,
         sprite_x=1,
         sprite_y=3,
-        habilidade_ii_nome='FÚR.',
-        habilidade_ii_descricao='Fúria',
-        habilidade_iii_nome='EXEC.',
-        habilidade_iii_descricao='Execução',
+        habilidades=[habilidades.GolpeEspiritual(), habilidades.Furia(), habilidades.Execucao()]
     )
 
     MAGO = Classe(
@@ -39,8 +38,7 @@ class Classes(Enum):
         sprite_x=5,
         sprite_y=2,
         proxima_classe='FEITICEIRO',
-        habilidade_ii_nome='BOL. FOG.',
-        habilidade_ii_descricao='Bola de Fogo'
+        habilidades=[habilidades.GolpeEspiritual(), habilidades.BolaDeFogo()]
     )
 
     FEITICEIRO = Classe(
@@ -49,10 +47,7 @@ class Classes(Enum):
         sprite_x=6,
         sprite_y=2,
         proxima_classe=None,
-        habilidade_ii_nome='BOL. FOG.',
-        habilidade_ii_descricao='Bola de Fogo',
-        habilidade_iii_nome='CONG.',
-        habilidade_iii_descricao='Congelar',
+        habilidades=[habilidades.GolpeEspiritual(), habilidades.BolaDeFogo(), habilidades.Congelar()]
     )
 
     GUERREIRO = Classe(
@@ -61,8 +56,7 @@ class Classes(Enum):
         sprite_x=0,
         sprite_y=1,
         proxima_classe='TEMPLARIO',
-        habilidade_ii_nome='BENÇ.',
-        habilidade_ii_descricao='Benção'
+        habilidades=[habilidades.GolpeEspiritual(), habilidades.Bencao()]
     )
 
     TEMPLARIO = Classe(
@@ -71,8 +65,5 @@ class Classes(Enum):
         sprite_x=4,
         sprite_y=1,
         proxima_classe=None,
-        habilidade_ii_nome='BENÇ.',
-        habilidade_ii_descricao='Benção',
-        habilidade_iii_nome='REDN.',
-        habilidade_iii_descricao='Redenção',
+        habilidades=[habilidades.GolpeEspiritual(), habilidades.Bencao(), habilidades.Redencao()]
     )

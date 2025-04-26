@@ -55,8 +55,10 @@ class GameState:
             "placar_de_lideres": [l.model_dump() for l in placar_de_lideres],
             "jogador": self.jogador.get_websocket_data() if self.jogador else None,
             "atributos_equipamentos_jogador": self.atributos_equipamentos_jogador if self.jogador else None,
-            "inimigo": self.combate.inimigo.get_websocket_data() if self.combate else None,
+            "inimigo": self.combate.inimigo.get_websocket_data() if self.combate and self.combate.inimigo else None,
             "masmorra": self.masmorra.get_websocket_data() if self.masmorra else None,
+            "particula_em_jogador": self.jogador.particula_temporaria if self.jogador else None,
+            "particula_em_inimigo": self.combate.inimigo.particula_temporaria if self.combate and self.combate.inimigo else None,
             "tamanho_inventario": self.tamanho_inventario,
             "missoes": self.missoes,
             "inventario": [
@@ -75,7 +77,7 @@ class GameState:
     async def signup(self, nome: str, email: str, senha: str, confirmar_senha: str):
         if senha != confirmar_senha:
             raise ValueError('As senhas não batem!')
-        db.create_usuario(nome, email, senha)
+        db.create_usuario(nome=nome, email=email, senha=senha)
         return await self.login(email=email, senha=senha)
 
     async def login(self, email: str, senha: str):

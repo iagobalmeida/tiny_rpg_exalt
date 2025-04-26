@@ -1,6 +1,6 @@
 import math
 from logging import getLogger
-from typing import Dict, Literal, Optional, Tuple
+from typing import Dict, Literal, Optional
 
 from config import get_config
 from data.classes import Classes
@@ -22,13 +22,6 @@ class Jogador(Entidade):
         'agilidade': 0,
         'inteligencia': 0
     })
-
-    @property
-    def custo_habilidades(self) -> Tuple[int, int, int]:
-        custo_habilidade_i = min(self.energia_maxima, max(10, int(math.sqrt(self.inteligencia)*4)))
-        custo_habilidade_ii = int(custo_habilidade_i*2)
-        custo_habilidade_iii = int(custo_habilidade_ii*3)
-        return custo_habilidade_i, custo_habilidade_ii, custo_habilidade_iii
 
     @classmethod
     def a_partir_de_usuario(cls, usuario):
@@ -60,6 +53,13 @@ class Jogador(Entidade):
         )
 
     @property
+    def renascido(self):
+        """Retorna uma cópia da entidade com vida e energia máximas."""
+        base_entity = super().renascido
+        base_entity.classe = self.classe
+        return base_entity
+
+    @property
     def experiencia_proximo_nivel(self):
         return 10 + ((self.level - 1) * 15)
 
@@ -67,14 +67,25 @@ class Jogador(Entidade):
     def deve_subir_nivel(self):
         return self.experiencia >= self.experiencia_proximo_nivel
 
+    def com_atributos_bonus(self, atributos_bonus: dict = {}) -> 'Jogador':
+        jogador = self.model_copy()
+        jogador.classe = self.classe
+        jogador.forca += atributos_bonus.get('forca', 0)
+        jogador.agilidade += atributos_bonus.get('agilidade', 0)
+        jogador.resistencia += atributos_bonus.get('resistencia', 0)
+        jogador.inteligencia += atributos_bonus.get('inteligencia', 0)
+
+        jogador.forca += self.bonus_atributos_classe['forca']
+        jogador.agilidade += self.bonus_atributos_classe['agilidade']
+        jogador.resistencia += self.bonus_atributos_classe['resistencia']
+        jogador.inteligencia += self.bonus_atributos_classe['inteligencia']
+        return jogador
+
     def get_websocket_data(self):
         base_dict = super().get_websocket_data()
-        base_dict['classe'] = self.classe.__dict__
+        base_dict['classe'] = self.classe.get_websocket_data()
         base_dict['experiencia_proximo_nivel'] = self.experiencia_proximo_nivel
-        custo_habilidade_i, custo_habilidade_ii, custo_habilidade_iii = self.custo_habilidades
-        base_dict['custo_habilidade_i'] = custo_habilidade_i
-        base_dict['custo_habilidade_ii'] = custo_habilidade_ii
-        base_dict['custo_habilidade_iii'] = custo_habilidade_iii
+        base_dict['custo_habilidades'] = self.custo_habilidades
         return base_dict
 
     def subir_nivel(self):
@@ -109,8 +120,8 @@ class Jogador(Entidade):
             self.sprite_x = self.classe.sprite_x
             self.sprite_y = self.classe.sprite_y
 
-        elif self.classe.nivel == 2 and self.level >= 30 and self.ouro >= 100000:
-            self.ouro -= 100000
+        elif self.classe.nivel == 2 and self.level >= 30 and self.ouro >= 50000:
+            self.ouro -= 50000
             self.pontos_disponiveis += config["game"]["pontos_atributo_por_level"]
 
             self.energia_maxima += math.ceil(self.level/10) * config["game"]["energia_base_por_level"]

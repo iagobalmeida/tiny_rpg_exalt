@@ -151,7 +151,7 @@ calabouco = Masmorra(
 laboratorio_secreto = Masmorra(
     nome='Laboratório Secreto',
     descricao='Que tipo de coisa faziam aqui?',
-    imagem_background='backgrounds/laboratorio_secreto.jpg',
+    imagem_background='backgrounds/laboratorio_secreto.webp',
     lista_inimigos=[
         inimigos.experimento_i,
         inimigos.experimento_ii,

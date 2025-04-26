@@ -23,12 +23,18 @@ class LeaderboardEntry(BaseModel):
     classe: str
 
 
+def usuario_patrocinio_expiracao():
+    return datetime.now()
+
+
 class Usuario(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    nome: str
+    nome: str = Field(default=None)
     descricao: str = Field(default='Caçar, evoluir, caçar!')
     email: str = Field(index=True, unique=True)
-    senha: str
+    senha: str = Field(default=None)
+    patrocinador: bool = Field(default=False)
+    patrocinio_expiracao: datetime = Field(default_factory=usuario_patrocinio_expiracao)
     ouro: int = Field(default=0)
     classe: str = Field(default='APRENDIZ')
     level: int = Field(default=1)
@@ -58,7 +64,7 @@ class UsuarioInventario(SQLModel, table=True):
 
 config = get_config()
 
-engine = create_engine(os.environ.get('DATABASE_URL'), echo=False)
+engine = create_engine(os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/tinyrpg'), echo=False)
 
 
 def create_db_and_tables():
@@ -73,7 +79,6 @@ def get_session() -> Generator[Session, Any, Any]:
 
 def __criar_usuario(nome: str, email: str, senha: str, **kwargs):
     with get_session() as session:
-        print(f'Criando usuário {email} / {senha}')
         session.add(Usuario(
             nome=nome,
             email=email,
@@ -150,10 +155,13 @@ def update_inventario_by_usuario_id(usuario_id: int, inventario: List[UsuarioInv
             session.commit()
 
 
-def create_usuario(nome: str, email: str, senha: str):
+def create_usuario(email: str, nome: str = None, senha: str = None) -> Usuario:
     with get_session() as session:
-        session.add(Usuario(email=email, senha=senha, nome=nome))
+        entidade = Usuario(email=email, senha=senha, nome=nome)
+        session.add(entidade)
         session.commit()
+        session.refresh(entidade)
+        return entidade
 
 
 def get_placar_de_lideres(usuario_id: int = None) -> List[LeaderboardEntry]:
@@ -179,7 +187,6 @@ def get_placar_de_lideres(usuario_id: int = None) -> List[LeaderboardEntry]:
         result = session.exec(query, params={"usuario_id": usuario_id}) if usuario_id else session.exec(query)
         rows = result.fetchall()
         resultado = [LeaderboardEntry(**row._mapping) for row in rows]
-        print(resultado)
 
     if resultado:
         with CACHE_LOCK:

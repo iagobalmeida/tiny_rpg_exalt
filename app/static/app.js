@@ -139,27 +139,39 @@ const app = createApp({
             if(this.jogador && data.jogador) {
                 this.wsAnimateJogador(data);
             }
-            if(this.inimigo && data.inimigo && this.inimigo.id_unico == data.inimigo.id_unico) {
+            if(this.inimigo && data.inimigo && !data.inimigo.id_unico) {
                 this.wsAnimateInimigo(data);
+            }
+            if(data.particula_em_inimigo) {
+                let opacidade = data.particula_em_inimigo == 'ataque_erro.png' ? 0.5 : 1;
+                this.criarParticulas({'opacidade': opacidade, 'alvo': 'inimigo', 'sprite_arquivo': `particulas/${data.particula_em_inimigo}`});
+                setTimeout(() => {
+                    this.criarParticulas({'opacidade': opacidade, 'alvo': 'inimigo', 'sprite_arquivo': `particulas/${data.particula_em_inimigo}`});
+                }, 250);
+            }
+            if(data.particula_em_jogador) {
+                let opacidade = data.particula_em_jogador == 'ataque_erro.png' ? 0.5 : 1;
+                this.criarParticulas({'opacidade': opacidade, 'alvo': 'jogador', 'sprite_arquivo': `particulas/${data.particula_em_jogador}`});
+                setTimeout(() => {
+                    this.criarParticulas({'opacidade': opacidade, 'alvo': 'jogador', 'sprite_arquivo': `particulas/${data.particula_em_jogador}`});
+                }, 250);
             }
         },
         wsAnimateJogador(data) {
+            if(data.jogador.vida || data.jogador.vida == 0) {
                 const diferencaVida = data.jogador.vida - this.jogador.vida;
                 if(diferencaVida > 0) {
                     this.criarTextoFlutuante(diferencaVida, 'jogador', colorHeal);
                 } else if(diferencaVida < 0) {
                     this.criarParticulas({
                         'alvo': 'jogador',
-                        'sprite_arquivo': data.inimigo.sprite_particula
+                        'sprite_arquivo': this.inimigo.sprite_particula
                     }).then((top, left) => {
                         this.tocarAudio('#audio_dano_jogador');
                         this.criarTextoFlutuante(diferencaVida, 'jogador', colorDamage, 32, top, left);
                     });
-                } else {
-                    if(this.masmorra.nome != 'Casa') {
-                        this.criarTextoFlutuante('0', 'jogador', colorMiss, 24);
-                    }
                 }
+            }
 
             const diferencaEnergia = data.jogador.energia - this.jogador.energia;
             if(diferencaEnergia > 0) {
@@ -173,7 +185,7 @@ const app = createApp({
             if(diferencaExperiencia > 0) {
                 this.criarParticulas({
                     'alvo': 'jogador',
-                    'sprite_arquivo': 'particulas/experiencia.webp',
+                    'sprite_arquivo': 'particulas/experiencia.png',
                     'opacidade': .5
                 }).then((top, left) => {
                     this.tocarAudio('#audio_exp_up');
@@ -181,14 +193,14 @@ const app = createApp({
                 });
             }
 
-            if(data.jogador.classe.nivel > this.jogador.classe.nivel) {
+            if(data?.jogador?.classe?.nivel > this.jogador.classe.nivel) {
                 this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18);
             }
 
-            if(data.jogador.level > this.jogador.level) {
+            if(data.jogador > this.jogador.level) {
                 this.criarParticulas({
                     'alvo': 'jogador',
-                    'sprite_arquivo': 'particulas/level.webp',
+                    'sprite_arquivo': 'particulas/level.png',
                     'aleatorio': false,
                     'tamanho': 2,
                     'opacidade': .5
@@ -199,20 +211,22 @@ const app = createApp({
             }
         },
         wsAnimateInimigo(data) {
-            const diferencaVida = data.inimigo.vida - this.inimigo.vida;
-            if(diferencaVida > 0) {
-                this.criarTextoFlutuante(diferencaVida, 'inimigo', colorHeal);
-            } else if(diferencaVida < 0) {
-                this.criarParticulas({
-                    'alvo': 'inimigo',
-                    'sprite_arquivo': 'particulas/ataque_basico.webp'
-                }).then((top, left) => {
-                    this.tocarAudio('#audio_dano_monstro');
-                    this.criarTextoFlutuante(diferencaVida, 'inimigo', colorDamage, 32, top, left);
-                });
-            } else {
-                if(this.masmorra.nome != 'Casa') {
-                    this.criarTextoFlutuante('0', 'inimigo', colorMiss, 24);
+            if(data?.inimigo?.vida || data?.inimigo?.vida == 0) {
+                const diferencaVida = data.inimigo.vida - this.inimigo.vida;
+                if(diferencaVida > 0) {
+                    this.criarTextoFlutuante(diferencaVida, 'inimigo', colorHeal);
+                } else if(diferencaVida < 0) {
+                    this.criarParticulas({
+                        'alvo': 'inimigo',
+                        'sprite_arquivo': 'particulas/ataque_basico.png'
+                    }).then((top, left) => {
+                        this.tocarAudio('#audio_dano_monstro');
+                        this.criarTextoFlutuante(diferencaVida, 'inimigo', colorDamage, 32, top, left);
+                    });
+                } else {
+                    if(this.masmorra.nome != 'Casa') {
+                        this.criarTextoFlutuante('0', 'inimigo', colorMiss, 24);
+                    }
                 }
             }
         },

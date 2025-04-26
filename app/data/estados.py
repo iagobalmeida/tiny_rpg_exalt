@@ -17,7 +17,7 @@ class Sangramento(Estado):
 class Congelamento(Estado):
     nome: str = 'Congelamento'
     fator: int = Field(default=1)
-    duracao: int = Field(default=99)
+    duracao: int = Field(default=5)
 
     def executar(self, entidade: Entidade) -> bool:
         self.duracao = max(0, self.duracao - 1)

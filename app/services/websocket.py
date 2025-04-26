@@ -51,7 +51,6 @@ class WebSocketManager:
         """Envia uma mensagem para um jogador específico."""
         if player_id in self.connected_players:
             await self.connected_players[player_id].send_json(message)
-            self.game_states_last_payloads[player_id] = message
 
     async def broadcast(self, message: Dict[str, Any], exclude: int = None):
         """Envia uma mensagem para todos os jogadores conectados, exceto o especificado."""
@@ -157,9 +156,9 @@ class WebSocketManager:
                 for chave, masmorra in MASMORRAS.items()
             ]
         }
-        # TODO: Esse bendito tem que funcionar
-        # update_payload = self.diff_dicts(update_payload, self.game_states_last_payloads.get(player_id, None))
-        await self.send_message(player_id, update_payload)
+        sanitized_payload = self.diff_dicts(update_payload, self.game_states_last_payloads.get(player_id, None))
+        await self.send_message(player_id, sanitized_payload)
+        self.game_states_last_payloads[player_id] = update_payload
 
     async def process_game_loop(self):
         """Processa o loop principal do jogo para todos os jogadores."""

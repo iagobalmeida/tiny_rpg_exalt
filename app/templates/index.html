@@ -13,27 +13,23 @@
         </div>
     </section>
 
+    <hr>
+
     <!-- Seção Placar de Líderes -->
     <section class="section">
         <div class="container text-center">
             <h2 class="section-title mb-5">Placar de Líderes</h2>
             <p>Os assets utilizados no jogo foram retirados de fontes externas e são creditados abaixo:</p>
-            <table class="table table-bordered table-hoverable rounded bg-transparent">
-                <tr>
-                    <th>#</th>
-                    <th>Nome</th>
-                    <th>Level</th>
-                    <th>Classe</th>
-                </tr>
+            <ul class="list-group w-100">
                 {% for pontuacao in placar_de_lideres %}
-                    <tr>
-                        <td>#{{pontuacao.posicao}}</td>
-                        <td>{{pontuacao.nome}}</td>
-                        <td>{{pontuacao.level}}</td>
-                        <td>{{pontuacao.classe}}</td>
-                    </tr>
+                    <li class="list-group-item bg-transparent text-white row d-flex">
+                        <div class="col-3">#{{pontuacao.posicao}}</div>
+                        <div class="col-3">{{pontuacao.nome}}</div>
+                        <div class="col-3">{{pontuacao.level}}</div>
+                        <div class="col-3">{{pontuacao.classe}}</div>
+                    </li>
                 {% endfor %}
-            </table>
+            </ul>
         </div>
     </section>
 
@@ -87,19 +83,52 @@
         </div>
     </section>
 
-    <hr>
+    <!-- <hr> -->
     <!-- Seção de Assinatura Premium -->
-    <section class="section">
+    <!-- <section class="section">
         <div class="container text-center">
             <h2 class="section-title mb-5">Torne-se um Patrocinador</h2>
             <p class="lead mb-4">Ajude o jogo a crescer, por apenas <b class="text-warning">R$ 5.00/mês</b>, e receba recompensas exlusivas!</p>
-            <a href="#" class="btn btn-warning btn-lg">Tornar-se um Patrocinador</a>
+            <a data-bs-toggle="modal" data-bs-target="#modal-patrocinador" class="btn btn-warning btn-lg">Tornar-se um Patrocinador</a>
         </div>
     </section>
+    <div class="modal fade" id="modal-patrocinador">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Torne-se um Patrocinador</h5>
+                    <button type="button" class="btn p-0 ms-auto" data-bs-dismiss="modal" aria-label="Close">
+                        <div class="material-symbols-outlined text-white">close</div>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Esse é um jogo totalmente independente, escrito do zero por um único desenvolvedor.</p>
+                    <p>Manter o jogo e seu servidor dá trabalho e tem custos, mas você pode ajudar com isso!</p>
+                    <p>Por <b class="text-warning">R$ 5.00/mês</b> você se torna um patrocinador, e tem direito á:</p>
+                    <ul>
+                        <li>Um ícone especial em seu nome.</li>
+                        <li>Chance de obter itens exclusivos em cada masmorra.</li>
+                        <li>Acesso á terceira evolução de classe.</li>
+                        <li>Capacidade de "renascer" personagem.</li>
+                    </ul>
+                    <form method="{{url_for('get_link_pagamento')}}">
+                        <div class="mb-3 form-group">
+                            <label for="email" class="form-label">E-mail</label>
+                            <input type="email" name="email" class="form-control">
+                            <small class="form-help">Você recebera um link de pagamento, informe o e-mail da sua conta ou lembre-se de criar uma conta com o mesmo e-mail.</small>
+                        </div>
+                        <button class="btn btn-warning w-100">
+                            Receber link
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div> -->
+    </div>
     <hr>
     <div class="section">
         <div class="container text-center">
-            Criado por <a href="https://iagobalmeida.vercel.app/">Iago B. Almeida</a>
+            Criado por <a href="https://iagobalmeida.vercel.app/">Iago B. Almeida</a> / iago.borba.almeida@gmail.com
         </div>
     </div>
 {% endblock %}

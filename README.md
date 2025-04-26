@@ -26,6 +26,10 @@ O jogo está em desenvolvimento e qualquer colaboração (desde que de acordo co
 docker-compose up --build
 ```
 
+### Ideias para o futuro
+- Jogador com sprite base masculina ou feminina e equipamentos mudam visual do jogador: https://gandalfhardcore.itch.io/2d-pixel-art-male-and-female-character
+
+
 ### Ideia de progressão
 
 - Existem 3 tipos de equipamento: `ARMA`, `ARMADURA` e `ACESSORIO`
