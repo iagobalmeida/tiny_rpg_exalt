@@ -18,6 +18,8 @@ class Masmorra(Objeto):
 
     @property
     def total_passos(self) -> int:
+        if not self.lista_itens:
+            return 1
         total_itens = len(self.lista_itens)
         total_inimigos = len(self.lista_inimigos)
         tamanho_passos = total_inimigos/total_itens
