@@ -23,6 +23,16 @@
                 width: auto !important;
             }
         }
+        * {
+            user-select: none;
+            cursor: default;
+        }
+        .sprite {
+            cursor: grab;
+            &:focus, &:active {
+                cursor: grabbing;
+            }
+        }
 
         table.table {
             --bs-table-bg: transparent;
@@ -391,7 +401,7 @@
             position: relative;
             transition: all 125ms ease-in-out;
             &:not(.vazio){
-                cursor: pointer;
+                cursor: grab;
                 border: 1px solid white;
                 &:hover{
                     filter: brightness(1.1);

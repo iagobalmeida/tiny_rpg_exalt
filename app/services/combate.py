@@ -4,6 +4,7 @@ from typing import Union
 
 from config import get_config
 from data import estados, inimigos
+from data.colors import colorDamage, colorMiss
 from models.inimigo import Inimigo
 from models.jogador import Classes, Jogador
 
@@ -20,21 +21,27 @@ class Combate:
         self.acao_inimigo = None
         self.contagem_turno = 0
 
-    async def executar_turno_jogador(self, atributos_equipamentos: dict = {}) -> Union[bool, int]:
+    async def executar_turno_jogador(self, atributos_equipamentos: dict = {}):
         jogador_equipado = self.jogador.com_atributos_bonus(atributos_equipamentos)
         if jogador_equipado.calcular_chance_acerto(self.inimigo):
             dano = jogador_equipado.calcular_dano(self.inimigo)
             self.inimigo.vida = max(0, self.inimigo.vida - dano)
-            return dano
-        return False
+            self.inimigo.adicionar_particula_temporaria(
+                str(-dano) if dano >= 0 else 'Erro',
+                colorDamage if dano >= 0 else colorMiss,
+                'ataque_basico.png' if dano >= 0 else 'ataque_erro.png'
+            )
 
-    async def executar_turno_inimigo(self, atributos_equipamentos: dict = {}) -> Union[bool, int]:
+    async def executar_turno_inimigo(self, atributos_equipamentos: dict = {}):
         jogador_equipado = self.jogador.com_atributos_bonus(atributos_equipamentos)
         if self.inimigo.calcular_chance_acerto(jogador_equipado):
             dano = self.inimigo.calcular_dano(jogador_equipado)
             self.jogador.vida = max(0, self.jogador.vida - dano)
-            return dano
-        return False
+            self.jogador.adicionar_particula_temporaria(
+                str(-dano) if dano >= 0 else 'Erro',
+                colorDamage if dano >= 0 else colorMiss,
+                self.inimigo.sprite_particula if dano >= 0 else 'ataque_erro.png'
+            )
 
     async def executar_acao_jogador(self, atributos_equipamentos) -> bool:
         # TODO: Achar uma forma de lidar sempre com `float` com até 1 casa decimal, no jogo todo
@@ -86,27 +93,17 @@ class Combate:
 
     async def executar_turno(self, atributos_equipamentos_jogador: dict = {}) -> Union[bool, str]:
         self.contagem_turno += 1
-        self.jogador.particula_temporaria = ''
-        self.inimigo.particula_temporaria = ''
-        jogador_dano_causado = None
-        inimigo_dano_causado = False
 
         await self.executar_passiva_jogador_classe()
         if not self.jogador.congelado:
-            jogador_dano_causado = await self.executar_turno_jogador(atributos_equipamentos_jogador)
+            await self.executar_turno_jogador(atributos_equipamentos_jogador)
         await self.executar_acao_jogador(atributos_equipamentos_jogador)  # Jogador tem preferência mesmo congelado
         self.jogador.executar_estados()
 
         if not self.inimigo.congelado:
-            inimigo_dano_causado = await self.executar_turno_inimigo(atributos_equipamentos_jogador)
+            await self.executar_turno_inimigo(atributos_equipamentos_jogador)
             await self.executar_acao_inimigo(atributos_equipamentos_jogador)
         self.inimigo.executar_estados()
-
-        if self.jogador.particula_temporaria == '' and inimigo_dano_causado == 0:
-            self.jogador.particula_temporaria = 'ataque_erro.png'
-
-        if self.inimigo.particula_temporaria == '' and jogador_dano_causado == 0:
-            self.inimigo.particula_temporaria = 'ataque_erro.png'
 
         if self.inimigo.vida <= 0:
             return 'jogador'

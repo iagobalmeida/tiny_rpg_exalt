@@ -11,8 +11,8 @@ class GolpeEspiritual(Habilidade):
     nivel: int = 1
 
     def aplicar(self, de: Entidade, para: Entidade):
-        para.particula_temporaria = 'ataque_nulo.png'
         dano = de.calcular_dano_magico(para) * 2
+        para.adicionar_particula_temporaria(str(dano), '#ff0000', 'ataque_nulo.png')
         para.vida = max(0, para.vida - dano)
 
 
@@ -23,7 +23,7 @@ class Furia(Habilidade):
     nivel: int = 2
 
     def aplicar(self, de: Entidade, _):
-        de.particula_temporaria = 'habilidade_furia.png'
+        de.adicionar_particula_temporaria('Fúria!', '#ffffff', 'habilidade_furia.png')
         if getattr(de, 'bonus_atributos_classe', None):
             de.bonus_atributos_classe['agilidade'] += int(max(3, de.inteligencia/5))
 
@@ -34,11 +34,12 @@ class Execucao(Habilidade):
     nivel: int = 3
 
     def aplicar(self, de: Entidade, para: Entidade):
-        para.particula_temporaria = 'habilidade_execucao.png'
         if para.vida <= para.vida/2:
-            para.vida = 0
+            dano = para.vida
         else:
-            para.vida = int(max(0, para.vida - para.vida_maxima/3))
+            dano = int(para.vida_maxima/3)
+        para.adicionar_particula_temporaria(str(dano), '#ff0000', 'habilidade_execucao.png')
+        para.vida = int(max(0, para.vida - dano))
 
 
 # Mago & Feiticeiro
@@ -48,8 +49,8 @@ class BolaDeFogo(Habilidade):
     nivel: int = 2
 
     def aplicar(self, de: Entidade, para: Entidade):
-        para.particula_temporaria = 'habilidade_bola_de_fogo.png'
         dano = de.calcular_dano_magico(para) * 4
+        para.adicionar_particula_temporaria(str(dano), '#ff0000', 'habilidade_bola_de_fogo.png')
         para.vida = max(0, para.vida - dano)
 
 
@@ -59,9 +60,9 @@ class Congelar(Habilidade):
     nivel: int = 3
 
     def aplicar(self, de: Entidade, para: Entidade):
-        para.particula_temporaria = 'habilidade_congelar.png'
-        dano = de.calcular_dano_magico(para) * 8
         para.vida = max(0, para.vida - dano)
+        para.adicionar_particula_temporaria(str(dano), '#00aaff', 'habilidade_congelar.png')
+        dano = de.calcular_dano_magico(para) * 8
         para.adicionar_estado(Congelamento())
 
 
@@ -72,8 +73,9 @@ class Bencao(Habilidade):
     nivel: int = 2
 
     def aplicar(self, de: Entidade, _):
-        de.particula_temporaria = 'habilidade_cura.png'
-        de.vida += max(10, int(de.inteligencia/1.5))
+        cura = int(de.inteligencia/1.5)
+        de.vida += max(10, cura)
+        de.adicionar_particula_temporaria(str(cura), '#00ff00', 'habilidade_cura.png')
 
 
 class Redencao(Habilidade):
@@ -83,6 +85,7 @@ class Redencao(Habilidade):
 
     def aplicar(self, de: Entidade, _):
         de.vida = de.vida_maxima
-        de.particula_temporaria = 'habilidade_cura.png'
+        cura = de.vida_maxima - de.vida
+        de.adicionar_particula_temporaria(str(cura), '#00ff00', 'habilidade_cura.png')
         if getattr(de, 'bonus_atributos_classe', None):
             de.bonus_atributos_classe['resistencia'] += int(max(3, de.inteligencia/5))

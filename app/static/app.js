@@ -1,9 +1,4 @@
 const { createApp } = Vue
-const colorDamage = '#d32f2f'
-const colorHeal = '#49F7B4'
-const colorEnergy = '#b319d2'
-const colorExperience = '#0DCAF0'
-const colorMiss = '#ffff'
 
 function deepMerge(target, patch) {
     if (target === null || typeof target !== 'object') {
@@ -69,7 +64,6 @@ const app = createApp({
         },
         jogadorProximaMissao(){
             if(!this.jogador) return;
-            const chaves = Object.keys(this.missoes);
             for(missao_chave in this.missoes) {
                 const missao = this.missoes[missao_chave];
                 if(!missao['completa']) return missao;
@@ -135,100 +129,21 @@ const app = createApp({
             }
             this.usarAutomatico();
         },
+        wsAnimateParticulas(alvo, particulas, particula_atual=0) {
+            if(particula_atual >= particulas.length) return;
+            const [texto, cor, sprite] = particulas[particula_atual]
+            this.criarParticulas({
+                'alvo': alvo,
+                'sprite_arquivo': `particulas/${sprite}`
+            }).then((top, left) => {
+                this.criarTextoFlutuante(texto, alvo, cor, 24, top, left).then(
+                    this.wsAnimateParticulas(alvo, particulas, particula_atual+1)
+                )
+            })
+        },
         wsAnimate(data) {
-            if(this.jogador && data.jogador) {
-                this.wsAnimateJogador(data);
-            }
-            if(this.inimigo && data.inimigo && !data.inimigo.id_unico) {
-                this.wsAnimateInimigo(data);
-            }
-            if(data.particula_em_inimigo) {
-                let opacidade = data.particula_em_inimigo == 'ataque_erro.png' ? 0.5 : 1;
-                this.criarParticulas({'opacidade': opacidade, 'alvo': 'inimigo', 'sprite_arquivo': `particulas/${data.particula_em_inimigo}`});
-                setTimeout(() => {
-                    this.criarParticulas({'opacidade': opacidade, 'alvo': 'inimigo', 'sprite_arquivo': `particulas/${data.particula_em_inimigo}`});
-                }, 250);
-            }
-            if(data.particula_em_jogador) {
-                let opacidade = data.particula_em_jogador == 'ataque_erro.png' ? 0.5 : 1;
-                this.criarParticulas({'opacidade': opacidade, 'alvo': 'jogador', 'sprite_arquivo': `particulas/${data.particula_em_jogador}`});
-                setTimeout(() => {
-                    this.criarParticulas({'opacidade': opacidade, 'alvo': 'jogador', 'sprite_arquivo': `particulas/${data.particula_em_jogador}`});
-                }, 250);
-            }
-        },
-        wsAnimateJogador(data) {
-            if(data.jogador.vida || data.jogador.vida == 0) {
-                const diferencaVida = data.jogador.vida - this.jogador.vida;
-                if(diferencaVida > 0) {
-                    this.criarTextoFlutuante(diferencaVida, 'jogador', colorHeal);
-                } else if(diferencaVida < 0) {
-                    this.criarParticulas({
-                        'alvo': 'jogador',
-                        'sprite_arquivo': this.inimigo.sprite_particula
-                    }).then((top, left) => {
-                        this.tocarAudio('#audio_dano_jogador');
-                        this.criarTextoFlutuante(diferencaVida, 'jogador', colorDamage, 32, top, left);
-                    });
-                }
-            }
-
-            const diferencaEnergia = data.jogador.energia - this.jogador.energia;
-            if(diferencaEnergia > 0) {
-                this.criarTextoFlutuante(diferencaEnergia, 'jogador', colorEnergy);
-                // this.tocarAudio('#audio_exp_up');
-            } else if(diferencaEnergia < 0) {
-                this.criarTextoFlutuante(diferencaEnergia, 'jogador', colorEnergy);
-            }
-
-            const diferencaExperiencia = data.jogador.experiencia - this.jogador.experiencia;
-            if(diferencaExperiencia > 0) {
-                this.criarParticulas({
-                    'alvo': 'jogador',
-                    'sprite_arquivo': 'particulas/experiencia.png',
-                    'opacidade': .5
-                }).then((top, left) => {
-                    this.tocarAudio('#audio_exp_up');
-                    this.criarTextoFlutuante(diferencaExperiencia, 'jogador', colorExperience, 32, top, left);
-                });
-            }
-
-            if(data?.jogador?.classe?.nivel > this.jogador.classe.nivel) {
-                this.criarTextoFlutuante(`Classe UP!`, 'jogador', colorExperience, 18);
-            }
-
-            if(data.jogador > this.jogador.level) {
-                this.criarParticulas({
-                    'alvo': 'jogador',
-                    'sprite_arquivo': 'particulas/level.png',
-                    'aleatorio': false,
-                    'tamanho': 2,
-                    'opacidade': .5
-                }).then((top, left)=> {
-                    this.tocarAudio('#audio_level_up');
-                    this.criarTextoFlutuante(`Level UP!`, 'jogador', colorExperience, 18, top, left);
-                });
-            }
-        },
-        wsAnimateInimigo(data) {
-            if(data?.inimigo?.vida || data?.inimigo?.vida == 0) {
-                const diferencaVida = data.inimigo.vida - this.inimigo.vida;
-                if(diferencaVida > 0) {
-                    this.criarTextoFlutuante(diferencaVida, 'inimigo', colorHeal);
-                } else if(diferencaVida < 0) {
-                    this.criarParticulas({
-                        'alvo': 'inimigo',
-                        'sprite_arquivo': 'particulas/ataque_basico.png'
-                    }).then((top, left) => {
-                        this.tocarAudio('#audio_dano_monstro');
-                        this.criarTextoFlutuante(diferencaVida, 'inimigo', colorDamage, 32, top, left);
-                    });
-                } else {
-                    if(this.masmorra.nome != 'Casa') {
-                        this.criarTextoFlutuante('0', 'inimigo', colorMiss, 24);
-                    }
-                }
-            }
+            this.wsAnimateParticulas('jogador', data.jogador_particulas ? data.jogador_particulas : []);
+            this.wsAnimateParticulas('inimigo', data.inimigo_particulas ? data.inimigo_particulas : []);
         },
         wsUpdateState(data) {
             this.podeEnviarAcao = true;
@@ -250,7 +165,6 @@ const app = createApp({
             }
             if(data.inventario){
                 this.inventario = data.inventario
-                // this.inventario = deepMerge(this.inventario, data.inventario);
             }
             if(data.inimigo) {
                 this.inimigo = deepMerge(this.inimigo, data.inimigo);
@@ -277,11 +191,7 @@ const app = createApp({
                 const precisaUsar = this.jogador.vida + this.usarAutomaticoVidaFator <= this.jogador.vida_maxima || this.jogador.vida <= this.jogador.vida_maxima * 0.25;
                 if(precisaUsar) {
                     const itemIndice = this.inventario.findIndex(item => item.nome == this.usarAutomaticoVidaNome);
-                    if(itemIndice < 0) {
-                        this.usarAutomaticoVidaNome = null;
-                        this.usarAutomaticoVidaFator = null;
-                    }
-                    else {
+                    if(itemIndice > 0) {
                         this.itemAcao(itemIndice, 'usar');
                     }
                 }
@@ -290,13 +200,9 @@ const app = createApp({
                 const precisaUsar = this.jogador.energia + this.usarAutomaticoEnergiaFator <= this.jogador.energia_maxima || this.jogador.energia <= this.jogador.energia_maxima * 0.25;
                 if(precisaUsar) {
                     const itemIndice = this.inventario.findIndex(item => item.nome == this.usarAutomaticoEnergiaNome);
-                    if(itemIndice < 0) {
+                    if(itemIndice > 0) {
                         this.usarAutomaticoEnergiaNome = null;
                         this.usarAutomaticoEnergiaFator = null;
-                    }
-                    else {
-                        this.itemAcao(itemIndice, 'usar');
-                        console.log(itemIndice);
                     }
                 }
             } 

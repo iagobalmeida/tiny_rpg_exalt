@@ -125,7 +125,7 @@ class WebSocketManager:
             return new
 
         for key in new:
-            if key == 'type':
+            if key == 'type' or key == 'jogador_particulas' or key == 'inimigo_particulas':
                 diff[key] = new[key]
             new_val = new[key]
             old_val = old.get(key, None)

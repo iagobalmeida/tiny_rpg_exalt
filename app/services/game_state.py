@@ -19,6 +19,14 @@ from services.combate import Combate
 log = getLogger('uvicorn')
 
 TAMANHO_SLOT_INVENTARIO = 16
+EMAILS_TESTE = [
+    'selvagem@teste.com',
+    'barbaro@teste.com',
+    'mago@teste.com',
+    'feiticeiro@teste.com',
+    'guerreiro@teste.com',
+    'templario@teste.com'
+]
 
 
 class GameState:
@@ -54,11 +62,11 @@ class GameState:
         ret = {
             "placar_de_lideres": [l.model_dump() for l in placar_de_lideres],
             "jogador": self.jogador.get_websocket_data() if self.jogador else None,
+            "jogador_particulas": self.jogador.particulas_temporarias if self.jogador else None,
             "atributos_equipamentos_jogador": self.atributos_equipamentos_jogador if self.jogador else None,
+            "inimigo_particulas": self.combate.inimigo.particulas_temporarias if self.combate and self.combate.inimigo else None,
             "inimigo": self.combate.inimigo.get_websocket_data() if self.combate and self.combate.inimigo else None,
             "masmorra": self.masmorra.get_websocket_data() if self.masmorra else None,
-            "particula_em_jogador": self.jogador.particula_temporaria if self.jogador else None,
-            "particula_em_inimigo": self.combate.inimigo.particula_temporaria if self.combate and self.combate.inimigo else None,
             "tamanho_inventario": self.tamanho_inventario,
             "missoes": self.missoes,
             "inventario": [
@@ -101,7 +109,7 @@ class GameState:
         self.masmorra = Masmorra.casa()
         self.iniciar_combate(renascer=True)
 
-        if '@teste.com' in usuario_registro.email:
+        if usuario_registro.email in EMAILS_TESTE:
             # Adiciona todos os itens do jogo para o jogador
             self.tamanho_inventario = 64
             self.inventario = []
@@ -224,6 +232,9 @@ class GameState:
         if not self.masmorra or not self.combate:
             return
 
+        self.jogador.particulas_temporarias = []
+        self.combate.inimigo.particulas_temporarias = []
+
         if self.masmorra.nome == 'Casa':
             cura = math.ceil(max(self.jogador.vida_maxima/15, self.jogador.vida * 0.2))
             cura_energia = math.ceil(max(self.jogador.vida_maxima/15, self.jogador.energia * 0.2))
@@ -253,12 +264,10 @@ class GameState:
                 if item_aletorio:
                     self.adicionar_item(item_aletorio)
 
-                experiencia_ganha = self.combate.inimigo.experiencia
-                self.jogador.experiencia += experiencia_ganha
                 self.jogador.ouro = max(0, self.jogador.ouro + self.combate.inimigo.ouro)
                 self.masmorra.passos = min(self.masmorra.total_passos, self.masmorra.passos+1)
-                if self.jogador.deve_subir_nivel:
-                    self.jogador.subir_nivel()
+
+                self.jogador.adicionar_experiencia(self.combate.inimigo.experiencia)
             self.combate_acabou = True
             return
 

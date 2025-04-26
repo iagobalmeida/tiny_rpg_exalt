@@ -4,6 +4,7 @@ from typing import Dict, Literal, Optional
 
 from config import get_config
 from data.classes import Classes
+from data.colors import colorExperience
 from models.classe import Classe
 from models.entidade import Entidade
 from pydantic import Field
@@ -88,6 +89,16 @@ class Jogador(Entidade):
         base_dict['custo_habilidades'] = self.custo_habilidades
         return base_dict
 
+    def adicionar_experiencia(self, quantidade):
+        self.experiencia += quantidade
+        self.adicionar_particula_temporaria(
+            str(quantidade),
+            colorExperience,
+            'experiencia.png'
+        )
+        if self.deve_subir_nivel:
+            self.subir_nivel()
+
     def subir_nivel(self):
         self.experiencia -= self.experiencia_proximo_nivel
         self.level += 1
@@ -97,6 +108,11 @@ class Jogador(Entidade):
         self.vida_maxima += math.ceil(self.level/50) * (2 * (self.classe.nivel+1))
         self.energia = self.energia_maxima
         self.vida = self.vida_maxima
+        self.adicionar_particula_temporaria(
+            'Level Up!',
+            colorExperience,
+            'level.png'
+        )
 
     def atribuir_ponto(self, atributo: str):
         """Atribui um ponto de atributo ao jogador."""

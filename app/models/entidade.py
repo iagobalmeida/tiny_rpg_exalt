@@ -1,6 +1,6 @@
 import math
 import random
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Tuple
 
 from models.estado import Estado
 from pydantic import BaseModel, Field
@@ -38,7 +38,7 @@ class Entidade(Objeto):
     sprite_largura: int = Field(default=224*3)
     sprite_altura: int = Field(default=224*3)
     estados: List[Estado] = Field(default=[])
-    particula_temporaria: Optional[str] = Field(default=None)
+    particulas_temporarias: Optional[List[Tuple[str, str, str]]] = Field(default_factory=lambda: [])
 
     def model_post_init(self, __context):
         if self.vida_maxima == 0:
@@ -66,6 +66,11 @@ class Entidade(Objeto):
     @property
     def congelado(self):
         return any([e.nome == 'Congelamento' for e in self.estados])
+
+    def adicionar_particula_temporaria(self, texto: str, cor: str, sprite: str):
+        self.particulas_temporarias.append(
+            (texto, cor, sprite)
+        )
 
     def aplicar_dano(self, quantidade: int):
         self.vida = int(max(0, self.vida - quantidade))

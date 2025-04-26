@@ -19,4 +19,4 @@ class Habilidade(Objeto):
             de.vida = de_com_atributos.vida
             de.energia = de_com_atributos.energia
             de.estados = de_com_atributos.estados
-            de.particula_temporaria = de_com_atributos.particula_temporaria
+            de.particulas_temporarias = de_com_atributos.particulas_temporarias

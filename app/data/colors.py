@@ -1,0 +1,5 @@
+colorDamage = '#d32f2f'
+colorHeal = '#49F7B4'
+colorEnergy = '#b319d2'
+colorExperience = '#0DCAF0'
+colorMiss = '#ffff'
