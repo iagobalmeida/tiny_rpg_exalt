@@ -2,6 +2,9 @@ from data import inimigos, itens
 from models.masmorra import Masmorra
 from models.npcs import mae
 
+CHANCE_CONSUMIVEIS = 0.1
+CHANCE_EQUIPAMENTOS_ARMAS = 0.05
+
 # Definição das masmorras
 casa = Masmorra(
     nome='Casa',
@@ -21,10 +24,11 @@ esgoto = Masmorra(
         inimigos.rato_guerreiro,
     ],
     lista_itens=[
-        (0.09, itens.queijo),
-        (0.09, itens.vinho),
-        (0.04, itens.faca_de_cozinha),
-        (0.04, itens.bengala)
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.arco_curto),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.espada_curta),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.tronco_magico),
+        (CHANCE_CONSUMIVEIS, itens.pocao_pequena),
+        (CHANCE_CONSUMIVEIS, itens.elixir_pequeno),
     ]
 )
 
@@ -41,10 +45,12 @@ floresta = Masmorra(
         inimigos.gnomo_anciao
     ],
     lista_itens=[
-        (0.09, itens.maca),
-        (0.09, itens.rum),
-        (0.04, itens.espada_de_treino),
-        (0.04, itens.cajado_improvisado)
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.camiseta_comun),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.malha_de_ferro),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.manto_de_aprendiz),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.couraca_simples),
+        (CHANCE_CONSUMIVEIS, itens.pocao_pequena),
+        (CHANCE_CONSUMIVEIS, itens.elixir_pequeno),
     ]
 )
 
@@ -59,11 +65,11 @@ mata_fechada = Masmorra(
         inimigos.entidade_obscura,
     ],
     lista_itens=[
-        (0.09, itens.pocao_pequena),
-        (0.09, itens.absinto),
-        (0.04, itens.espada_longa),
-        (0.04, itens.cajado_de_aprendiz),
-        (0.02, itens.tronco_de_salgueiro)
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.arco_militar),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.serpentina),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.cajado_de_aprendiz),
+        (CHANCE_CONSUMIVEIS, itens.pocao_media),
+        (CHANCE_CONSUMIVEIS, itens.elixir_medio),
     ]
 )
 
@@ -80,11 +86,12 @@ castelo_abandonado = Masmorra(
         inimigos.morto_vivo,
     ],
     lista_itens=[
-        (0.09, itens.pocao_media),
-        (0.09, itens.elixir_impuro),
-        (0.04, itens.espada_pesada),
-        (0.04, itens.cajado_de_aprendiz)
-        # TODO: Criar item especial
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.roupa_de_escoteiro),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.roupa_de_soldado),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.manto_autoral),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.couraca_de_javali),
+        (CHANCE_CONSUMIVEIS, itens.pocao_media),
+        (CHANCE_CONSUMIVEIS, itens.elixir_medio),
     ]
 )
 
@@ -100,11 +107,11 @@ cemiterio = Masmorra(
         inimigos.protetora_das_catacumbas,
     ],
     lista_itens=[
-        (0.09, itens.pocao_media),
-        (0.09, itens.elixir_impuro),
-        (0.04, itens.espada_pesada),
-        (0.04, itens.cajado_de_aprendiz),
-        (0.02, itens.lamina_fantasma)
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.arco_composto),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.aniquiladora),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.cajado_de_conducao),
+        (CHANCE_CONSUMIVEIS, itens.pocao_grande),
+        (CHANCE_CONSUMIVEIS, itens.elixir_grande),
     ]
 )
 
@@ -119,12 +126,12 @@ catacumbas = Masmorra(
         inimigos.sacerdote_renegado,
     ],
     lista_itens=[
-        (0.09, itens.pocao_media),
-        (0.09, itens.elixir_semipuro),
-        (0.04, itens.espada_pesada),
-        (0.04, itens.cajado_de_aprendiz),
-        (0.02, itens.lamina_fantasma)
-        # TODO: Criar item especial
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.traje_de_cacador),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.peito_de_aco),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.ombros_de_turmalina),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.couraca_de_tigre_dente_de_sabre),
+        (CHANCE_CONSUMIVEIS, itens.pocao_dupla),
+        (CHANCE_CONSUMIVEIS, itens.elixir_duplo),
     ]
 )
 
@@ -140,11 +147,11 @@ calabouco = Masmorra(
         inimigos.dragao_anciao,
     ],
     lista_itens=[
-        (0.09, itens.pocao_grande),
-        (0.09, itens.elixir_semipuro),
-        (0.04, itens.espada_pesada),
-        (0.04, itens.cajado_de_aprendiz),
-        (0.02, itens.matadora_de_dragoes)
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.besta),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.ultima_fantasia),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.cajado_de_grao_mestre),
+        (CHANCE_CONSUMIVEIS, itens.pocao_de_litro),
+        (CHANCE_CONSUMIVEIS, itens.elixir_de_litro),
     ]
 )
 
@@ -158,11 +165,12 @@ laboratorio_secreto = Masmorra(
         inimigos.experimento_iv,
     ],
     lista_itens=[
-        (0.09, itens.pocao_grande),
-        (0.09, itens.elixir_puro),
-        (0.04, itens.espada_pesada),
-        (0.04, itens.cajado_de_aprendiz),
-        (0.02, itens.linha_da_verdade)
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.armadura_de_samurai),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.protecao_divina),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.robe_mistico),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.couraca_de_mamute),
+        (CHANCE_CONSUMIVEIS, itens.pocao_de_litro),
+        (CHANCE_CONSUMIVEIS, itens.elixir_de_litro),
     ]
 )
 
@@ -179,11 +187,11 @@ submundo = Masmorra(
         inimigos.barbathos
     ],
     lista_itens=[
-        (0.09, itens.pocao_suprema),
-        (0.09, itens.elixir_concentrado),
-        (0.04, itens.espada_pesada),
-        (0.04, itens.cajado_de_aprendiz),
-        (0.02, itens.brasa_eterna)
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.besta_celestial),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.atravesssa_planos),
+        (CHANCE_EQUIPAMENTOS_ARMAS, itens.centro_do_universo),
+        (CHANCE_CONSUMIVEIS, itens.pocao_real),
+        (CHANCE_CONSUMIVEIS, itens.elixir_real),
     ]
 )
 
@@ -195,10 +203,8 @@ nulo = Masmorra(
         inimigos.nulo
     ],
     lista_itens=[
-        (0.09, itens.pocao_suprema),
-        (0.09, itens.elixir_concentrado),
-        (0.02, itens.ruptura),
-        (0.02, itens.setenca_final)
+        (CHANCE_CONSUMIVEIS, itens.pocao_real),
+        (CHANCE_CONSUMIVEIS, itens.elixir_real),
     ]
 )
 

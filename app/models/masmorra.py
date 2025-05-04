@@ -65,8 +65,14 @@ class Masmorra(Objeto):
         return ret
 
     def item_aleatorio(self) -> UNION_ITEM:
-        indice_maximo = int(self.passos / self.total_passos) * len(self.lista_itens)
-        for chance, item in self.lista_itens[0:indice_maximo]:
+        # indice_maximo = math.ceil((self.passos / self.total_passos) * len(self.lista_itens))
+        # for chance, item in self.lista_itens[0:indice_maximo]:
+        #     chance = max(0, 1 - chance)
+        #     chance = min(0.999, chance*1.015)
+        #     if random.random() >= chance:
+        #         print('dropou')
+        #         return item.model_copy()
+        for chance, item in self.lista_itens:
             chance = max(0, 1 - chance)
             chance = min(0.999, chance*1.015)
             if random.random() >= chance:

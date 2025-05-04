@@ -34,9 +34,9 @@ class Entidade(Objeto):
     inteligencia: int
     sprite_x: int = Field(default=0)
     sprite_y: int = Field(default=0)
-    sprite_nome: str = Field(default='rogues.png')
-    sprite_largura: int = Field(default=224*3)
-    sprite_altura: int = Field(default=224*3)
+    sprite_nome: str = Field(default='sprites_01.png')
+    sprite_largura: int = Field(default=320*3)
+    sprite_altura: int = Field(default=320*3)
     estados: List[Estado] = Field(default=[])
     particulas_temporarias: Optional[List[Tuple[str, str, str]]] = Field(default_factory=lambda: [])
 
@@ -51,7 +51,8 @@ class Entidade(Objeto):
         custo_habilidade_i = min(self.energia_maxima, max(10, int(math.sqrt(self.inteligencia)*4)))
         custo_habilidade_ii = int(custo_habilidade_i*2)
         custo_habilidade_iii = int(custo_habilidade_ii*3)
-        return [custo_habilidade_i, custo_habilidade_ii, custo_habilidade_iii]
+        custo_habilidade_iv = int(custo_habilidade_iii*2)
+        return [custo_habilidade_i, custo_habilidade_ii, custo_habilidade_iii, custo_habilidade_iv]
 
     @property
     def renascido(self):
@@ -67,7 +68,15 @@ class Entidade(Objeto):
     def congelado(self):
         return any([e.nome == 'Congelamento' for e in self.estados])
 
-    def adicionar_particula_temporaria(self, texto: str, cor: str, sprite: str):
+    @property
+    def habilidades_sem_recarga(self):
+        return any([e.nome == 'Habilidades Sem Recarga' for e in self.estados])
+
+    @property
+    def refletindo_dano(self):
+        return any([e.nome == 'Refletindo Dano' for e in self.estados])
+
+    def adicionar_particula_temporaria(self, texto: str, cor: str, sprite: str = None):
         self.particulas_temporarias.append(
             (texto, cor, sprite)
         )
@@ -154,7 +163,7 @@ class Entidade(Objeto):
             return True
 
         # Calcula a diferença de agilidade
-        diferenca_agilidade = self.agilidade - alvo.agilidade
+        diferenca_agilidade = math.floor((self.agilidade - alvo.agilidade)/1.5)
 
         # Se a diferença for menor que o limite, usa um fator menor
         if abs(diferenca_agilidade) <= CONFIG_diferenca_agilidade_limite:

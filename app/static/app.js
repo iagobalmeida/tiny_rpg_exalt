@@ -56,6 +56,55 @@ const app = createApp({
         this.wsConnect();
     },
     computed: {
+        jogadorFatorClasseNivel() {
+            return this.jogador.classe.nivel ? parseInt(Math.pow(this.jogador.classe.nivel, 1.5)) : 0;
+        },
+        jogadorEvoluirClasseLevel() { 
+            return 15 + (this.jogadorFatorClasseNivel * 30)
+        },
+        jogadorEvoluirClassePreco() {
+            return 1500 + (this.jogadorFatorClasseNivel * 5000)
+        },
+        jogadorForca() {
+            let ret = `${this.jogador.forca}`;
+            if(this.atributosEquipamentosJogador && this.atributosEquipamentosJogador['forca']) {
+                ret += `<small>+${this.atributosEquipamentosJogador['forca']}</small>`;
+            }
+            if(this.jogador.bonus_atributos_classe['forca']) {
+                ret += ` <small>+${this.jogador.bonus_atributos_classe['forca']}</small>`;
+            }
+            return ret;
+        },
+        jogadorAgilidade() {
+            let ret = `${this.jogador.agilidade}`;
+            if(this.atributosEquipamentosJogador && this.atributosEquipamentosJogador['agilidade']) {
+                ret += ` <small>+${this.atributosEquipamentosJogador['agilidade']}</small>`;
+            }
+            if(this.jogador.bonus_atributos_classe['agilidade']) {
+                ret += ` <small>+${this.jogador.bonus_atributos_classe['agilidade']}</small>`;
+            }
+            return ret;
+        },
+        jogadorResistencia() {
+            let ret = `${this.jogador.resistencia}`;
+            if(this.atributosEquipamentosJogador && this.atributosEquipamentosJogador['resistencia']) {
+                ret += ` <small>+${this.atributosEquipamentosJogador['resistencia']}</small>`;
+            }
+            if(this.jogador.bonus_atributos_classe['resistencia']) {
+                ret += ` <small>+${this.jogador.bonus_atributos_classe['resistencia']}</small>`;
+            }
+            return ret;
+        },
+        jogadorInteligencia() {
+            let ret = `${this.jogador.inteligencia}`;
+            if(this.atributosEquipamentosJogador && this.atributosEquipamentosJogador['inteligencia']) {
+                ret += ` <small>+${this.atributosEquipamentosJogador['inteligencia']}</small>`;
+            }
+            if(this.jogador.bonus_atributos_classe['inteligencia']) {
+                ret += ` <small>+${this.jogador.bonus_atributos_classe['inteligencia']}</small>`;
+            }
+            return ret;
+        },
         jogadorEstadoClasses() {
             return this.jogador ? this.jogador.estados.map(e => (e.nome.toLowerCase())) : [];
         },
@@ -132,14 +181,22 @@ const app = createApp({
         wsAnimateParticulas(alvo, particulas, particula_atual=0) {
             if(particula_atual >= particulas.length) return;
             const [texto, cor, sprite] = particulas[particula_atual]
-            this.criarParticulas({
-                'alvo': alvo,
-                'sprite_arquivo': `particulas/${sprite}`
-            }).then((top, left) => {
-                this.criarTextoFlutuante(texto, alvo, cor, 24, top, left).then(
-                    this.wsAnimateParticulas(alvo, particulas, particula_atual+1)
+            if(sprite) {
+                this.criarParticulas({
+                    'alvo': alvo,
+                    'sprite_arquivo': `particulas/${sprite}`
+                }).then((top_left) => {
+                    this.criarTextoFlutuante(texto, alvo, cor, 24, top_left[0], top_left[1]).then(() => {
+                            this.wsAnimateParticulas(alvo, particulas, particula_atual+1)
+                        }
+                    )
+                })
+            } else {
+                this.criarTextoFlutuante(texto, alvo, cor, 24).then(() => {
+                        this.wsAnimateParticulas(alvo, particulas, particula_atual+1)
+                    }
                 )
-            })
+            }
         },
         wsAnimate(data) {
             this.wsAnimateParticulas('jogador', data.jogador_particulas ? data.jogador_particulas : []);
@@ -209,10 +266,10 @@ const app = createApp({
         },
         processarDescricaoItem(descricao) {
             return descricao.map((linha) => {
-                _linha = linha.replace('ATTR_FORCA', '<span class="material-symbols-outlined">fitness_center</span>')
-                _linha = _linha.replace('ATTR_AGILIDADE', '<span class="material-symbols-outlined">directions_run</span>')
-                _linha = _linha.replace('ATTR_RESISTENCIA', '<span class="material-symbols-outlined">shield</span>')
-                _linha = _linha.replace('ATTR_INTELIGENCIA', '<span class="material-symbols-outlined">psychology</span>')
+                _linha = linha.replace('ATTR_FORCA', '% <span class="material-symbols-outlined">fitness_center</span>')
+                _linha = _linha.replace('ATTR_AGILIDADE', '% <span class="material-symbols-outlined">directions_run</span>')
+                _linha = _linha.replace('ATTR_RESISTENCIA', '% <span class="material-symbols-outlined">shield</span>')
+                _linha = _linha.replace('ATTR_INTELIGENCIA', '% <span class="material-symbols-outlined">psychology</span>')
                 _linha = _linha.replace('ATTR_VIDA', '<span class="font-bold" style="color:#198754">Pontos de Vida</span>')
                 _linha = _linha.replace('ATTR_ENERGIA', '<span class="font-bold" style="color:#1976d2">Pontos de Energia</span>')
                 return `<span class="d-flex align-items-center gap-1 w-full mb-1">${_linha}</span>`;
@@ -280,7 +337,7 @@ const app = createApp({
         },
         criarTextoFlutuante(texto, alvo, cor, tamanho=32, top=null, left=null) {
             return new Promise((resolve) => {
-                const container = document.querySelector(`.${alvo}-card .sprite-container`);
+                const container = document.querySelector(`#wrapper-sprite-${alvo}`);
                 const textoFlutuante = document.createElement('div');
 
                 textoFlutuante.className = 'texto-flutuante';
@@ -289,8 +346,8 @@ const app = createApp({
                 textoFlutuante.textContent = texto;
                 if(top == null) top = 50;
                 else top -= 16;
-                if(left == null) left = Math.random() * 75;
-                
+                if(left == null) left = 25 + Math.random() * 50;
+
                 textoFlutuante.style.top = `${top}%`;
                 textoFlutuante.style.left = `${left}%`;
                 container.appendChild(textoFlutuante);
@@ -303,10 +360,10 @@ const app = createApp({
         },
         criarParticulas({alvo, sprite_arquivo, aleatorio=true, tamanho=1, duracao=750, opacidade=1}) {
             return new Promise((resolve) => {
-                const container = document.querySelector(`.${alvo}-card .sprite-container`);
+                const container = document.querySelector(`#wrapper-sprite-${alvo}`);
                 const elementParticula = document.createElement('div');
-                const top = aleatorio ? 12.5 + Math.random() * 50 : 50
-                const left = aleatorio ? 12.5 + Math.random() * 50 : 50
+                const top = aleatorio ? 25 + Math.random() * 25 : 50
+                const left = aleatorio ? 25 + Math.random() * 25 : 50
                 elementParticula.style.top = `${top}%`;
                 elementParticula.style.left = `${left}%`;
                 elementParticula.classList.add('particula-dano');
@@ -323,7 +380,7 @@ const app = createApp({
                 }, duracao-50);
 
                 setTimeout(() => {
-                    resolve(top, left);
+                    resolve([top, left]);
                 }, duracao/15);
             })
         },
@@ -348,6 +405,85 @@ const app = createApp({
         },
         subirNivelClasse(classe) {
             this.wsSend('subir_nivel_classe', { classe: classe });
+        },
+        spriteXClasse(nomeClasse) {
+            switch(nomeClasse) {
+                case 'INICIANTE':
+                    return 0
+                case 'VIGIA':
+                    return 1
+                case 'GUARDIAO':
+                    return 2
+                case 'PALADINO':
+                    return 3
+                case 'APRENDIZ':
+                    return 0
+                case 'MAGO':
+                    return 1
+                case 'FEITICEIRO':
+                    return 2
+                case 'ARCANO':
+                    return 3
+                case 'SELVAGEM':
+                    return 0
+                case 'BARBARO':
+                    return 1
+                case 'BERSERKER':
+                    return 2
+                case 'CAMPEAO':
+                    return 3
+                case 'VAGABUNDO':
+                    return 0
+                case 'LADINO':
+                    return 1
+                case 'ASSASSINO':
+                    return 2
+                case 'PREDADOR':
+                    return 3
+                default:
+                    return 0
+            }
+        },
+        spriteYClasse(nomeClasse) {
+            switch(nomeClasse) {
+                case 'INICIANTE':
+                    return 3
+                case 'VIGIA':
+                    return 3
+                case 'GUARDIAO':
+                    return 3
+                case 'PALADINO':
+                    return 3
+                case 'APRENDIZ':
+                    return 2
+                case 'MAGO':
+                    return 2
+                case 'FEITICEIRO':
+                    return 2
+                case 'ARCANO':
+                    return 2
+                case 'SELVAGEM':
+                    return 1
+                case 'BARBARO':
+                    return 1
+                case 'BERSERKER':
+                    return 1
+                case 'CAMPEAO':
+                    return 1
+                case 'VAGABUNDO':
+                    return 0
+                case 'LADINO':
+                    return 0
+                case 'ASSASSINO':
+                    return 0
+                case 'PREDADOR':
+                    return 0
+                default:
+                    return 4
+            }
+        },
+        comprarExpansaoInventario() {
+            this.wsSend('comprar_expansao_inventario');
         }
     }
 })

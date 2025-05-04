@@ -112,7 +112,7 @@
                                         Lv [[jogador.level]]
                                     </h3>
                                 </div>
-                                <div class="text-center my-2">
+                                <div class="text-center my-2" id="wrapper-sprite-jogador" style="position: relative;">
                                     <div class="sprite-container"  :style="{'animation-duration': `${Math.max(250, 500*jogador.resistencia/jogador.agilidade)}ms`}">
                                         <div :class="`sprite ${jogadorEstadoClasses} ${jogador.vida <= 0 ? 'morto' : ''}`"
                                             :style="{
@@ -161,14 +161,18 @@
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Força" @click="jogador.pontos_disponiveis && aumentarAtributo('forca')">
-                                            <span class="material-symbols-outlined">fitness_center</span>
-                                            [[ jogador.forca ]] [[ atributosEquipamentosJogador && atributosEquipamentosJogador['forca'] ? `(+${atributosEquipamentosJogador['forca']})` : '']]
+                                            <div class="d-flex fflex-row gap-2 align-items-center justify-content-center">
+                                                <span class="material-symbols-outlined">fitness_center</span>
+                                                <div class="d-flex flex-row gap-1 align-items-start justify-content-center" v-html="jogadorForca"></div>
+                                            </div>
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Agilidade" @click="jogador.pontos_disponiveis && aumentarAtributo('agilidade')">
-                                            <span class="material-symbols-outlined">directions_run</span>
-                                            [[ jogador.agilidade ]] [[ atributosEquipamentosJogador && atributosEquipamentosJogador['agilidade'] ? `(+${atributosEquipamentosJogador['agilidade']})` : '']]
+                                            <div class="d-flex fflex-row gap-2 align-items-center justify-content-center">
+                                                <span class="material-symbols-outlined">directions_run</span>
+                                                <div class="d-flex flex-row gap-1 align-items-start justify-content-center" v-html="jogadorAgilidade"></div>
+                                            </div>
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -179,14 +183,18 @@
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Resistência" @click="jogador.pontos_disponiveis && aumentarAtributo('resistencia')">
-                                            <span class="material-symbols-outlined">shield</span>
-                                            [[ jogador.resistencia ]] [[ atributosEquipamentosJogador && atributosEquipamentosJogador['resistencia'] ? `(+${atributosEquipamentosJogador['resistencia']})` : '']]
+                                            <div class="d-flex fflex-row gap-2 align-items-center justify-content-center">
+                                                <span class="material-symbols-outlined">shield</span>
+                                                <div class="d-flex flex-row gap-1 align-items-start justify-content-center" v-html="jogadorResistencia"></div>
+                                            </div>
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
         
                                         <div class="atributo border text-white" :class="{'btn btn-info text-white': jogador.pontos_disponiveis > 0}" data-bs-toggle="tooltip" data-bs-title="Inteligência" @click="jogador.pontos_disponiveis && aumentarAtributo('inteligencia')">
-                                            <span class="material-symbols-outlined">psychology</span>
-                                            [[ jogador.inteligencia ]] [[ atributosEquipamentosJogador && atributosEquipamentosJogador['inteligencia'] ? `(+${atributosEquipamentosJogador['inteligencia']})` : '']]
+                                            <div class="d-flex fflex-row gap-2 align-items-center justify-content-center">
+                                                <span class="material-symbols-outlined">psychology</span>
+                                                <div class="d-flex flex-row gap-1 align-items-start justify-content-center" v-html="jogadorInteligencia"></div>
+                                            </div>
                                             <span v-if="jogador.pontos_disponiveis" class="material-symbols-outlined">add</span>
                                         </div>
                                     </div>
@@ -198,14 +206,34 @@
                 <div class="col-md-2 d-flex flex-row flex-md-column gap-3" v-if="jogador">
                     <button
                     v-for="habilidade in jogador.classe.habilidades"
-                    :disabled="jogador.energia < jogador.custo_habilidades[habilidade.nivel-1]"
+                    :disabled="jogador.energia < jogador.custo_habilidades[habilidade.nivel-1] || jogador.recarga_habilidades"
                     class="w-100 btn-sm btn btn-light d-flex justify-content-center align-items-center flex-column gap-1 relative"
                     @click="enviarAcao(habilidade.descricao)"
                     data-bs-toggle="tooltip"
                     :data-bs-title="habilidade.descricao"
                     >
                         <img :src="`/static/habilidades/${habilidade.descricao}.png`" :alt="habilidade.descricao" style="width: 32px; height: 32px; image-rendering: pixelated;">
-                        <span class="px-2 py-1 rounded bg-primary text-white border border-white absolute -top-8 -right-8">[[ jogador.custo_habilidades[habilidade.nivel-1] ]]</span>
+                        <span
+                        :style="`
+                        --progress-position: ${((6-jogador.recarga_habilidades)/6)*100}%;
+                        --progress-bg: ${ jogador.energia >= jogador.custo_habilidades[habilidade.nivel-1] ? 'rgba(var(--bs-primary-rgb))' : '#666'};
+                        font-size: 18px;
+                        width: 32px;
+                        height: 32px;
+                        position: absolute;
+                        right: -8px;
+                        top: -8px;
+                        border-radius: 100%;
+                        background: conic-gradient(var(--progress-bg) var(--progress-position), #000 var(--progress-position));
+                        transition: all 125ms ease-in-out;
+                        color: white;
+                        border: 2px solid white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;`
+                        ">
+                            [[ jogador.custo_habilidades[habilidade.nivel-1] ]]
+                        </span>
                         <span class="d-none d-md-block">[[habilidade.nome]]</span>
                     </button>
                     <button class="w-100 btn btn-sm btn-info d-flex justify-content-center align-items-center flex-column gap-1" v-if="jogador && jogador.classe.nivel < 3" data-bs-toggle="modal" data-bs-target="#modal_evolucao">
@@ -230,7 +258,7 @@
                                         Lv [[inimigo.level]]
                                     </h3>
                                 </div>
-                                <div class="text-center my-2">
+                                <div class="text-center my-2" id="wrapper-sprite-inimigo" style="position: relative;">
                                     <div class="sprite-container"  :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
                                         <div :class="`sprite ${inimigoEstadoClasses} ${inimigo.vida <= 0 ? 'morto' : ''}`"
                                             :style="{
@@ -313,9 +341,9 @@
                         <div class="material-symbols-outlined">business_center</div>
                         Inventário ([[inventario.length]]/[[tamanhoInventario]])
                     </h3>
-                    <div v-if="jogador" class="rounded border border-warning p-2 ps-3 text-warning d-flex flex-row justify-content-start align-items-center gap-3" data-bs-toggle="tooltip" data-bs-title="Ouro">
-                        [[ jogador.ouro ]]
+                    <div v-if="jogador" class="rounded border border-warning p-2 text-warning d-flex flex-row justify-content-start align-items-center gap-2" data-bs-toggle="tooltip" data-bs-title="Ouro">
                         <div class="material-symbols-outlined text-warning">paid</div>
+                        [[ jogador.ouro ]]
                     </div>
                 </div>
                 <div class="card-body">
@@ -333,8 +361,8 @@
                                     '--size': 'calc(2 * 32px)',
                                     '--sprite-x': item.sprite_x,
                                     '--sprite-y': item.sprite_y,
-                                    'background-image': `url('/static/items.png')`,
-                                    'background-size': 'calc(2 * 352px) calc(2 * 832px)'
+                                    'background-image': `url('/static/sprites_01.png')`,
+                                    'background-size': 'calc(2 * 320px) calc(2 * 320px)'
                                 }">
                                 </div>
                                 <span class="bg-white text-black rounded border-white quantidade">
@@ -388,12 +416,12 @@
                             </button>
                         </div>
                         <!-- Ainda não implementado -->
-                        <!-- <button class="btn btn-light w-100" style="grid-column-start: 1; grid-column-end: 9;">
+                        <button class="btn btn-light w-100" style="grid-column-start: 1; grid-column-end: 9;" @click="comprarExpansaoInventario">
                             +8 espaços
                             <div class="d-flex align-items-center justify-content-center gap-1">
-                                <div class="material-symbols-outlined text-black">paid</div> 50000
+                                <div class="material-symbols-outlined text-black">paid</div> [[ tamanhoInventario * 1000 ]]
                             </div>
-                        </button> -->
+                        </button>
                     </div>
                 </div>
             </div>
@@ -417,12 +445,12 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div class="card mb-3" v-for="masmorra in masmorras">
-                                <div class="card-header text-white" data-bs-toggle="collapse" :data-bs-target="`#collapse_regiao_${masmorra.nome}`" style="cursor: pointer;">
+                            <div class="card mb-3" v-for="(masmorra, index) in masmorras">
+                                <div class="card-header text-white" data-bs-toggle="collapse" :data-bs-target="`#collapse_regiao_${index}`" style="cursor: pointer;">
                                     <h5>[[masmorra.nome]]</h5>
                                     <p class="mb-0">[[masmorra.descricao]]</p>
                                 </div>
-                                <div class="card-body collapse p-0" :id="`collapse_regiao_${masmorra.nome}`">
+                                <div class="card-body collapse p-0" :id="`collapse_regiao_${index}`">
                                     <div class="d-flex gap-3 flex-wrap align-items-center justify-content-center p-3" v-if="masmorra.lista_itens.length">
                                         <button
                                         class="item p-1 rounded"
@@ -437,8 +465,8 @@
                                                 '--size': 'calc(2 * 32px)',
                                                 '--sprite-x': item.sprite_x,
                                                 '--sprite-y': item.sprite_y,
-                                                'background-image': `url('/static/items.png')`,
-                                                'background-size': 'calc(2 * 352px) calc(2 * 832px)'
+                                                'background-image': `url('/static/sprites_01.png')`,
+                                                'background-size': 'calc(2 * 320px) calc(2 * 320px)'
                                             }">
                                             </div>
                                         </button>
@@ -509,79 +537,32 @@
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Evolução [[jogador.classe.nivel]]</h5>
+                            <h5 class="modal-title">Evolução [[jogador.classe.nivel + 1]]</h5>
                             <button type="button" class="btn p-0 ms-auto" data-bs-dismiss="modal" aria-label="Close">
                                 <div class="material-symbols-outlined text-white">close</div>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div  v-if="jogador.classe.nivel == 1">
-                                <div class="alert alert-warning" v-if="jogador.classe.nivel == 1 && (jogador.level < 15 || jogador.ouro < 1500)">
-                                    Você precisa atingir o nível 15 e ter 1.500 ouro para poder evoluir.
-                                </div>
-                                <div class="alert alert-warning" v-if="jogador.classe.nivel == 2 && (jogador.level < 30 || jogador.ouro < 50000)">
-                                    Você precisa atingir o nível 30 e ter 50.000 ouro para poder evoluir.
-                                </div>
-                                <p>Você está prestes a evoluir para a próxima classe. Isso irá aumentar seu nível e seus atributos, além de desbloquear uma nova habilidade.</p>
-                                <div class="row gap-3 px-3 justify-content-center">
-                                    <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('GUERREIRO')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
-                                        <div class="card-body">
-                                            <div class="sprite-container" style="animation-duration: 700ms">
-                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 1; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
-                                            </div>
-                                            <h4>GUERREIRO</h4>
-                                            <p class="d-flex align-items-center justify-content-center gap-2">
-                                                <span class="material-symbols-outlined">paid</span>
-                                                1500
-                                            </p>
-                                            <p>Foco em resistência.</p>
-                                        </div>
-                                    </button>
-                                    <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('MAGO')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
-                                        <div class="card-body">
-                                            <div class="sprite-container"  style="animation-duration: 900ms">
-                                                <div class="sprite" style="--sprite-x: 5; --sprite-y: 2; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
-                                            </div>
-                                            <h4>MAGO</h4>
-                                            <p class="d-flex align-items-center justify-content-center gap-2">
-                                                <span class="material-symbols-outlined">paid</span>
-                                                1500
-                                            </p>
-                                            <p>Foco em inteligência.</p>
-                                        </div>
-                                    </button>
-                                    <button class="btn card col-12 col-lg-3" @click="subirNivelClasse('SELVAGEM')" data-bs-dismiss="modal" :disabled="jogador.level < 15">
-                                        <div class="card-body">
-                                            <div class="sprite-container" style="animation-duration: 600ms">
-                                                <div class="sprite" style="--sprite-x: 0; --sprite-y: 3; background-image: url('/static/rogues.png'); background-size: calc(3* 224px) calc(3* 224px);"></div>
-                                            </div>
-                                            <h4>SELVAGEM</h4>
-                                            <p class="d-flex align-items-center justify-content-center gap-2">
-                                                <span class="material-symbols-outlined">paid</span>
-                                                1500
-                                            </p>
-                                            <p>Foco em força.</p>
-                                        </div>
-                                    </button>
-                                </div>
+                            <div class="rounded border border-info p-2 text-info d-flex flex-row justify-content-start align-items-center gap-2 mb-3" data-bs-toggle="tooltip" data-bs-title="Ouro">
+                                <div class="material-symbols-outlined text-info">arrow_upload_ready</div>
+                                Lvl. [[ jogador.level ]] / [[ jogadorEvoluirClasseLevel ]]
                             </div>
-                            <div v-if="jogador.classe.nivel == 2">
-                                <div class="alert alert-warning" v-if="jogador.level < 30">
-                                    Você precisa atingir o nível 30 para poder evoluir.
-                                </div>
-                                <p>Você está prestes a evoluir para a próxima classe. Isso irá aumentar seu nível e seus atributos, além de desbloquear uma nova habilidade.</p>
-                                <button class="btn card mx-auto" @click="subirNivelClasse('')" data-bs-dismiss="modal" :disabled="jogador.level < 30">
-                                    <div class="card-body">
-                                        <div class="sprite-container" style="filter:brightness(0)">
-                                            <div class="sprite" style="--sprite-x: 2; --sprite-y: 2; background-image: url('/static/monsters.png'); background-size: calc(3*384px) calc(3*416px);"></div>
-                                        </div>
-                                        <h4>????</h4>
-                                        <p class="d-flex align-items-center gap-2">
-                                            <span class="material-symbols-outlined">paid</span>
-                                            50.000
-                                        </p>
-                                        <p>Progresse para a próxima classe.</p>
+                            <div class="rounded border border-warning p-2 text-warning d-flex flex-row justify-content-start align-items-center gap-2 mb-3" data-bs-toggle="tooltip" data-bs-title="Ouro">
+                                <div class="material-symbols-outlined text-warning">paid</div>
+                                [[ jogador.ouro ]] / [[ jogadorEvoluirClassePreco ]]
+                            </div>
+
+                            <div class="d-flex flex-row gap-2">
+                                <button @click="subirNivelClasse(classe)" class="card text-white pt-3" v-for="classe in jogador.classe.proximas_classes">
+                                    <div class="sprite-container">
+                                        <div class="sprite"
+                                        style="background-image: url('/static/sprites_01.png'); background-size: calc(3 * 320px) calc(3 * 320px);"
+                                        :style="{
+                                            '--sprite-x': spriteXClasse(classe),
+                                            '--sprite-y': spriteYClasse(classe),
+                                        }"></div>
                                     </div>
+                                    <span class="pt-2">[[classe]]</span>
                                 </button>
                             </div>
                         </div>

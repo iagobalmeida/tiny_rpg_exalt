@@ -36,7 +36,7 @@ class Usuario(SQLModel, table=True):
     patrocinador: bool = Field(default=False)
     patrocinio_expiracao: datetime = Field(default_factory=usuario_patrocinio_expiracao)
     ouro: int = Field(default=0)
-    classe: str = Field(default='APRENDIZ')
+    classe: str = Field(default='FAZENDEIRO')
     level: int = Field(default=1)
     experiencia: int = Field(default=0)
     vida: int = Field(default=25)
@@ -71,6 +71,11 @@ def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
+def reset_db():
+    SQLModel.metadata.drop_all(engine)
+    create_db_and_tables()
+
+
 @contextmanager
 def get_session() -> Generator[Session, Any, Any]:
     with Session(engine) as session:
@@ -78,53 +83,83 @@ def get_session() -> Generator[Session, Any, Any]:
 
 
 def __criar_usuario(nome: str, email: str, senha: str, **kwargs):
-    with get_session() as session:
-        session.add(Usuario(
-            nome=nome,
-            email=email,
-            senha=senha,
-            **kwargs
-        ))
-        session.commit()
-
-
-def __criar_usuario_de_teste(classe: str, level: int = 16):
     try:
-        missoes = MISSOES
-        if level > 16:
-            missoes = {**MISSOES}
-            for nome_regiao in missoes:
-                missoes[nome_regiao]['completa'] = True
-
-        __criar_usuario(
-            nome=f'{classe.title()} Teste',
-            email=f'{classe.lower()}@teste.com',
-            senha='teste',
-            classe=classe,
-            level=level,
-            vida=level*5,
-            vida_maxima=level*5,
-            energia=level*5,
-            energia_maxima=level*5,
-            forca=int(level*3/4),
-            resistencia=int(level*3/4),
-            agilidade=int(level*3/4),
-            inteligencia=int(level*3/4),
-            tamanho_inventario=64,
-            missoes=missoes_dict_to_json(missoes)
-        )
+        with get_session() as session:
+            session.add(Usuario(
+                nome=nome,
+                email=email,
+                senha=senha,
+                **kwargs
+            ))
+            session.commit()
     except Exception as ex:
-        print(ex)
         pass
 
 
+def __criar_usuario_de_teste(classe: str, level: int = 16):
+    missoes = MISSOES
+    if level > 16:
+        missoes = {**MISSOES}
+        for nome_regiao in missoes:
+            missoes[nome_regiao]['completa'] = True
+
+    __criar_usuario(
+        nome=f'{classe.title()} Teste',
+        email=f'{classe.lower()}@teste.com',
+        senha='teste',
+        classe=classe,
+        level=level,
+        vida=level*5,
+        vida_maxima=level*5,
+        energia=level*5,
+        energia_maxima=level*5,
+        forca=int(level*3/4),
+        resistencia=int(level*3/4),
+        agilidade=int(level*3/4),
+        inteligencia=int(level*3/4),
+        tamanho_inventario=64,
+        missoes=missoes_dict_to_json(missoes)
+    )
+
+
 def criar_usuarios_de_teste():
-    __criar_usuario_de_teste('SELVAGEM')
+    __criar_usuario_de_teste('INICIANTE', 16)
+    __criar_usuario_de_teste('VIGIA', 32)
+    __criar_usuario_de_teste('GUARDIAO', 64)
+    __criar_usuario_de_teste('PALADINO', 128)
+    __criar_usuario_de_teste('APRENDIZ', 16)
+    __criar_usuario_de_teste('MAGO', 32)
+    __criar_usuario_de_teste('FEITICEIRO', 64)
+    __criar_usuario_de_teste('ARCANO', 128)
+    __criar_usuario_de_teste('SELVAGEM', 16)
     __criar_usuario_de_teste('BARBARO', 32)
-    __criar_usuario_de_teste('MAGO')
-    __criar_usuario_de_teste('FEITICEIRO', 32)
-    __criar_usuario_de_teste('GUERREIRO')
-    __criar_usuario_de_teste('TEMPLARIO', 32)
+    __criar_usuario_de_teste('BERSERKER', 64)
+    __criar_usuario_de_teste('CAMPEAO', 128)
+    __criar_usuario_de_teste('VAGABUNDO', 16)
+    __criar_usuario_de_teste('LADINO', 32)
+    __criar_usuario_de_teste('ASSASSINO', 64)
+    __criar_usuario_de_teste('PREDADOR', 128)
+    level = 256
+    missoes = {**MISSOES}
+    for nome_regiao in missoes:
+        missoes[nome_regiao]['completa'] = True
+    __criar_usuario(
+        nome=f'AMON Beats',
+        email=f'amonbeats@teste.com',
+        senha='teste',
+        classe='CAMPEAO',
+        level=level,
+        vida=level*5,
+        vida_maxima=level*5,
+        energia=level*5,
+        energia_maxima=level*5,
+        forca=int(level*3/4),
+        resistencia=int(level*3/4),
+        agilidade=int(level*3/4),
+        inteligencia=int(level*3/4),
+        tamanho_inventario=64,
+        missoes=missoes_dict_to_json(missoes)
+    )
 
 
 def get_usuario_by_email(email: str) -> Usuario:
@@ -178,7 +213,7 @@ def get_placar_de_lideres(usuario_id: int = None) -> List[LeaderboardEntry]:
             WITH leaderboard AS (
                 SELECT id, nome, level, classe,
                     ROW_NUMBER() OVER (ORDER BY level DESC, id ASC) AS posicao
-                FROM usuario
+                FROM usuario WHERE email NOT LIKE '%teste%'
             )
             SELECT *
             FROM leaderboard

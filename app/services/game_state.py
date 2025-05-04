@@ -19,14 +19,24 @@ from services.combate import Combate
 log = getLogger('uvicorn')
 
 TAMANHO_SLOT_INVENTARIO = 16
-EMAILS_TESTE = [
-    'selvagem@teste.com',
-    'barbaro@teste.com',
-    'mago@teste.com',
-    'feiticeiro@teste.com',
-    'guerreiro@teste.com',
-    'templario@teste.com'
-]
+EMAILS_TESTE = [f'{nome_classe.lower()}@teste.com' for nome_classe in [
+    'INICIANTE'
+    'VIGIA',
+    'GUARDIAO',
+    'PALADINO',
+    'APRENDIZ',
+    'MAGO',
+    'FEITICEIRO',
+    'ARCANO',
+    'SELVAGEM',
+    'BARBARO',
+    'BERSERKER',
+    'CAMPEAO',
+    'VAGABUNDO',
+    'LADINO',
+    'ASSASSINO',
+    'PREDADOR',
+]]
 
 
 class GameState:
@@ -113,6 +123,7 @@ class GameState:
             # Adiciona todos os itens do jogo para o jogador
             self.tamanho_inventario = 64
             self.inventario = []
+            self.jogador.ouro = 300000
 
             for variavel_nome in dir(itens):
                 variavel = getattr(itens, variavel_nome)
@@ -163,6 +174,13 @@ class GameState:
         """Inicia um novo combate na masmorra."""
         if renascer:
             self.jogador = self.jogador.renascido
+        self.jogador.recarga_habilidades = 0
+        self.jogador.bonus_atributos_classe = {
+            'forca': 0,
+            'agilidade': 0,
+            'inteligencia': 0,
+            'resistencia': 0
+        }
         inimigo = self.masmorra.inimigo_aleatorio()
         self.combate = Combate(self.jogador, inimigo)
         self.combate_acabou = False
@@ -215,6 +233,11 @@ class GameState:
             retorno['resistencia'] += i.resistencia
             retorno['agilidade'] += i.agilidade
             retorno['inteligencia'] += i.inteligencia
+
+        retorno['forca'] = math.ceil(self.jogador.forca * retorno['forca']/100)
+        retorno['resistencia'] = math.ceil(self.jogador.resistencia * retorno['resistencia']/100)
+        retorno['agilidade'] = math.ceil(self.jogador.agilidade * retorno['agilidade']/100)
+        retorno['inteligencia'] = math.ceil(self.jogador.inteligencia * retorno['inteligencia']/100)
         return retorno
 
     def __progredir_missao(self, nome_inimigo: str):
@@ -258,8 +281,6 @@ class GameState:
                 self.masmorra.passos = 0
 
             elif self.vencedor == 'jogador':
-                self.__progredir_missao(self.combate.inimigo.nome)
-
                 item_aletorio = self.masmorra.item_aleatorio()
                 if item_aletorio:
                     self.adicionar_item(item_aletorio)
@@ -268,6 +289,7 @@ class GameState:
                 self.masmorra.passos = min(self.masmorra.total_passos, self.masmorra.passos+1)
 
                 self.jogador.adicionar_experiencia(self.combate.inimigo.experiencia)
+                self.__progredir_missao(self.combate.inimigo.nome)
             self.combate_acabou = True
             return
 
@@ -326,3 +348,9 @@ class GameState:
             usado = self.inventario[item_indice].usar(self.jogador)
             if usado:
                 self.remover_item(self.inventario[item_indice].model_copy())
+
+    def comprar_expansao_inventario(self):
+        custo = self.tamanho_inventario * 1000
+        if self.jogador.ouro >= custo:
+            self.jogador.ouro -= custo
+            self.tamanho_inventario += 8

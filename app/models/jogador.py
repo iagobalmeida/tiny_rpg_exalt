@@ -17,6 +17,7 @@ class Jogador(Entidade):
     email: str
     classe: Classe
     pontos_disponiveis: int = Field(default=0)
+    recarga_habilidades: int = 0
     bonus_atributos_classe: Dict[str, int] = Field(default_factory=lambda: {
         'forca': 0,
         'resistencia': 0,
@@ -102,7 +103,7 @@ class Jogador(Entidade):
     def subir_nivel(self):
         self.experiencia -= self.experiencia_proximo_nivel
         self.level += 1
-        self.pontos_disponiveis += self.classe.nivel+1
+        self.pontos_disponiveis += self.classe.nivel+2
 
         self.energia_maxima += math.ceil(self.level/150) * (2 * (self.classe.nivel+1))
         self.vida_maxima += math.ceil(self.level/50) * (2 * (self.classe.nivel+1))
@@ -120,30 +121,36 @@ class Jogador(Entidade):
             setattr(self, atributo, getattr(self, atributo) + 1)
             self.pontos_disponiveis -= 1
 
-    def subir_nivel_classe(self, nome_classe: Optional[Literal['APRENDIZ', 'SELVAGEM', 'BARBARO', 'MAGO', 'FEITICEIRO', 'GUERREIRO', 'TEMPLARIO']] = None):
+    def subir_nivel_classe(self, nome_classe: Optional[Literal[
+        'INICIANTE',
+        'VIGIA',
+        'GUARDIAO',
+        'PALADINO',
+        'APRENDIZ',
+        'MAGO',
+        'FEITICEIRO',
+        'ARCANO',
+        'SELVAGEM',
+        'BARBARO',
+        'BERSERKER',
+        'CAMPEAO',
+        'VAGABUNDO',
+        'LADINO',
+        'ASSASSINO',
+        'PREDADOR'
+    ]] = None):
         """Sobe o nível da classe do jogador."""
-        config = get_config()
+        fator_classe_nivel = int(math.pow(self.classe.nivel, 1.5)) if self.classe.nivel > 0 else 0
 
-        if self.classe.nivel == 1 and self.level >= 15 and self.ouro >= 1500:
-            self.ouro -= 1500
-            self.pontos_disponiveis += config["game"]["pontos_atributo_por_level"]
+        level_minimo = 15 + (fator_classe_nivel * 15)
+        ouro_necessario = 1500 + (fator_classe_nivel * 5000)
 
-            self.energia_maxima += math.ceil(self.level/10) * config["game"]["energia_base_por_level"]
-            self.energia = self.energia_maxima
-            self.vida_maxima += math.ceil(self.level/10) * config["game"]["vida_base_por_level"]
-            self.vida = self.vida_maxima
+        pode_evoluir_para_classe = nome_classe in self.classe.proximas_classes
+
+        if self.level >= level_minimo and self.ouro >= ouro_necessario and pode_evoluir_para_classe:
+            self.ouro -= ouro_necessario
+            self.pontos_disponiveis += fator_classe_nivel
+
             self.classe = Classes[nome_classe].value
-            self.sprite_x = self.classe.sprite_x
-            self.sprite_y = self.classe.sprite_y
-
-        elif self.classe.nivel == 2 and self.level >= 30 and self.ouro >= 50000:
-            self.ouro -= 50000
-            self.pontos_disponiveis += config["game"]["pontos_atributo_por_level"]
-
-            self.energia_maxima += math.ceil(self.level/10) * config["game"]["energia_base_por_level"]
-            self.energia = self.energia_maxima
-            self.vida_maxima += math.ceil(self.level/10) * config["game"]["vida_base_por_level"]
-            self.vida = self.vida_maxima
-            self.classe = Classes[self.classe.proxima_classe].value
             self.sprite_x = self.classe.sprite_x
             self.sprite_y = self.classe.sprite_y

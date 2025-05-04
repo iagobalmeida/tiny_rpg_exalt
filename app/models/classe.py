@@ -14,7 +14,7 @@ class Classe:
     sprite_x: int
     sprite_y: int
     nivel: int
-    proxima_classe: Optional[str] = None
+    proximas_classes: Optional[List[str]] = None
     habilidades: List[Habilidade] = Field(default_factory=lambda: [])
 
     def get_websocket_data(self):

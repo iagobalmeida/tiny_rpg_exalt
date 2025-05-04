@@ -3,16 +3,16 @@ import math
 from models.inimigo import Inimigo
 
 BASE_EXP = 5
-FATOR_EXP = 6
+FATOR_EXP = 8
 
 BASE_VIDA = 10
-FATOR_VIDA = 22
+FATOR_VIDA = 32
 
 BASE_ATTR = 1
-FATOR_ATTR = 3
+FATOR_ATTR = 4
 
 BASE_OURO = 1
-FATOR_OURO = 4
+FATOR_OURO = 6
 
 
 def inimigo_attrs(level: int, atributos_principais: dict):
@@ -27,7 +27,7 @@ def inimigo_attrs(level: int, atributos_principais: dict):
         'energia_maxima': int(BASE_VIDA + ((FATOR_VIDA + atributos_principais.get('energia', 0))*level ^ 3)),
         'experiencia': int(BASE_EXP + ((FATOR_EXP + atributos_principais.get('experiencia', 0))*level ^ 2)),
         'ouro': int(BASE_OURO + ((FATOR_OURO + atributos_principais.get('ouro', 0))*level)),
-        'level': math.ceil(level),
+        'level': math.ceil(level*5),
     }
 
 

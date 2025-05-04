@@ -7,7 +7,6 @@ from fastapi import FastAPI, Form, Request, WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from services import db
-from services.db import create_db_and_tables, criar_usuarios_de_teste
 from services.websocket import websocket_manager
 
 app = FastAPI()
@@ -22,9 +21,17 @@ async def get(request: Request):
     return templates.TemplateResponse('index.html', {'request': request, 'placar_de_lideres': db.get_placar_de_lideres()})
 
 
+@app.get("/reset/{key:str}")
+async def get_reset(request: Request, key: str):
+    if key == os.environ.get('RESET_SECRET', 'foo'):
+        db.reset_db()
+        return 'OK'
+    return 'Not Authorized'
+
+
 @app.get("/jogar")
 async def get_jogar(request: Request):
-    criar_usuarios_de_teste()
+    db.criar_usuarios_de_teste()
     ws_url = str(request.url_for('websocket_endpoint'))
     if not 'localhost' in os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/tinyrpg'):
         ws_url = ws_url.replace('ws://', 'wss://')
@@ -54,7 +61,7 @@ async def get_link_pagamento(request: Request, email: str = Form()):
 @app.on_event("startup")
 async def startup_event():
     # Inicia o loop do jogo em background
-    create_db_and_tables()
+    db.create_db_and_tables()
     asyncio.create_task(websocket_manager.process_game_loop())
 
 if __name__ == "__main__":

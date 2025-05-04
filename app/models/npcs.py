@@ -12,5 +12,8 @@ mae = Entidade(
     experiencia=500,
     level=99,
     sprite_x=1,
-    sprite_y=6
+    sprite_y=6,
+    sprite_nome='rogues.png',
+    sprite_largura=224*3,
+    sprite_altura=224*3,
 )

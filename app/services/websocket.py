@@ -107,6 +107,9 @@ class WebSocketManager:
             elif message["type"] == "subir_nivel_classe":
                 game_state.subir_nivel_classe(message["data"].get("classe", None))
 
+            elif message["type"] == "comprar_expansao_inventario":
+                game_state.comprar_expansao_inventario()
+
             # Envia atualização do estado do jogo para o jogador
             await self.send_update(player_id)
 
@@ -125,7 +128,7 @@ class WebSocketManager:
             return new
 
         for key in new:
-            if key == 'type' or key == 'jogador_particulas' or key == 'inimigo_particulas':
+            if key == 'type' or key == 'jogador_particulas' or key == 'inimigo_particulas' or key == 'atributos_equipamentos_jogador':
                 diff[key] = new[key]
             new_val = new[key]
             old_val = old.get(key, None)
