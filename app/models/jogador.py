@@ -18,7 +18,7 @@ class Jogador(Entidade):
     classe: Classe
     pontos_disponiveis: int = Field(default=0)
     recarga_habilidades: int = 0
-    bonus_atributos_classe: Dict[str, int] = Field(default_factory=lambda: {
+    bonus_atributos_classe: Dict[str, float] = Field(default_factory=lambda: {
         'forca': 0,
         'resistencia': 0,
         'agilidade': 0,

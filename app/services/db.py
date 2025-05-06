@@ -21,6 +21,10 @@ class LeaderboardEntry(BaseModel):
     level: int
     posicao: int
     classe: str
+    forca: int
+    agilidade: int
+    resistencia: int
+    inteligencia: int
 
 
 def usuario_patrocinio_expiracao():
@@ -211,7 +215,7 @@ def get_placar_de_lideres(usuario_id: int = None) -> List[LeaderboardEntry]:
     with get_session() as session:
         query = text(f"""
             WITH leaderboard AS (
-                SELECT id, nome, level, classe,
+                SELECT id, nome, level, classe, forca, agilidade, resistencia, inteligencia,
                     ROW_NUMBER() OVER (ORDER BY level DESC, id ASC) AS posicao
                 FROM usuario WHERE email NOT LIKE '%teste%'
             )

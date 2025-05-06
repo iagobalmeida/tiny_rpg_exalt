@@ -28,10 +28,10 @@ class Entidade(Objeto):
     ouro: int = Field(default=0)
     vida_maxima: int = Field(default=0)
     energia_maxima: int = Field(default=0)
-    forca: int
-    agilidade: int
-    resistencia: int
-    inteligencia: int
+    forca: float
+    agilidade: float
+    resistencia: float
+    inteligencia: float
     sprite_x: int = Field(default=0)
     sprite_y: int = Field(default=0)
     sprite_nome: str = Field(default='sprites_01.png')

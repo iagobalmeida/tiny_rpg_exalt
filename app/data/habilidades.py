@@ -141,8 +141,8 @@ class AtaqueRapido(Habilidade):
     nivel: int = 2
 
     def aplicar(self, de: Entidade, para: Entidade):
-        quantidade_ataques = math.ceil((de.agilidade * 4) - (para.agilidade/4))
-        for ataque in quantidade_ataques:
+        quantidade_ataques = min(6, math.ceil((de.agilidade*2/para.agilidade)))
+        for ataque in range(quantidade_ataques):
             dano = de.calcular_dano(para)
             para.adicionar_particula_temporaria(str(dano), colorDamage, 'ataque_lamina.png')
             para.vida = int(max(0, para.vida - dano))

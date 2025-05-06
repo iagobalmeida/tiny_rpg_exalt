@@ -1,14 +1,45 @@
 {% extends 'base.html' %}
 
 {% block style %}
+<style>
+    .sprite-classes {
+        animation: spriteClasses 2.5s ease-in-out infinite;
+    }
+
+    @keyframes spriteClasses {
+        0% {
+            --sprite-x: 0;
+            --sprite-y: 0;
+        }
+        25% {
+            --sprite-x: 1;
+            --sprite-y: 0;
+        }
+        50% {
+            --sprite-x: 2;
+            --sprite-y: 0;
+        }
+        75% {
+            --sprite-x: 3;
+            --sprite-y: 0;
+        }
+    }
+
+    .particula-index-habilidades {
+        animation: particula6Frames 500ms linear forwards infinite;
+    }
+
+    
+</style>
 {% endblock %}
 
 {% block content %}
     <!-- Landing Page -->
     <section class="text-center text-white">
         <div class="container">
-            <h1 class="display-4">Bem-vindo ao <b>Tiny RPG Exalt</b></h1>
-            <p class="lead">O RPG Idle do futuro. Aventure-se, colecione e conquiste o topo!</p>
+            <img src="{{url_for('static', path='/logo.png')}}" style="width: 200px; height: auto;">
+            <!-- <h1 class="display-4">Bem-vindo ao <b>Tiny RPG Exalt</b></h1> -->
+            <p class="lead pt-3">Eu que fiz! Aventure-se, colecione e conquiste o topo!</p>
             <a href="{{url_for('get_jogar')}}" class="btn btn-light btn-lg">Jogar Agora</a>
         </div>
     </section>
@@ -19,14 +50,39 @@
     <section class="section">
         <div class="container text-center">
             <h2 class="section-title mb-5">Placar de Líderes</h2>
-            <p>Os assets utilizados no jogo foram retirados de fontes externas e são creditados abaixo:</p>
+            <p>Quem são os verdadeiros campeões?</p>
             <ul class="list-group w-100">
+                <li class="list-group-item bg-transparent text-white row d-flex">
+                    <div class="col-2">#</div>
+                    <div class="col-2">Nome</div>
+                    <div class="col-2">Level</div>
+                    <div class="col-2">Classe</div>
+                    <div class="col-4">Atributos</div>
+                </li>
                 {% for pontuacao in placar_de_lideres %}
                     <li class="list-group-item bg-transparent text-white row d-flex">
-                        <div class="col-3">#{{pontuacao.posicao}}</div>
-                        <div class="col-3">{{pontuacao.nome}}</div>
-                        <div class="col-3">{{pontuacao.level}}</div>
-                        <div class="col-3">{{pontuacao.classe}}</div>
+                        <div class="col-2">#{{pontuacao.posicao}}</div>
+                        <div class="col-2">{{pontuacao.nome}}</div>
+                        <div class="col-2">{{pontuacao.level}}</div>
+                        <div class="col-2">{{pontuacao.classe}}</div>
+                        <div class="col-4 d-flex flex-row gap-1 justify-content-between">
+                            <div class="d-flex flex-row align-items-center justify-content-center gap-2">
+                                <span class="material-symbols-outlined">fitness_center</span>
+                                {{pontuacao.forca}}
+                            </div>
+                            <div class="d-flex flex-row align-items-center justify-content-center gap-2">
+                                <span class="material-symbols-outlined">directions_run</span>
+                                {{pontuacao.agilidade}}
+                            </div>
+                            <div class="d-flex flex-row align-items-center justify-content-center gap-2">
+                                <span class="material-symbols-outlined">shield</span>
+                                {{pontuacao.resistencia}}
+                            </div>
+                            <div class="d-flex flex-row align-items-center justify-content-center gap-2">
+                                <span class="material-symbols-outlined">psychology</span>
+                                {{pontuacao.inteligencia}}
+                            </div>
+                        </div>
                     </li>
                 {% endfor %}
             </ul>
@@ -42,6 +98,17 @@
             <div class="row">
                 <!-- Exemplo de card de funcionalidade -->
                 <div class="col-md-4">
+                    <div class="text-center my-2" id="wrapper-sprite-inimigo" style="position: relative;">
+                        <div class="sprite-container"  :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
+                            <div class="sprite"
+                                style="
+                                    --sprite-x: 0; 
+                                    --sprite-y: 0;
+                                    background-image: url('/static/monsters.png');
+                                    background-size: calc(3*384px) calc(3*416px);
+                            "></div>
+                        </div>
+                    </div>
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">Aventuras Automáticas</h5>
@@ -50,18 +117,48 @@
                     </div>
                 </div>
                 <div class="col-md-4">
+                    <div class="text-center my-2" id="wrapper-sprite-inimigo" style="position: relative;">
+                        <div class="sprite-container"  :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
+                            <div class="sprite sprite-classes"
+                                style="
+                                    --sprite-x: 0; 
+                                    --sprite-y: 0;
+                                    background-image: url('/static/sprites_01.png');
+                                    background-size: calc(3*320px) calc(3*320px);
+                            "></div>
+                        </div>
+                    </div>
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Sistema de Atributos</h5>
+                            <h5 class="card-title">Classes e Atributos</h5>
                             <p class="card-text">Evolua como quiser, distribuinto pontos ao passar de level.</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
+                    <div class="text-center my-2" id="wrapper-sprite-inimigo" style="position: relative;">
+                        <div class="particula-dano particula-index-habilidades" style="
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            --particula-sprite: url('static/particulas/ataque_lamina.png')
+                        ">
+
+                        </div>
+                        <div class="sprite-container"  :style="{'animation-duration': `${500*inimigo.resistencia/inimigo.agilidade}ms`}">
+                            <div class="sprite"
+                                style="
+                                    --sprite-x: 3; 
+                                    --sprite-y: 2;
+                                    background-image: url('/static/sprites_01.png');
+                                    background-size: calc(3*320px) calc(3*320px);
+                            "></div>
+                        </div>
+                    </div>
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Colecione Tudo!</h5>
-                            <p class="card-text">Enfrente inimigos raros para conseguir itens ainda mais raros.</p>
+                            <h5 class="card-title">Habilidades Especiais</h5>
+                            <p class="card-text">Desbloqueie novas habilidades conforme progride.</p>
                         </div>
                     </div>
                 </div>
@@ -131,4 +228,14 @@
             Criado por <a href="https://iagobalmeida.vercel.app/">Iago B. Almeida</a> / iago.borba.almeida@gmail.com
         </div>
     </div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    setInterval(() => {
+        document.querySelector('.particula-index-habilidades').style.top = `${40 + Math.random()*20}%`
+        document.querySelector('.particula-index-habilidades').style.left = `${40 + Math.random()*20}%`
+    }, 500)
+</script>
 {% endblock %}

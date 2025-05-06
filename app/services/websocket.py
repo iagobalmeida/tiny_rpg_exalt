@@ -124,11 +124,18 @@ class WebSocketManager:
     def diff_dicts(self, new, old):
         diff = {}
 
+        KEEP_KEYS = [
+            'type',
+            'jogador_particulas',
+            'inimigo_particulas',
+            'atributos_equipamentos'
+        ]
+
         if not old:
             return new
 
         for key in new:
-            if key == 'type' or key == 'jogador_particulas' or key == 'inimigo_particulas' or key == 'atributos_equipamentos_jogador':
+            if key in KEEP_KEYS:
                 diff[key] = new[key]
             new_val = new[key]
             old_val = old.get(key, None)

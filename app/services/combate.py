@@ -31,6 +31,10 @@ class Combate:
                 colorDamage if dano >= 0 else colorMiss,
                 'ataque_basico.png' if dano >= 0 else 'ataque_erro.png'
             )
+
+            if self.jogador.classe.nome in ['VAGABUNDO', 'LADINO', 'ASSASSINO', 'PREDADOR'] and random.random() <= 0.5:
+                self.jogador.recarga_habilidades = max(0, self.jogador.recarga_habilidades - 1)
+
         else:
             self.inimigo.adicionar_particula_temporaria('Errou!', '#333')
 
@@ -70,7 +74,6 @@ class Combate:
                 if not self.jogador.habilidades_sem_recarga:
                     self.jogador.recarga_habilidades = 6
 
-        print(f'{self.jogador.habilidades_sem_recarga} - {self.jogador.recarga_habilidades}')
         self.acao_jogador = None
 
     async def executar_acao_inimigo(self, atributos_equipamentos) -> bool:
@@ -97,33 +100,33 @@ class Combate:
                 self.jogador.adicionar_estado(estados.Sangramento())
 
     async def executar_passiva_jogador_classe(self):
-        atributo_bonus = math.floor(random.random() * self.jogador.classe.nivel*1.5)
+        atributo_bonus = round(random.random() * math.sqrt(self.jogador.classe.nivel), 2)
 
         if self.jogador.classe.nome in ['VAGABUNDO', 'LADINO', 'ASSASSINO', 'PREDADOR']:
-            atributo_maximo = int(self.jogador.agilidade + self.jogador.level/8)
-            self.jogador.bonus_atributos_classe['agilidade'] = min(atributo_maximo, self.jogador.bonus_atributos_classe['agilidade'] + atributo_bonus)
+            atributo_maximo = round(self.jogador.agilidade + self.jogador.level/8, 2)
+            self.jogador.bonus_atributos_classe['agilidade'] = round(min(atributo_maximo, self.jogador.bonus_atributos_classe['agilidade'] + atributo_bonus), 2)
 
         elif self.jogador.classe.nome in ['SELVAGEM', 'BARBARO', 'BERSERKER', 'CAMPEAO']:
-            atributo_maximo = int(self.jogador.forca + self.jogador.level/8)
-            self.jogador.bonus_atributos_classe['forca'] = min(atributo_maximo, self.jogador.bonus_atributos_classe['forca'] + atributo_bonus)
+            atributo_maximo = round(self.jogador.forca + self.jogador.level/8, 2)
+            self.jogador.bonus_atributos_classe['forca'] = round(min(atributo_maximo, self.jogador.bonus_atributos_classe['forca'] + atributo_bonus), 2)
 
         elif self.jogador.classe.nome in ['APRENDIZ', 'MAGO', 'FEITICEIRO', 'ARCANO']:
-            atributo_maximo = int(self.jogador.inteligencia + self.jogador.level/8)
-            self.jogador.bonus_atributos_classe['inteligencia'] = min(atributo_maximo, self.jogador.bonus_atributos_classe['inteligencia'] + atributo_bonus)
+            atributo_maximo = round(self.jogador.inteligencia + self.jogador.level/8, 2)
+            self.jogador.bonus_atributos_classe['inteligencia'] = round(min(atributo_maximo, self.jogador.bonus_atributos_classe['inteligencia'] + atributo_bonus), 2)
 
             energia = atributo_bonus * 2
             if energia > 0:
                 self.jogador.adicionar_particula_temporaria(str(energia), colorEnergy, 'recuperacao_energia.png')
-            self.jogador.energia = min(self.jogador.energia_maxima, self.jogador.energia + energia)
+            self.jogador.energia = int(min(self.jogador.energia_maxima, self.jogador.energia + energia))
 
         elif self.jogador.classe.nome in ['INICIANTE', 'VIGIA', 'GUARDIAO', 'PALADINO']:
-            atributo_maximo = int(self.jogador.resistencia + self.jogador.level/8)
-            self.jogador.bonus_atributos_classe['resistencia'] = min(atributo_maximo, self.jogador.bonus_atributos_classe['resistencia'] + atributo_bonus)
+            atributo_maximo = round(self.jogador.resistencia + self.jogador.level/8, 2)
+            self.jogador.bonus_atributos_classe['resistencia'] = round(min(atributo_maximo, self.jogador.bonus_atributos_classe['resistencia'] + atributo_bonus), 2)
 
             cura = atributo_bonus * 2
             if cura > 0:
                 self.jogador.adicionar_particula_temporaria(str(cura), colorHeal, 'recuperacao_vida.png')
-            self.jogador.vida = min(self.jogador.vida_maxima, self.jogador.vida + cura)
+            self.jogador.vida = int(min(self.jogador.vida_maxima, self.jogador.vida + cura))
 
     async def executar_turno(self, atributos_equipamentos_jogador: dict = {}) -> Union[bool, str]:
         self.contagem_turno += 1

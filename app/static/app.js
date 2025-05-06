@@ -199,8 +199,32 @@ const app = createApp({
             }
         },
         wsAnimate(data) {
-            this.wsAnimateParticulas('jogador', data.jogador_particulas ? data.jogador_particulas : []);
-            this.wsAnimateParticulas('inimigo', data.inimigo_particulas ? data.inimigo_particulas : []);
+            if(data.jogador_particulas) {
+                if(data.jogador_particulas.length > 1) {
+                    const chunkSize = 1;
+                    for (let i = 0; i < data.jogador_particulas.length; i += chunkSize) {
+                        const chunk = data.jogador_particulas.slice(i, i+chunkSize);
+                        setTimeout(() => {
+                            this.wsAnimateParticulas('jogador', chunk);
+                        }, 50*i);
+                    }
+                } else {
+                    this.wsAnimateParticulas('jogador', data.jogador_particulas);
+                }
+            }
+            if(data.inimigo_particulas) {
+                if(data.inimigo_particulas.length > 1) {
+                    const chunkSize = 1;
+                    for (let i = 0; i < data.inimigo_particulas.length; i += chunkSize) {
+                        const chunk = data.inimigo_particulas.slice(i, i+chunkSize);
+                        setTimeout(() => {
+                            this.wsAnimateParticulas('inimigo', chunk);
+                        }, 50*i);
+                    }
+                } else {
+                    this.wsAnimateParticulas('inimigo', data.inimigo_particulas);
+                }
+            }
         },
         wsUpdateState(data) {
             this.podeEnviarAcao = true;
