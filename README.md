@@ -2,6 +2,8 @@
 
 ![tiny_rpg](demo.png)
 
+[JOGAR AGORA](https://tinyrpgexalt-production.up.railway.app/)
+
 Gerencie sua jornada até os fins dos tempos passando por diferentes regiões em batalhas em tempo real contra diferentes inimigos!
 
 Conquiste o placar de líderes da temporada para garantir recompensas exclusivas!
